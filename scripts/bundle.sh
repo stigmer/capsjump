@@ -43,11 +43,12 @@ BIN="$("${build[@]}" --show-bin-path)"
 
 APP="$OUT/Nightcrawler.app"
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Helpers"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Helpers" "$APP/Contents/Resources"
 cp "$BIN/NightcrawlerApp" "$APP/Contents/MacOS/Nightcrawler"
 cp "$BIN/nightcrawler" "$APP/Contents/Helpers/nightcrawler"
 sed "s/@VERSION@/$VERSION/g" "$ROOT/packaging/Info.plist" > "$APP/Contents/Info.plist"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
+cp "$ROOT/packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
 for exe in "$APP/Contents/MacOS/Nightcrawler" "$APP/Contents/Helpers/nightcrawler"; do
   archs="$(lipo -archs "$exe")"

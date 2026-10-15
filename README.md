@@ -1,3 +1,5 @@
+<img src="packaging/icon.svg" width="96" alt="Nightcrawler icon">
+
 # Nightcrawler
 
 Jump to a site's tab in the right Chrome account, or open it there.
@@ -93,7 +95,7 @@ make app             # .build/bundle/Nightcrawler.app, universal, signed ad hoc
 make install-local   # install that build to ~/Applications and the CLI to ~/.local/bin
 ```
 
-A local build is signed ad hoc, and macOS ties its permissions to that exact build, so every rebuild asks for them again (`nightcrawler setup`). Released builds don't have this problem.
+A local build is signed ad hoc, and macOS ties its permissions to that exact build, so every rebuild asks for them again: `make install-local` clears the old entries, then run `nightcrawler setup`. Released builds don't have this problem.
 
 Layout:
 
@@ -101,6 +103,7 @@ Layout:
 - `Sources/NightcrawlerChrome`: the live side: Apple Events to Chrome, Accessibility, launching Chrome, permissions.
 - `Sources/NightcrawlerApp`: the background app that receives `nightcrawler://` links.
 - `Sources/nightcrawler`: the CLI.
+- `packaging/icon.svg` is the icon's source; `scripts/make-icon.sh` renders it into `packaging/AppIcon.icns`.
 - `scripts/bundle.sh` builds the app bundle; `scripts/notarize.sh` and `scripts/macos-import-signing-keychain.sh` are the release's signing steps.
 
 ## Release

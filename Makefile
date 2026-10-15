@@ -1,6 +1,7 @@
 # Nightcrawler. `make test` runs the unit tests; `make app` builds Nightcrawler.app signed
 # ad hoc (every rebuild asks for the permissions again; releases are signed and keep them);
-# `make install-local` puts that build in ~/Applications and the CLI in ~/.local/bin.
+# `make install-local` puts that build in ~/Applications and the CLI in ~/.local/bin, and
+# clears the previous build's permission entries so `nightcrawler setup` asks afresh.
 
 APP := .build/bundle/Nightcrawler.app
 APPS_DIR := $(HOME)/Applications
@@ -27,6 +28,9 @@ install-local: app
 	mkdir -p "$(APPS_DIR)" "$(BIN_DIR)"
 	ditto "$(APP)" "$(APPS_DIR)/Nightcrawler.app"
 	"$(LSREGISTER)" -f "$(APPS_DIR)/Nightcrawler.app"
+	@# The grants of the previous ad hoc build stay listed, switched on, and no longer apply.
+	tccutil reset Accessibility ai.stigmer.nightcrawler
+	tccutil reset AppleEvents ai.stigmer.nightcrawler
 	ln -sf "$(APPS_DIR)/Nightcrawler.app/Contents/Helpers/nightcrawler" "$(BIN_DIR)/nightcrawler"
 	@echo "installed $(APPS_DIR)/Nightcrawler.app; CLI at $(BIN_DIR)/nightcrawler"
 	@echo "next: nightcrawler setup (a local build asks for its permissions again after every rebuild)"

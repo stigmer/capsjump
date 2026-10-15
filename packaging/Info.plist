@@ -8,6 +8,8 @@
 	<string>Nightcrawler</string>
 	<key>CFBundleExecutable</key>
 	<string>Nightcrawler</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>ai.stigmer.nightcrawler</string>
 	<key>CFBundleInfoDictionaryVersion</key>
