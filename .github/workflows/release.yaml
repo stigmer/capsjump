@@ -5,7 +5,8 @@
 # Eight repository secrets drive it, all required: the seven Apple ones the desktop app's
 # release uses (APPLE_CERTIFICATE as a base64 .p12, APPLE_CERTIFICATE_PASSWORD,
 # APPLE_SIGNING_IDENTITY, APPLE_TEAM_ID, APPLE_API_ISSUER, APPLE_API_KEY, APPLE_API_KEY_P8
-# as a base64 .p8) and HOMEBREW_TAP_TOKEN, which may push to stigmer/homebrew-tap. The
+# as a base64 .p8) and HOMEBREW_TAP_DEPLOY_KEY, the private half of a deploy key with write
+# access to stigmer/homebrew-tap alone. The
 # scripts under scripts/ do the work and run the same on a laptop; these steps only move
 # secrets into files and environment variables. A release is never signed partly: with
 # any secret missing, the run stops before building.
@@ -52,16 +53,16 @@ jobs:
           HAS_API_ISSUER: ${{ secrets.APPLE_API_ISSUER != '' }}
           HAS_API_KEY: ${{ secrets.APPLE_API_KEY != '' }}
           HAS_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 != '' }}
-          HAS_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN != '' }}
+          HAS_TAP_DEPLOY_KEY: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY != '' }}
         run: |
           set -euo pipefail
           missing=()
-          for name in CERTIFICATE CERTIFICATE_PASSWORD SIGNING_IDENTITY TEAM_ID API_ISSUER API_KEY API_KEY_P8 TAP_TOKEN; do
+          for name in CERTIFICATE CERTIFICATE_PASSWORD SIGNING_IDENTITY TEAM_ID API_ISSUER API_KEY API_KEY_P8 TAP_DEPLOY_KEY; do
             flag="HAS_$name"
             [ "${!flag}" = "true" ] || missing+=("$name")
           done
           if [ "${#missing[@]}" -gt 0 ]; then
-            echo "::error::release secrets missing: ${missing[*]} (APPLE_* and HOMEBREW_TAP_TOKEN); nothing was built"
+            echo "::error::release secrets missing: ${missing[*]} (APPLE_* and HOMEBREW_TAP_DEPLOY_KEY); nothing was built"
             exit 1
           fi
 
@@ -121,8 +122,8 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: stigmer/homebrew-tap
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          # This job pushes the cask to the tap with git, so the checkout keeps its token.
+          ssh-key: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
+          # This job pushes the cask to the tap with git, so the checkout keeps its key.
           path: homebrew-tap
 
       - name: Update the cask
