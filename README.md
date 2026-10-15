@@ -1,8 +1,16 @@
-<img src="packaging/icon.svg" width="96" alt="Nightcrawler icon">
+<p align="center">
+  <img src="packaging/icon.svg" width="160" alt="Nightcrawler icon: a browser window jumping to another">
+</p>
 
-# Nightcrawler
+<h1 align="center">Nightcrawler</h1>
 
-Jump to a site's tab in the right Chrome account, or open it there.
+<p align="center">Jump to a site's tab in the right Chrome account, or open it there.</p>
+
+<p align="center">
+  <a href="https://github.com/stigmer/nightcrawler/releases/latest"><img src="https://img.shields.io/github/v/release/stigmer/nightcrawler" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/macOS-13%2B-1B1F3B" alt="macOS 13 or later">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-8C7CFF" alt="MIT license"></a>
+</p>
 
 You use Chrome with several accounts (work, a client, personal), each in its own profile. You want one key to bring up GitHub in the work account: the GitHub tab already open there if there is one, otherwise a new one in that account's window. Nightcrawler does that from a link, `nightcrawler://github`, so any launcher that can open a link (karayaml, Raycast, Alfred, a Shortcut, `open` in a terminal) gets it.
 
@@ -11,22 +19,24 @@ Named after the X-Men character who teleports.
 ## Install
 
 ```sh
-brew trust stigmer/tap                 # Homebrew asks once per machine for a third-party tap
+brew trust stigmer/tap
 brew install --cask stigmer/tap/nightcrawler
-nightcrawler setup                     # grant its permissions once; upgrades keep them
-nightcrawler init                      # writes ~/.nightcrawler.yaml, listing your Chrome accounts
+nightcrawler setup
+nightcrawler init
 ```
 
-Edit `~/.nightcrawler.yaml`, then run `nightcrawler check`.
+- `brew trust` is asked once per machine: Homebrew 7 loads casks only from taps you trust.
+- `nightcrawler setup` asks for the app's permissions once; upgrades keep them.
+- `nightcrawler init` writes `~/.nightcrawler.yaml`, listing your Chrome accounts. Edit it, then run `nightcrawler check`.
 
 ## Configure
 
 ```yaml
 sites:
-  - name: github                       # nightcrawler://github
-    account: you@work.com              # email, or the profile's name when it has no signed-in account
+  - name: github
+    account: you@work.com
     open: https://github.com/your-org/your-repo/pulls
-    match: [github.com/your-org/your-repo/pulls, github.com/]   # optional
+    match: [github.com/your-org/your-repo/pulls, github.com/]
   - name: claude-client
     account: client@example.com
     open: https://claude.ai/new
@@ -42,7 +52,7 @@ The file is read on every jump, so edits apply at once. Unknown keys are refused
 
 ## Bind it to a key
 
-With [karayaml](https://github.com/swarupdonepudi/karayaml) (a release with `url:` entries):
+With [karayaml](https://github.com/swarupdonepudi/karayaml) 0.0.20 or later:
 
 ```yaml
 - key: g
