@@ -9,7 +9,7 @@ cask "nightcrawler" do
   desc "Jump to a site's tab in the right Chrome account, or open it there"
   homepage "https://github.com/stigmer/nightcrawler"
 
-  depends_on macos: ">= :ventura"
+  depends_on macos: :ventura
 
   app "Nightcrawler.app"
   binary "#{appdir}/Nightcrawler.app/Contents/Helpers/nightcrawler"
