@@ -33,14 +33,11 @@ enum Setup {
         show(accessibility: accessibility, automation: automation, chromeProblem: chromeProblem, notifications: notifications, login: login)
     }
 
-    /// Registers the app as a login item; turned off again in System Settings › General ›
-    /// Login Items & Extensions.
+    /// Registers the app as a login item; turned off again from the menu bar, or in System
+    /// Settings › General › Login Items & Extensions.
     private static func startAtLogin() -> SMAppService.Status {
-        let service = SMAppService.mainApp
-        if service.status != .enabled {
-            try? service.register()
-        }
-        return service.status
+        LoginItem.set(true)
+        return SMAppService.mainApp.status
     }
 
     private static func show(

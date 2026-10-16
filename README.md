@@ -80,6 +80,18 @@ While CapsJump runs, macOS's own key mapping (the one `hidutil` sets) turns Caps
 
 macOS keeps every app's shortcuts out of password fields, so the keys do nothing while one has focus and work again as soon as you leave it.
 
+## Pause, quit or turn it off
+
+CapsJump puts a Caps Lock symbol in the menu bar: filled while it has Caps Lock, outlined when it doesn't. Its menu:
+
+- **Pause Keys / Resume Keys**: gives Caps Lock back, or takes it again. A pause lasts until you resume, across restarts.
+- **Edit Config…**: opens `~/.capsjump.yaml` in your editor, writing a starter file first if there is none. Saving applies the change at once.
+- **Check Config**: shows what `capsjump check` shows.
+- **Start at Login**: whether CapsJump starts when you log in.
+- **Quit CapsJump**: gives Caps Lock back. It starts again at the next login, unless Start at Login is off.
+
+From a terminal: `capsjump pause`, `capsjump resume` and `capsjump quit`. To remove it: `brew uninstall --cask capsjump`, which quits it first.
+
 ## What a jump does
 
 A `site` key, or the link `capsjump://<name>`, runs a jump:
@@ -113,10 +125,12 @@ Releases are signed with a Developer ID and notarized, so macOS keeps these gran
 | `capsjump check` | Validate the file, resolve every site and key, and confirm CapsJump.app is running with Caps Lock mapped. Exits non-zero on a problem. |
 | `capsjump jump <site>` | Jump, exactly as the link does. |
 | `capsjump setup` | Ask for the permissions, start CapsJump at login, and show each one's state. |
+| `capsjump pause` / `capsjump resume` | Give Caps Lock back, or take it again. |
+| `capsjump quit` | Quit CapsJump.app, giving Caps Lock back. |
 | `capsjump logs [--last 2h]` | Show recent keys, jumps and failures from the macOS log. |
 | `capsjump version` | Print the version. |
 
-CapsJump runs in the background from login, with no Dock icon or menu.
+CapsJump runs from login, with a Caps Lock symbol in the menu bar and no Dock icon.
 
 ## Develop
 

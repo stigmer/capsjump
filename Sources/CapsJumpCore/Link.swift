@@ -6,6 +6,11 @@ import Foundation
 public enum Link: Sendable, Equatable {
     case site(String)
     case setup
+    case pause
+    case resume
+
+    /// The app's own actions, by host.
+    private static let actions: [String: Link] = ["_setup": .setup, "_pause": .pause, "_resume": .resume]
 
     public enum ParseError: Error, Equatable, CustomStringConvertible {
         case notCapsJump(String)
@@ -29,8 +34,8 @@ public enum Link: Sendable, Equatable {
         let host = (url.host ?? "").lowercased()
         guard !host.isEmpty else { throw .noSite(url.absoluteString) }
         if host.hasPrefix("_") {
-            guard host == "_setup" else { throw .unknownAction(host) }
-            return .setup
+            guard let action = actions[host] else { throw .unknownAction(host) }
+            return action
         }
         return .site(host)
     }
@@ -40,4 +45,6 @@ public enum Link: Sendable, Equatable {
     }
 
     public static let setupURL = URL(string: "\(Identity.scheme)://_setup")!
+    public static let pauseURL = URL(string: "\(Identity.scheme)://_pause")!
+    public static let resumeURL = URL(string: "\(Identity.scheme)://_resume")!
 }

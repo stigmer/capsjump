@@ -87,7 +87,7 @@
 
     <section class="config">
       <h2>One file, ~/.capsjump.yaml</h2>
-      <p>Each key does one thing. Save the file and the change applies at once; <code>capsjump check</code> says what every key will do.</p>
+      <p>Each key does one thing. Open it from the menu bar with <strong>Edit Config…</strong>; save it and the change applies at once. <strong>Check Config</strong> says what every key will do.</p>
 <pre><code>sites:
   - name: github
     account: you@work.com
@@ -111,7 +111,7 @@ brew install --cask stigmer/tap/capsjump
 capsjump setup
 capsjump init</code></pre>
       <ol>
-        <li><code>capsjump setup</code> asks for the permissions once (Accessibility, Chrome automation, notifications) and starts CapsJump at login.</li>
+        <li><code>capsjump setup</code> asks for the permissions once (Accessibility, Chrome automation, notifications) and starts CapsJump at login. A Caps Lock symbol appears in the menu bar.</li>
         <li><code>capsjump init</code> writes a starter <code>~/.capsjump.yaml</code> listing your Chrome accounts. Edit it, then run <code>capsjump check</code>.</li>
       </ol>
     </section>
@@ -122,7 +122,7 @@ capsjump init</code></pre>
         <li><strong>Chrome only, for sites.</strong> Site keys work with Google Chrome and its accounts; app, window and link keys work with anything.</li>
         <li><strong>Windows stay on their screen.</strong> A window snaps within the screen it is on; moving it to another screen isn't a key yet.</li>
         <li><strong>Not while typing a password.</strong> macOS keeps every app's shortcuts out of password fields; the keys work again as soon as you leave one.</li>
-        <li><strong>Caps Lock comes back when CapsJump quits.</strong> While it runs, Caps Lock no longer types capitals.</li>
+        <li><strong>Caps Lock comes back whenever you want it.</strong> While CapsJump has it, Caps Lock no longer types capitals. Pause or quit from its menu-bar icon and Caps Lock works as usual at once.</li>
       </ul>
     </section>
   </main>

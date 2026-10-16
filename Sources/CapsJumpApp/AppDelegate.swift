@@ -4,8 +4,8 @@
 // once per launch, so the prompts come up without anyone typing `capsjump setup`: when the
 // app is opened directly (not by a link) with a permission missing, and when a jump fails
 // for want of one. A launch by a link never adds a second round to the setup it asked for.
-// Quitting, logging out, SIGTERM and SIGINT all go through `applicationWillTerminate`,
-// which gives Caps Lock back.
+// Quitting (from the menu bar too), logging out, SIGTERM and SIGINT all go through
+// `applicationWillTerminate`, which gives Caps Lock back.
 
 import AppKit
 import CapsJumpChrome
@@ -24,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var keys = Keys(notifier: notifier) { [weak self] action in
         self?.enqueue { [weak self] in await self?.run(action) }
     }
+    private var menu: StatusMenu?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         notifier.install()
@@ -39,6 +40,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let menu = StatusMenu(keys: keys)
+        keys.onChange = { [weak menu] in menu?.refresh() }
+        self.menu = menu
         keys.start()
         guard notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool == true else { return }
         enqueue { [self] in
@@ -71,6 +75,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .setup:
             logger.notice("setup requested")
             await setup()
+        case .pause:
+            keys.pause()
+        case .resume:
+            keys.resume()
         case let .site(name):
             await jump(to: name)
         }

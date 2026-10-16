@@ -3,7 +3,9 @@
 // back Caps Lock to match, and a broken one keeps the last good bindings and says so once.
 // Caps Lock is mapped only while the tap runs, so it never becomes a key that nothing
 // handles, and `stop` gives it back. Without Accessibility the tap is refused; the keys
-// then start by themselves within two seconds of it being granted.
+// then start by themselves within two seconds of it being granted. A pause (from the menu
+// bar or `capsjump pause`) gives Caps Lock back and lasts until resumed, across restarts.
+// Every change of state calls `onChange`, which redraws the menu-bar icon.
 
 import CapsJumpChrome
 import CapsJumpCore
@@ -22,6 +24,7 @@ final class Keys {
     private var lastNotice: String?
     private var permissionNoticeShown = false
     private var waitingForAccess: Task<Void, Never>?
+    var onChange: (@MainActor () -> Void)?
 
     init(notifier: Notifier, onAction: @escaping @MainActor (KeyAction) -> Void) {
         self.notifier = notifier
@@ -39,6 +42,22 @@ final class Keys {
         reload(quietWhenMissing: true)
     }
 
+    var status: KeyStatus {
+        KeyStatus.of(paused: Pause.isOn, config: config, configBroken: lastNotice != nil, tapRunning: layer.isRunning)
+    }
+
+    func pause() {
+        Pause.isOn = true
+        logger.notice("keys paused")
+        apply()
+    }
+
+    func resume() {
+        Pause.isOn = false
+        logger.notice("keys resumed")
+        apply()
+    }
+
     /// Gives Caps Lock back and stops the tap.
     func stop() {
         KeyMapping.apply(false)
@@ -46,6 +65,7 @@ final class Keys {
     }
 
     private func reload(quietWhenMissing: Bool) {
+        defer { onChange?() }
         do {
             let config = try Inputs.config()
             self.config = config
@@ -68,9 +88,10 @@ final class Keys {
     }
 
     private func apply() {
-        let bindings = config.map(KeyRules.bindings(for:)) ?? [:]
-        layer.update(bindings)
-        guard config?.takesCapsLock == true else {
+        defer { onChange?() }
+        let active = Pause.isOn ? nil : config
+        layer.update(active.map(KeyRules.bindings(for:)) ?? [:])
+        guard active?.takesCapsLock == true else {
             KeyMapping.apply(false)
             return
         }

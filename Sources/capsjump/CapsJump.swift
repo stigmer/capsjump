@@ -1,13 +1,15 @@
 // The capsjump command: writes and checks the config, lists Chrome's profiles, and
 // hands links to CapsJump.app. It never talks to Chrome itself: the app holds the
 // permissions, so `jump` and `setup` go through macOS's link handling to it. `check` also
-// reads whether the app runs and whether Caps Lock is mapped, the two things the keys need.
+// reads whether the app runs and whether Caps Lock is mapped, the two things the keys need;
+// `pause` and `resume` reach the running app by link, and `quit` asks it to quit.
 
 import AppKit
 import ArgumentParser
 import Foundation
 import CapsJumpChrome
 import CapsJumpCore
+import CapsJumpSystem
 
 @main
 struct CapsJump: ParsableCommand {
@@ -16,7 +18,7 @@ struct CapsJump: ParsableCommand {
         abstract: "Shortcuts built around Caps Lock: apps, Chrome sites in the right account, windows and links.",
         discussion: "Keys and sites live in ~/.capsjump.yaml. Hold Caps Lock and press a key; each site is also the link capsjump://<name>.",
         version: Version.current,
-        subcommands: [Init.self, Profiles.self, Check.self, Jump.self, Setup.self, Logs.self, VersionCommand.self]
+        subcommands: [Init.self, Profiles.self, Check.self, Jump.self, Setup.self, PauseCommand.self, ResumeCommand.self, QuitCommand.self, Logs.self, VersionCommand.self]
     )
 }
 
@@ -68,7 +70,7 @@ struct Check: ParsableCommand {
             lookup: Lookup.thisMac
         )
         findings.append(LinkHandler.finding())
-        findings += KeyState.findings(config: try? Inputs.config())
+        findings += KeyState.findings(config: try? Inputs.config(), running: KeyState.appIsRunning)
         for finding in findings {
             print("\(finding.level.rawValue.padding(toLength: 8, withPad: " ", startingAt: 0))\(finding.text)")
         }
@@ -102,6 +104,48 @@ struct Setup: ParsableCommand {
     func run() throws {
         try LinkHandler.open(Link.setupURL)
         print("CapsJump is asking for its permissions; its alert lists each one's state.")
+    }
+}
+
+struct PauseCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "pause", abstract: "Pause the keys and give Caps Lock back, until `capsjump resume`.")
+
+    func run() throws {
+        try RunningApp.open(Link.pauseURL)
+        print("paused; Caps Lock works as usual until `capsjump resume`")
+    }
+}
+
+struct ResumeCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "resume", abstract: "Turn the keys back on after `capsjump pause`.")
+
+    func run() throws {
+        try RunningApp.open(Link.resumeURL)
+        print("resumed; hold Caps Lock and press a key")
+    }
+}
+
+struct QuitCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "quit", abstract: "Quit CapsJump.app, giving Caps Lock back. It starts again at the next login.")
+
+    func run() throws {
+        let apps = NSRunningApplication.runningApplications(withBundleIdentifier: Identity.bundleID)
+        guard !apps.isEmpty else {
+            print("CapsJump.app isn't running")
+            return
+        }
+        for app in apps { app.terminate() }
+        print("CapsJump.app is quitting; Caps Lock works as usual")
+    }
+}
+
+/// The app, reached by link only while it runs, so pausing never starts it.
+enum RunningApp {
+    static func open(_ url: URL) throws {
+        guard KeyState.appIsRunning else {
+            throw ValidationError("CapsJump.app isn't running; open it, or run `capsjump setup`")
+        }
+        try LinkHandler.open(url)
     }
 }
 

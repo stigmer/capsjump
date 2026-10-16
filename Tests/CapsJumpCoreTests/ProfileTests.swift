@@ -108,6 +108,8 @@ func site(_ name: String = "s", account: String? = nil, profile: String? = nil, 
         #expect(try Link.parse(URL(string: "capsjump://github")!) == .site("github"))
         #expect(try Link.parse(URL(string: "CAPSJUMP://GitHub/")!) == .site("github"))
         #expect(try Link.parse(Link.setupURL) == .setup)
+        #expect(try Link.parse(Link.pauseURL) == .pause)
+        #expect(try Link.parse(Link.resumeURL) == .resume)
         #expect(throws: Link.ParseError.unknownAction("_x")) { try Link.parse(URL(string: "capsjump://_x")!) }
         #expect(throws: Link.ParseError.self) { try Link.parse(URL(string: "tabjump://github")!) }
         #expect(throws: Link.ParseError.self) { try Link.parse(URL(string: "capsjump:")!) }
