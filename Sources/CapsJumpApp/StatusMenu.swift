@@ -90,7 +90,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     @objc private func editConfig() {
         let url = Paths.config()
         if !FileManager.default.fileExists(atPath: url.path) {
-            try? StarterConfig.render(catalog: try? Inputs.profiles()).write(to: url, atomically: true, encoding: .utf8)
+            _ = try? ConfigFile(url: url).write(StarterConfig.config(catalog: try? Inputs.profiles()), replacing: nil)
         }
         if NSWorkspace.shared.urlForApplication(toOpen: url) != nil, NSWorkspace.shared.open(url) { return }
         // No app claims .yaml files: plain text in TextEdit.

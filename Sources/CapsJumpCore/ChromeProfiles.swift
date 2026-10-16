@@ -119,3 +119,14 @@ public struct ProfileCatalog: Sendable, Equatable {
         throw .notFound(account: account, known: profiles.map { $0.email.isEmpty ? $0.name : $0.email })
     }
 }
+
+/// What a site writes to live in a profile: the account, and the folder only when needed.
+public enum SiteAccount {
+    /// The email, or the profile's name when no account is signed in; `profile` too only
+    /// when the account alone would land on another profile, or on none.
+    public static func fields(for profile: ChromeProfile, in catalog: ProfileCatalog) -> (account: String, profile: String?) {
+        let account = profile.email.isEmpty ? profile.name : profile.email
+        let landsOn = try? catalog.profile(account: account)
+        return (account, landsOn?.directory == profile.directory ? nil : profile.directory)
+    }
+}

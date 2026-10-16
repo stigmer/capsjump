@@ -27,30 +27,30 @@ capsjump init
 
 - `brew trust` is asked once per machine: Homebrew 7 loads casks only from taps you trust.
 - `capsjump setup` asks for the app's permissions once (upgrades keep them) and starts CapsJump at login.
-- `capsjump init` writes `~/.capsjump.yaml`, listing your Chrome accounts. Edit it, then run `capsjump check`.
+- `capsjump init` writes a starter `~/.capsjump.yaml` in your first Chrome account; `capsjump profiles` lists the others. Edit it, then run `capsjump check`.
 
 ## Configure
 
 ```yaml
 sites:
-  - name: github
-    account: you@work.com
-    open: https://github.com/your-org/your-repo/pulls
-    match: [github.com/your-org/your-repo/pulls, github.com/]
-  - name: claude-client
-    account: client@example.com
-    open: https://claude.ai/new
+- name: github
+  account: you@work.com
+  open: https://github.com/your-org/your-repo/pulls
+  match: [github.com/your-org/your-repo/pulls, github.com/]
+- name: claude-client
+  account: client@example.com
+  open: https://claude.ai/new
 
 keys:
-  s: { app: iTerm }
-  t: { app: Finder }
-  o: { app: ~/Applications/Obsidian.app }
-  g: { site: github }
-  f1: { site: claude-client }
-  left: { window: left-half }
-  right: { window: right-half }
-  f: { window: maximize }
-  w: { url: "slack://channel?team=T123&id=C456" }
+  s: {app: iTerm}
+  t: {app: Finder}
+  o: {app: ~/Applications/Obsidian.app}
+  g: {site: github}
+  f1: {site: claude-client}
+  left: {window: left-half}
+  right: {window: right-half}
+  f: {window: maximize}
+  w: {url: 'slack://channel?team=T123&id=C456'}
 ```
 
 ### Keys
@@ -72,7 +72,7 @@ While Caps Lock is held, a key with nothing bound does nothing. A file with no `
 - `open`: the page opened when no tab matches.
 - `match`: URL prefixes without the scheme, most specific first. A tab matches when its URL (without `https://` and `www.`) starts with one. The default is the `open` URL's host, e.g. `claude.ai/`.
 
-Edits apply as soon as the file is saved. Unknown keys are refused, so a typo is reported instead of being ignored. A broken edit keeps the keys you had and says what is wrong in a notification, and `capsjump check` lists every problem with its line.
+This is the layout CapsJump itself writes, and a file in it never loses anything when CapsJump saves it. Edits apply as soon as the file is saved. Unknown keys are refused, so a typo is reported instead of being ignored. A broken edit keeps the keys you had and says what is wrong in a notification, and `capsjump check` lists every problem with its line.
 
 ## How Caps Lock becomes CapsJump's key
 
@@ -146,9 +146,9 @@ A local build is signed ad hoc, and macOS ties its permissions to that exact bui
 
 Layout:
 
-- `Sources/CapsJumpCore`: all the rules (config, key names, what each key event does, window frames, Chrome profiles, links, window pairing, choosing a tab), with no system calls. Every test is here.
+- `Sources/CapsJumpCore`: all the rules (reading, checking and writing the config, key names, what each key event does, window frames, Chrome profiles, links, window pairing, choosing a tab), with no system calls. Nearly every test is here.
 - `Sources/CapsJumpChrome`: the live side of a jump: Apple Events to Chrome, Accessibility, launching Chrome, permissions.
-- `Sources/CapsJumpSystem`: the live side of the keys: the Caps Lock mapping, the event tap, watching the config, moving windows, opening apps and links.
+- `Sources/CapsJumpSystem`: the live side of the keys: the Caps Lock mapping, the event tap, watching and saving the config, moving windows, opening apps and links. Saving has its own tests, on a real disk, because its bugs would lose your file.
 - `Sources/CapsJumpApp`: the background app that runs the keys and receives `capsjump://` links.
 - `Sources/capsjump`: the CLI.
 - `packaging/icon.svg` is the icon's source and `packaging/menubar.svg` the menu bar's; `scripts/make-icon.sh` renders them into `packaging/AppIcon.icns` and `packaging/MenuBarIcon*.png`.

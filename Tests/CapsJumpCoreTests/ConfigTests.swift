@@ -130,21 +130,25 @@ import Testing
         }
     }
 
-    @Test func starterConfigParsesAndListsAccounts() throws {
+    @Test func starterIsCanonicalAndUsesTheFirstAccount() throws {
         let catalog = ProfileCatalog(profiles: [
             ChromeProfile(directory: "Profile 1", name: "acme.dev", email: "alex@acme.dev", givenName: "Alex"),
             ChromeProfile(directory: "Profile 26", name: "kim@initech.com", email: "", givenName: ""),
         ])
         let text = StarterConfig.render(catalog: catalog)
-        #expect(text.contains("#   alex@acme.dev  (Profile 1)"))
-        #expect(text.contains("#   kim@initech.com  (Profile 26)"))
+        #expect(ConfigWriter.isCanonical(text))
         let config = try ConfigParser.parse(text)
+        #expect(config.sites.map(\.name) == ["github"])
         #expect(config.sites.first?.account == "alex@acme.dev")
+        #expect(config.sites.first?.profile == nil)
         #expect(config.keys == [
             KeyBinding(key: "left", action: .window(.leftHalf)),
             KeyBinding(key: "right", action: .window(.rightHalf)),
             KeyBinding(key: "f", action: .window(.maximize)),
         ])
-        #expect(try ConfigParser.parse(StarterConfig.render(catalog: nil)).sites.count == 1)
+
+        let offline = StarterConfig.render(catalog: nil)
+        #expect(ConfigWriter.isCanonical(offline))
+        #expect(try ConfigParser.parse(offline).sites.first?.account == "you@example.com")
     }
 }

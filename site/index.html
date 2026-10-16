@@ -89,18 +89,18 @@
       <h2>One file, ~/.capsjump.yaml</h2>
       <p>Each key does one thing. Open it from the menu bar with <strong>Edit Config…</strong>; save it and the change applies at once. <strong>Check Config</strong> says what every key will do.</p>
 <pre><code>sites:
-  - name: github
-    account: you@work.com
-    open: https://github.com/your-org/your-repo/pulls
+- name: github
+  account: you@work.com
+  open: https://github.com/your-org/your-repo/pulls
 
 keys:
-  s: { app: iTerm }
-  t: { app: Finder }
-  g: { site: github }
-  left: { window: left-half }
-  right: { window: right-half }
-  f: { window: maximize }
-  w: { url: "slack://channel?team=T123&amp;id=C456" }</code></pre>
+  s: {app: iTerm}
+  t: {app: Finder}
+  g: {site: github}
+  left: {window: left-half}
+  right: {window: right-half}
+  f: {window: maximize}
+  w: {url: 'slack://channel?team=T123&amp;id=C456'}</code></pre>
       <p class="fine">Key names: <code>a</code>–<code>z</code>, <code>0</code>–<code>9</code>, <code>f1</code>–<code>f12</code> and the arrows. A file with no <code>keys:</code> leaves Caps Lock as it is.</p>
     </section>
 
@@ -112,7 +112,7 @@ capsjump setup
 capsjump init</code></pre>
       <ol>
         <li><code>capsjump setup</code> asks for the permissions once (Accessibility, Chrome automation, notifications) and starts CapsJump at login. A Caps Lock symbol appears in the menu bar.</li>
-        <li><code>capsjump init</code> writes a starter <code>~/.capsjump.yaml</code> listing your Chrome accounts. Edit it, then run <code>capsjump check</code>.</li>
+        <li><code>capsjump init</code> writes a starter <code>~/.capsjump.yaml</code> in your first Chrome account; <code>capsjump profiles</code> lists the others. Edit it, then run <code>capsjump check</code>.</li>
       </ol>
     </section>
 

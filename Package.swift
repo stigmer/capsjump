@@ -2,12 +2,14 @@
 //
 // CapsJump: one Mac app for shortcuts built around Caps Lock. Hold it and press a key to
 // bring an app forward, land on a site's tab in the right Chrome account, snap the front
-// window, or open a link. CapsJumpCore is the pure logic and carries every test;
+// window, or open a link. CapsJumpCore is the pure logic and carries nearly every test;
 // CapsJumpChrome is the live side of a jump (Apple Events, Accessibility, launching
 // Chrome); CapsJumpSystem is the live side of the keys (the key mapping, the event tap,
-// the config watcher, moving windows, opening apps and links); CapsJumpApp runs the keys
-// and receives capsjump:// links; capsjump is the CLI. scripts/bundle.sh puts the app and
-// the CLI into one CapsJump.app.
+// the config watcher and saving the config, moving windows, opening apps and links);
+// CapsJumpApp runs the keys and receives capsjump:// links; capsjump is the CLI. Saving
+// the config is the one live piece with tests of its own (CapsJumpSystemTests), because
+// its bugs would lose the user's file. scripts/bundle.sh puts the app and the CLI into
+// one CapsJump.app.
 
 import PackageDescription
 
@@ -51,6 +53,10 @@ let package = Package(
         .testTarget(
             name: "CapsJumpCoreTests",
             dependencies: ["CapsJumpCore"]
+        ),
+        .testTarget(
+            name: "CapsJumpSystemTests",
+            dependencies: ["CapsJumpCore", "CapsJumpSystem"]
         ),
     ]
 )

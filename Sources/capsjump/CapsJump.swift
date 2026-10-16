@@ -23,7 +23,7 @@ struct CapsJump: ParsableCommand {
 }
 
 struct Init: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Write a starter ~/.capsjump.yaml listing this Mac's Chrome accounts.")
+    static let configuration = CommandConfiguration(abstract: "Write a starter ~/.capsjump.yaml in this Mac's first Chrome account.")
 
     func run() throws {
         let path = Paths.config()
@@ -31,10 +31,10 @@ struct Init: ParsableCommand {
             throw ValidationError("\(path.path) already exists; it was left as it is")
         }
         let catalog = try? Inputs.profiles()
-        try StarterConfig.render(catalog: catalog).write(to: path, atomically: true, encoding: .utf8)
+        try ConfigFile(url: path).write(StarterConfig.config(catalog: catalog), replacing: nil)
         print("wrote \(path.path)")
         if catalog == nil {
-            print("note: Chrome's profiles could not be read, so none are listed; `capsjump profiles` lists them once Chrome has run")
+            print("note: Chrome's profiles could not be read, so the example site says you@example.com; `capsjump profiles` lists the real accounts once Chrome has run")
         }
         print("next: edit it, then run `capsjump check`")
     }

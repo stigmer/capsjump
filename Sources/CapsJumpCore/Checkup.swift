@@ -1,7 +1,8 @@
 // What `capsjump check` reports about the config and Chrome's profiles: every problem,
 // for each site the profile and window label it resolves to, and for each key what it
 // does: the app it finds, the site, the window position, or the app that opens its link.
-// The disk and the link handlers are injected, so every line is tested.
+// Each site's and key's finding is its own function, which the editing window shows beside
+// its row. The disk and the link handlers are injected, so every line is tested.
 
 import Foundation
 
@@ -57,28 +58,31 @@ public enum Checkup {
         guard config.takesCapsLock else {
             return [Finding(.ok, "no keys, so Caps Lock is left alone")]
         }
-        return config.keys.map { binding in
-            let line = "`\(binding.key)` → \(binding.action)"
-            switch binding.action {
-            case .site, .window:
-                return Finding(.ok, line)
-            case let .app(target):
-                if let path = target.resolve(home: lookup.home, exists: lookup.exists) {
-                    return Finding(.ok, "`\(binding.key)` → app \(path)")
-                }
-                switch target {
-                case let .name(name):
-                    let folders = AppTarget.searchFolders.joined(separator: ", ")
-                    return Finding(.problem, "\(line): no \(name).app in \(folders); give its path instead")
-                case .path:
-                    return Finding(.problem, "\(line): nothing at \(target.candidates(home: lookup.home)[0])")
-                }
-            case let .url(url):
-                guard let app = lookup.linkHandler(url) else {
-                    return Finding(.note, "\(line): no installed app opens \(url.scheme ?? "these") links")
-                }
-                return Finding(.ok, "\(line) (opens in \(app))")
+        return config.keys.map { key($0, lookup: lookup) }
+    }
+
+    /// What one key does on this Mac: the app it finds, or the app that opens its link.
+    public static func key(_ binding: KeyBinding, lookup: Lookup) -> Finding {
+        let line = "`\(binding.key)` → \(binding.action)"
+        switch binding.action {
+        case .site, .window:
+            return Finding(.ok, line)
+        case let .app(target):
+            if let path = target.resolve(home: lookup.home, exists: lookup.exists) {
+                return Finding(.ok, "`\(binding.key)` → app \(path)")
             }
+            switch target {
+            case let .name(name):
+                let folders = AppTarget.searchFolders.joined(separator: ", ")
+                return Finding(.problem, "\(line): no \(name).app in \(folders); give its path instead")
+            case .path:
+                return Finding(.problem, "\(line): nothing at \(target.candidates(home: lookup.home)[0])")
+            }
+        case let .url(url):
+            guard let app = lookup.linkHandler(url) else {
+                return Finding(.note, "\(line): no installed app opens \(url.scheme ?? "these") links")
+            }
+            return Finding(.ok, "\(line) (opens in \(app))")
         }
     }
 
@@ -93,19 +97,21 @@ public enum Checkup {
         } catch {
             return [Finding(.problem, error.description)]
         }
+        return config.sites.map { site($0, catalog: catalog) }
+    }
 
-        return config.sites.map { site in
-            do {
-                let target = try Resolver.resolve(site, in: catalog)
-                let line = "\(site.name) → \(target.profile.directory), windows labelled “\(target.label)”"
-                guard target.canFocus else {
-                    let others = target.sharedLabelWith.map(\.directory).joined(separator: ", ")
-                    return Finding(.note, "\(line); always opens a new tab, because \(others) carries the same label")
-                }
-                return Finding(.ok, line)
-            } catch {
-                return Finding(.problem, "\(site.name): \(error)")
+    /// Where one site lands: its profile and window label, or why it can't.
+    public static func site(_ site: Site, catalog: ProfileCatalog) -> Finding {
+        do {
+            let target = try Resolver.resolve(site, in: catalog)
+            let line = "\(site.name) → \(target.profile.directory), windows labelled “\(target.label)”"
+            guard target.canFocus else {
+                let others = target.sharedLabelWith.map(\.directory).joined(separator: ", ")
+                return Finding(.note, "\(line); always opens a new tab, because \(others) carries the same label")
             }
+            return Finding(.ok, line)
+        } catch {
+            return Finding(.problem, "\(site.name): \(error)")
         }
     }
 }

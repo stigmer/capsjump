@@ -1,6 +1,7 @@
 // What a shortcut does: bring an app forward, jump to a site, snap the front window, or
-// open a link. Also where an app named by name is looked for, as a pure search over an
-// injected "does this path exist", so it is tested without a disk.
+// open a link. Also where an app named by name is looked for, and which of its name and
+// its path to write for an app picked by path, as pure searches over an injected "does
+// this path exist", so they are tested without a disk.
 
 import Foundation
 
@@ -87,6 +88,19 @@ public enum AppTarget: Sendable, Equatable, CustomStringConvertible {
     /// The first candidate that exists, or nil.
     public func resolve(home: String, exists: (String) -> Bool) -> String? {
         candidates(home: home).first(where: exists)
+    }
+
+    /// What to write for the app at `path`: its name when looking that name up finds this
+    /// same app, so the file reads `Slack`; otherwise its path, with the home folder as `~/`.
+    public static func preferred(forPath path: String, home: String, exists: (String) -> Bool) -> AppTarget {
+        let path = path.count > 1 && path.hasSuffix("/") ? String(path.dropLast()) : path
+        let file = path.split(separator: "/").last.map(String.init) ?? path
+        let name = file.hasSuffix(".app") ? String(file.dropLast(4)) : file
+        if !name.isEmpty, AppTarget.name(name).resolve(home: home, exists: exists) == path {
+            return .name(name)
+        }
+        let base = home.hasSuffix("/") ? String(home.dropLast()) : home
+        return path.hasPrefix(base + "/") ? .path("~" + path.dropFirst(base.count)) : .path(path)
     }
 
     static func expand(_ path: String, home: String) -> String {
