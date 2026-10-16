@@ -4,6 +4,8 @@
 // keys along; removing one says which keys used it; binding a key that's taken says what it
 // does now instead of overwriting it. Links to a site name the file had and the draft no
 // longer has stop working, which only the window can tell the user, so the draft lists them.
+// `checked()` judges the whole draft once and hands back every problem by row, so a window
+// that shows them field by field asks the rules once per edit, not once per field.
 
 import Foundation
 
@@ -75,25 +77,71 @@ public struct ConfigDraft: Sendable, Equatable {
         )
     }
 
-    public var validation: Result<Config, ConfigError> {
-        ConfigRules.validate(source)
+    /// One judgement of the draft by the rules.
+    public struct Check: Sendable, Equatable {
+        /// The config to save, or nil while any problem remains.
+        public let config: Config?
+        /// Every problem, in the order the rules found them.
+        public let issues: [Issue]
+        /// The problems above the rows.
+        public let file: [Issue]
+        public let bySite: [Int: [Issue]]
+        public let byKey: [Int: [Issue]]
+
+        init(config: Config?, issues: [Issue]) {
+            self.config = config
+            self.issues = issues
+            var file: [Issue] = []
+            var bySite: [Int: [Issue]] = [:]
+            var byKey: [Int: [Issue]] = [:]
+            for issue in issues {
+                switch issue.spot {
+                case .file: file.append(issue)
+                case let .site(id, _): bySite[id, default: []].append(issue)
+                case let .key(id, _): byKey[id, default: []].append(issue)
+                }
+            }
+            self.file = file
+            self.bySite = bySite
+            self.byKey = byKey
+        }
+
+        /// The site row's problems on these fields, all of them when none is named.
+        public func site(_ id: Int, _ fields: [SiteSource.Field] = []) -> [Issue] {
+            (bySite[id] ?? []).filter { issue in
+                guard case let .site(_, field) = issue.spot else { return false }
+                return fields.isEmpty || fields.contains(field)
+            }
+        }
+
+        public func key(_ id: Int) -> [Issue] {
+            byKey[id] ?? []
+        }
+    }
+
+    public func checked() -> Check {
+        switch ConfigRules.validate(source) {
+        case let .success(config):
+            return Check(config: config, issues: [])
+        case let .failure(error):
+            return Check(config: nil, issues: error.found.map { problem in
+                let spot: Spot = switch problem.place {
+                case .file, .keys: .file
+                case let .site(index, _, field): .site(id: sites[index].id, field: field)
+                case let .key(index, _, field): .key(id: keys[index].id, field: field)
+                }
+                return Issue(spot: spot, message: problem.message)
+            })
+        }
     }
 
     /// The config to save, or nil while any problem remains.
     public var config: Config? {
-        try? validation.get()
+        checked().config
     }
 
     public var issues: [Issue] {
-        guard case let .failure(error) = validation else { return [] }
-        return error.found.map { problem in
-            let spot: Spot = switch problem.place {
-            case .file, .keys: .file
-            case let .site(index, _, field): .site(id: sites[index].id, field: field)
-            case let .key(index, _, field): .key(id: keys[index].id, field: field)
-            }
-            return Issue(spot: spot, message: problem.message)
-        }
+        checked().issues
     }
 
     /// Whether the site matches the default prefix, which follows its open URL.
