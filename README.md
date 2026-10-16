@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="packaging/icon.svg" width="160" alt="CapsJump icon: a browser window jumping to another">
+  <img src="packaging/icon.svg" width="160" alt="CapsJump icon: a Caps Lock key with an arc jumping off it">
 </p>
 
 <h1 align="center">CapsJump</h1>
 
-<p align="center">Jump to a site's tab in the right Chrome account, or open it there.</p>
+<p align="center">Transform your Caps Lock. Hold it and press a key to bring an app forward, land on a site in the right Chrome account, snap a window, or open a link.</p>
 
 <p align="center">
   <a href="https://github.com/stigmer/capsjump/releases/latest"><img src="https://img.shields.io/github/v/release/stigmer/capsjump" alt="Latest release"></a>
@@ -12,9 +12,9 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-8C7CFF" alt="MIT license"></a>
 </p>
 
-You use Chrome with several accounts (work, a client, personal), each in its own profile. You want one key to bring up GitHub in the work account: the GitHub tab already open there if there is one, otherwise a new one in that account's window. CapsJump does that from a link, `capsjump://github`, so any launcher that can open a link (karayaml, Raycast, Alfred, a Shortcut, `open` in a terminal) gets it.
+<p align="center"><a href="https://stigmer.github.io/capsjump/">stigmer.github.io/capsjump</a></p>
 
-Named after the X-Men character who teleports.
+Hold Caps Lock and press S: your terminal comes forward. Caps Lock and G: the GitHub tab in your work Chrome account comes forward, or opens there if it isn't open yet. Caps Lock and ←: the front window takes the left half of the screen. Caps Lock and W: a Slack channel opens. One small file, `~/.capsjump.yaml`, says which key does what.
 
 ## Install
 
@@ -26,7 +26,7 @@ capsjump init
 ```
 
 - `brew trust` is asked once per machine: Homebrew 7 loads casks only from taps you trust.
-- `capsjump setup` asks for the app's permissions once; upgrades keep them.
+- `capsjump setup` asks for the app's permissions once (upgrades keep them) and starts CapsJump at login.
 - `capsjump init` writes `~/.capsjump.yaml`, listing your Chrome accounts. Edit it, then run `capsjump check`.
 
 ## Configure
@@ -40,28 +40,49 @@ sites:
   - name: claude-client
     account: client@example.com
     open: https://claude.ai/new
+
+keys:
+  s: { app: iTerm }
+  t: { app: Finder }
+  o: { app: ~/Applications/Obsidian.app }
+  g: { site: github }
+  f1: { site: claude-client }
+  left: { window: left-half }
+  right: { window: right-half }
+  f: { window: maximize }
+  w: { url: "slack://channel?team=T123&id=C456" }
 ```
 
-- `name`: the link's name, lower-case letters, digits and hyphens.
+### Keys
+
+Each entry under `keys:` is Caps Lock + one key. Key names: `a`–`z`, `0`–`9`, `f1`–`f12`, `left`, `right`, `up`, `down`. On an Apple keyboard, `f1`–`f12` work with or without fn. Each key does exactly one thing:
+
+- `app`: an app's name, such as `Slack`, or a path to an .app that starts with `/` or `~/`. A name is looked for in `/Applications`, `/Applications/Utilities`, `/System/Applications`, `/System/Applications/Utilities`, `~/Applications` and `/System/Library/CoreServices`, in that order. The app comes forward, starting if it isn't running and opening a window if it has none.
+- `site`: one of the sites below. See [What a jump does](#what-a-jump-does).
+- `window`: `left-half`, `right-half` or `maximize`, for the front window, within the screen it is on.
+- `url`: any link with a scheme. It opens the way a clicked link does: `slack://…` or `zoommtg://…` in the app that owns it, `https://…` in your default browser. Unlike `site`, it opens afresh each time; use `site` to land on a tab that is already open in a Chrome account.
+
+While Caps Lock is held, a key with nothing bound does nothing. A file with no `keys:` leaves Caps Lock as it is.
+
+### Sites
+
+- `name`: the site's name, lower-case letters, digits and hyphens. Each site is also the link `capsjump://<name>`, for launchers and scripts.
 - `account`: the account's email, or the profile's name for a profile with no signed-in account. `capsjump profiles` lists both.
 - `profile`: a profile folder (`Profile 26`) instead of, or as well as, `account`, for when two profiles share an account or a name.
 - `open`: the page opened when no tab matches.
 - `match`: URL prefixes without the scheme, most specific first. A tab matches when its URL (without `https://` and `www.`) starts with one. The default is the `open` URL's host, e.g. `claude.ai/`.
 
-The file is read on every jump, so edits apply at once. Unknown keys are refused, so a typo is reported instead of being ignored.
+Edits apply as soon as the file is saved. Unknown keys are refused, so a typo is reported instead of being ignored. A broken edit keeps the keys you had and says what is wrong in a notification, and `capsjump check` lists every problem with its line.
 
-## Bind it to a key
+## How Caps Lock becomes CapsJump's key
 
-With [karayaml](https://github.com/swarupdonepudi/karayaml) 0.0.20 or later:
+While CapsJump runs, macOS's own key mapping (the one `hidutil` sets) turns Caps Lock into F18, a key no keyboard has, and CapsJump watches for it. Caps Lock then no longer types capitals and its light stays off. CapsJump gives Caps Lock back whenever it quits: from its own quit, at logout, when stopped, and when uninstalled with Homebrew. If it ever crashes, Caps Lock does nothing until CapsJump starts again or the Mac restarts.
 
-```yaml
-- key: g
-  url: capsjump://github
-```
-
-From anywhere else: `open capsjump://github`, or `capsjump jump github`.
+macOS keeps every app's shortcuts out of password fields, so the keys do nothing while one has focus and work again as soon as you leave it.
 
 ## What a jump does
+
+A `site` key, or the link `capsjump://<name>`, runs a jump:
 
 1. Finds the site's Chrome profile from Chrome's own profile list.
 2. If Chrome is running, looks through that profile's windows, front to back, for a tab whose URL matches the first `match` prefix, then the next, preferring a window's active tab. It brings that tab and its window to the front.
@@ -75,9 +96,11 @@ If a permission is missing, the jump fails with a notification. It never opens a
 
 CapsJump asks for three, all at once, with `capsjump setup`, or by itself the first time a jump finds one missing:
 
-- **Accessibility**, to read Chrome's window titles and raise a window.
+- **Accessibility**, for the keys, to move windows, and to read Chrome's window titles and raise a window. The keys start by themselves as soon as it is granted.
 - **Automation of Google Chrome**, to read and switch tabs.
-- **Notifications**, to say why a jump failed.
+- **Notifications**, to say why a key or a jump did nothing.
+
+Setup also adds CapsJump to your login items, so the keys are there from the moment you log in. Turn that off in System Settings › General › Login Items & Extensions.
 
 Releases are signed with a Developer ID and notarized, so macOS keeps these grants across upgrades.
 
@@ -87,13 +110,13 @@ Releases are signed with a Developer ID and notarized, so macOS keeps these gran
 | --- | --- |
 | `capsjump init` | Write a starter `~/.capsjump.yaml`. Never overwrites. |
 | `capsjump profiles` | List Chrome's profiles: folder, account, name and window label. |
-| `capsjump check` | Validate the file, resolve every site, and confirm CapsJump.app receives the links. Exits non-zero on a problem. |
+| `capsjump check` | Validate the file, resolve every site and key, and confirm CapsJump.app is running with Caps Lock mapped. Exits non-zero on a problem. |
 | `capsjump jump <site>` | Jump, exactly as the link does. |
-| `capsjump setup` | Ask for the permissions and show each one's state. |
-| `capsjump logs [--last 2h]` | Show recent jumps and failures from the macOS log. |
+| `capsjump setup` | Ask for the permissions, start CapsJump at login, and show each one's state. |
+| `capsjump logs [--last 2h]` | Show recent keys, jumps and failures from the macOS log. |
 | `capsjump version` | Print the version. |
 
-CapsJump stays running in the background after its first jump (no Dock icon or menu), so later jumps are immediate.
+CapsJump runs in the background from login, with no Dock icon or menu.
 
 ## Develop
 
@@ -109,11 +132,13 @@ A local build is signed ad hoc, and macOS ties its permissions to that exact bui
 
 Layout:
 
-- `Sources/CapsJumpCore`: all the rules (config, Chrome profiles, links, window pairing, choosing a tab), with no system calls. Every test is here.
-- `Sources/CapsJumpChrome`: the live side: Apple Events to Chrome, Accessibility, launching Chrome, permissions.
-- `Sources/CapsJumpApp`: the background app that receives `capsjump://` links.
+- `Sources/CapsJumpCore`: all the rules (config, key names, what each key event does, window frames, Chrome profiles, links, window pairing, choosing a tab), with no system calls. Every test is here.
+- `Sources/CapsJumpChrome`: the live side of a jump: Apple Events to Chrome, Accessibility, launching Chrome, permissions.
+- `Sources/CapsJumpSystem`: the live side of the keys: the Caps Lock mapping, the event tap, watching the config, moving windows, opening apps and links.
+- `Sources/CapsJumpApp`: the background app that runs the keys and receives `capsjump://` links.
 - `Sources/capsjump`: the CLI.
 - `packaging/icon.svg` is the icon's source; `scripts/make-icon.sh` renders it into `packaging/AppIcon.icns`.
+- `site/` is the website, hand-written with no build; `.github/workflows/pages.yaml` publishes it to GitHub Pages when it changes on `main`.
 - `scripts/bundle.sh` builds the app bundle; `scripts/notarize.sh` and `scripts/macos-import-signing-keychain.sh` are the release's signing steps.
 
 ## Release

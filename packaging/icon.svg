@@ -1,23 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- CapsJump's icon: a faded browser window jumps, along a dotted arc, to a bright one.
+<!-- CapsJump's icon: a Caps Lock keycap, and a dotted arc jumping off it.
      The source of packaging/AppIcon.icns; after changing it, run scripts/make-icon.sh.
      The artwork sits on Apple's macOS icon grid: an 824-unit rounded square centred on a
      1024 canvas, drawn here at 256 units and scaled onto that grid. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1024" height="1024">
-  <defs>
-    <g id="window">
-      <rect x="0" y="0" width="104" height="120" rx="14" fill="#B9BDE8"/>
-      <rect x="72" y="12" width="22" height="10" rx="4" fill="#9CA1D6"/>
-      <path d="M2 28 Q12 28 12 18 L12 16 Q12 7 21 7 L55 7 Q64 7 64 16 L64 18 Q64 28 74 28 Z" fill="#F4F5FF"/>
-      <path d="M0 28 H104 V106 Q104 120 90 120 H14 Q0 120 0 106 Z" fill="#F4F5FF"/>
-      <rect x="10" y="36" width="84" height="10" rx="5" fill="#DADDF6"/>
-    </g>
-  </defs>
   <g transform="translate(128 128) scale(0.8521) translate(-128 -128)">
     <rect x="8" y="8" width="240" height="240" rx="56" fill="#1B1F3B"/>
-    <g transform="translate(34 134) scale(0.7308 0.7333)" opacity="0.4"><use href="#window"/></g>
-    <g transform="translate(128 42) scale(0.9423 0.9417)"><use href="#window"/></g>
-    <path d="M72 126 C 74 80, 100 62, 128 72" fill="none" stroke="#8C7CFF" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 17"/>
-    <circle cx="146" cy="104" r="9" fill="#8C7CFF"/>
+    <rect x="36" y="100" width="124" height="124" rx="24" fill="#9CA1D6"/>
+    <rect x="36" y="92" width="124" height="120" rx="24" fill="#F4F5FF"/>
+    <path d="M98 116 L70 146 H86 V166 H110 V146 H126 Z" fill="none" stroke="#1B1F3B" stroke-width="7" stroke-linejoin="round"/>
+    <rect x="84" y="178" width="28" height="8" rx="3" fill="#1B1F3B"/>
+    <path d="M108 74 C 124 22, 196 18, 208 100" fill="none" stroke="#8C7CFF" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 17"/>
+    <circle cx="209" cy="124" r="11" fill="#8C7CFF"/>
   </g>
 </svg>

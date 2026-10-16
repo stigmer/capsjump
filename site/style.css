@@ -1,0 +1,257 @@
+/* CapsJump's website: colour tokens for light and dark, a single column that narrows to a
+   phone, and the looping Caps Lock + G demo (still, in its final frame, for reduced motion). */
+
+:root {
+  --bg: #f7f7fc;
+  --surface: #ffffff;
+  --ink: #1b1f3b;
+  --muted: #5a5f7d;
+  --line: #e2e3f0;
+  --accent: #6e5cf0;
+  --accent-ink: #ffffff;
+  --accent-soft: #ece9ff;
+  --key: #ffffff;
+  --key-side: #c9cce8;
+  --tab: #eef0fa;
+  --code-bg: #1b1f3b;
+  --code-ink: #f4f5ff;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11132a;
+    --surface: #1b1f3b;
+    --ink: #f4f5ff;
+    --muted: #a9adcf;
+    --line: #2c3158;
+    --accent: #8c7cff;
+    --accent-ink: #11132a;
+    --accent-soft: #2a2950;
+    --key: #2a2f55;
+    --key-side: #0d0f22;
+    --tab: #262a4d;
+    --code-bg: #0b0d1f;
+    --code-ink: #f4f5ff;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #11132a;
+  --surface: #1b1f3b;
+  --ink: #f4f5ff;
+  --muted: #a9adcf;
+  --line: #2c3158;
+  --accent: #8c7cff;
+  --accent-ink: #11132a;
+  --accent-soft: #2a2950;
+  --key: #2a2f55;
+  --key-side: #0d0f22;
+  --tab: #262a4d;
+  --code-bg: #0b0d1f;
+  --code-ink: #f4f5ff;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); }
+code, pre, kbd { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+.bar, main, .foot {
+  max-width: 920px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 19px;
+  text-decoration: none;
+}
+.bar-link { color: var(--muted); text-decoration: none; font-weight: 500; }
+.bar-link:hover { color: var(--ink); }
+
+section { padding: 40px 0; }
+
+.hero { padding-top: 48px; text-align: center; }
+h1 {
+  margin: 0 0 16px;
+  font-size: clamp(36px, 7vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.lede {
+  max-width: 640px;
+  margin: 0 auto 28px;
+  color: var(--muted);
+  font-size: clamp(17px, 2.4vw, 20px);
+}
+.install-line {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  gap: 8px;
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.install-line code { font-size: 15px; overflow-x: auto; white-space: nowrap; }
+.copy {
+  flex: none;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fine { color: var(--muted); font-size: 14px; }
+
+h2 { margin: 0 0 12px; font-size: 24px; letter-spacing: -0.01em; }
+
+kbd {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px solid var(--line);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  background: var(--key);
+  color: var(--ink);
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+/* The demo. */
+.demo { text-align: center; }
+.demo svg { width: 100%; max-width: 640px; height: auto; display: block; margin: 0 auto; }
+.caption { color: var(--muted); font-size: 15px; margin-top: 12px; }
+
+.key-top { fill: var(--key); stroke: var(--line); stroke-width: 1.5; }
+.key-side { fill: var(--key-side); }
+.key-label { fill: var(--muted); font: 600 15px -apple-system, system-ui, sans-serif; }
+.key-letter { fill: var(--ink); font: 700 26px -apple-system, system-ui, sans-serif; text-anchor: middle; }
+.glyph { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
+.key-caps, .key-g { transform-box: fill-box; }
+
+.arc { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0 12; opacity: 0; }
+
+.window { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.chip { fill: var(--accent-soft); }
+.chip-label { fill: var(--accent); font: 700 12px -apple-system, system-ui, sans-serif; text-anchor: middle; }
+.tab rect { fill: var(--tab); }
+.tab text { fill: var(--muted); font: 600 12px -apple-system, system-ui, sans-serif; text-anchor: middle; }
+.page { fill: var(--bg); }
+.line { fill: var(--line); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .key-caps { animation: caps 5s infinite; }
+  .key-g { animation: g 5s infinite; }
+  .key-caps .key-top { animation: caps-top 5s infinite; }
+  .key-g .key-top { animation: g-top 5s infinite; }
+  .arc { animation: arc 5s infinite; }
+  .tab-docs rect { animation: tab-before 5s infinite; }
+  .tab-docs text { animation: tab-before-text 5s infinite; }
+  .tab-pr rect { animation: tab-after 5s infinite; }
+  .tab-pr text { animation: tab-after-text 5s infinite; }
+  .window { animation: window 5s infinite; }
+}
+
+/* Without motion, the last frame: the pull requests tab is the active one. */
+@media (prefers-reduced-motion: reduce) {
+  .arc { opacity: 1; }
+  .tab-pr rect { fill: var(--accent); }
+  .tab-pr text { fill: var(--accent-ink); }
+}
+
+@keyframes caps { 0%, 12%, 72%, 100% { transform: translateY(0); } 16%, 68% { transform: translateY(7px); } }
+@keyframes caps-top { 0%, 12%, 72%, 100% { fill: var(--key); } 16%, 68% { fill: var(--accent-soft); } }
+@keyframes g { 0%, 30%, 44%, 100% { transform: translateY(0); } 33%, 41% { transform: translateY(7px); } }
+@keyframes g-top { 0%, 30%, 44%, 100% { fill: var(--key); } 33%, 41% { fill: var(--accent-soft); } }
+@keyframes arc { 0%, 34% { opacity: 0; } 40%, 62% { opacity: 1; } 72%, 100% { opacity: 0; } }
+@keyframes tab-before { 0%, 42% { fill: var(--accent); } 46%, 100% { fill: var(--tab); } }
+@keyframes tab-before-text { 0%, 42% { fill: var(--accent-ink); } 46%, 100% { fill: var(--muted); } }
+@keyframes tab-after { 0%, 42% { fill: var(--tab); } 46%, 94% { fill: var(--accent); } 98%, 100% { fill: var(--tab); } }
+@keyframes tab-after-text { 0%, 42% { fill: var(--muted); } 46%, 94% { fill: var(--accent-ink); } 98%, 100% { fill: var(--muted); } }
+@keyframes window { 0%, 42%, 70%, 100% { stroke: var(--line); } 46%, 62% { stroke: var(--accent); } }
+
+/* The four panels. */
+.panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.panels article {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.panels h2 { font-size: 19px; margin-bottom: 8px; }
+.panels p { margin: 0; color: var(--muted); }
+
+pre {
+  margin: 16px 0;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+p code, li code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--accent-soft);
+  font-size: 0.88em;
+}
+.config p, .install li, .notes li { color: var(--muted); }
+.install ol, .notes ul { padding-left: 20px; }
+.install li, .notes li { margin-bottom: 8px; }
+.notes strong { color: var(--ink); }
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 24px;
+  padding-bottom: 40px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  section { padding: 28px 0; }
+  .hero { padding-top: 24px; }
+  .panels { grid-template-columns: 1fr; }
+  .install-line { display: flex; }
+  .install-line code { font-size: 13px; }
+}

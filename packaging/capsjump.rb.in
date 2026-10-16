@@ -4,10 +4,11 @@ cask "capsjump" do
   version "@VERSION@"
   sha256 "@SHA256@"
 
-  url "https://github.com/stigmer/capsjump/releases/download/v#{version}/CapsJump-#{version}.zip"
+  url "https://github.com/stigmer/capsjump/releases/download/v#{version}/CapsJump-#{version}.zip",
+      verified: "github.com/stigmer/capsjump/"
   name "CapsJump"
-  desc "Jump to a site's tab in the right Chrome account, or open it there"
-  homepage "https://github.com/stigmer/capsjump"
+  desc "Caps Lock shortcuts for apps, Chrome accounts, windows and links"
+  homepage "https://stigmer.github.io/capsjump/"
 
   depends_on macos: :ventura
 
@@ -20,7 +21,7 @@ cask "capsjump" do
   caveats <<~EOS
     Grant CapsJump its permissions once (they survive upgrades):
       capsjump setup
-    Then write your sites and check them:
+    Then write your keys and sites, and check them:
       capsjump init
       capsjump check
   EOS
