@@ -20,7 +20,8 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     /// What the menu's items ask of the app.
     struct Actions {
         let addCurrentTab: @MainActor () -> Void
-        let editConfig: @MainActor () -> Void
+        /// Opens the config window; true picks the first row with a problem.
+        let editConfig: @MainActor (_ showingProblems: Bool) -> Void
         let quit: @MainActor () -> Void
     }
 
@@ -104,7 +105,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
 
     @objc private func addTab() { actions.addCurrentTab() }
 
-    @objc private func editConfig() { actions.editConfig() }
+    @objc private func editConfig() { actions.editConfig(false) }
 
     @objc private func openConfigFile() { ConfigFileOpener.open() }
 
@@ -133,7 +134,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         alert.addButton(withTitle: "Edit Config…")
         NSApp.activate(ignoringOtherApps: true)
         if alert.runModal() == .alertSecondButtonReturn {
-            editConfig()
+            actions.editConfig(problems > 0)
         }
     }
 }

@@ -48,7 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         MainMenu.install(quitTarget: self, quit: #selector(quitAsked(_:)))
         let menu = StatusMenu(keys: keys, actions: StatusMenu.Actions(
             addCurrentTab: { [weak self] in self?.addCurrentTab() },
-            editConfig: { [weak self] in self?.editor.open() },
+            editConfig: { [weak self] showingProblems in self?.editor.open(showingProblems: showingProblems) },
             quit: { [weak self] in self?.quitAsked(nil) }
         ))
         keys.onChange = { [weak menu] in menu?.refresh() }
@@ -128,6 +128,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 await setup()
             }
         }
+    }
+
+    /// The main menu's File › Open Config File, whichever window is in front.
+    @objc func openConfigFile(_ sender: Any?) {
+        ConfigFileOpener.open()
     }
 
     /// CapsJump's own Quit: settles unsaved edits first.

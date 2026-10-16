@@ -173,6 +173,7 @@ struct AddTabView: View {
                     }
                     keyPicker
                 }
+                .formStyle(.grouped)
             case let .existing(name):
                 Text("That's already your site \(name)").font(.headline)
                 Text(model.keysAlready.isEmpty
@@ -180,6 +181,7 @@ struct AddTabView: View {
                      : "Caps Lock + \(model.keysAlready.map(KeyNames.symbol(for:)).joined(separator: " or ")) lands here already. Want another key too?")
                     .foregroundStyle(.secondary)
                 Form { keyPicker }
+                    .formStyle(.grouped)
             }
             HStack {
                 Spacer()
@@ -195,17 +197,9 @@ struct AddTabView: View {
     }
 
     private var keyPicker: some View {
-        LabeledContent("Key") {
-            VStack(alignment: .leading, spacing: 4) {
-                Picker("Key", selection: Binding(get: { model.key }, set: { model.key = $0 })) {
-                    Text("Choose…").tag(String?.none)
-                    ForEach(model.freeKeys, id: \.self) { key in
-                        Text("Caps Lock + \(KeyNames.symbol(for: key))").tag(Optional(key))
-                    }
-                }
-                .labelsHidden()
-                notes(nil, model.keyProblems)
-            }
+        VStack(alignment: .leading, spacing: 4) {
+            KeyPicker(key: Binding(get: { model.key }, set: { model.key = $0 }), free: model.freeKeys)
+            notes(nil, model.keyProblems)
         }
     }
 

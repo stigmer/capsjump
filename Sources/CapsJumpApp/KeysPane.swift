@@ -1,0 +1,216 @@
+// The Keys section: the list of keys in the keyboard's order, each a line that reads like the
+// key (a keycap, the action's icon, what it does), and beside it the picked key's editor.
+// A key is picked from the keys no other row holds; what it does is an app (through the
+// app chooser), one of the sites, a window position, or a link. The editor says what the
+// key will do on this Mac, or what's wrong under its field. A list line takes values, not
+// the model, so an edit redraws only the lines it changed.
+
+import CapsJumpCore
+import SwiftUI
+
+struct KeyList: View {
+    @ObservedObject var model: EditorModel
+
+    var body: some View {
+        let lines = model.keyLines
+        List(selection: $model.selectedKey) {
+            ForEach(lines) { line in
+                KeyLineView(line: line, problem: model.check.byKey[line.id] != nil, appPath: line.app.flatMap(model.appPath))
+                    .equatable()
+                    .tag(line.id)
+            }
+        }
+        .overlay {
+            if lines.isEmpty {
+                if model.query.isEmpty {
+                    EmptyNote(title: "No keys yet", text: "Caps Lock is left alone until a key has a job.", button: "Add Key") { model.addKey() }
+                } else {
+                    EmptyNote(title: "No keys match “\(model.query)”", text: "Search looks at the key, the app, the site and its account, and the link.")
+                }
+            }
+        }
+    }
+}
+
+struct KeyLineView: View, Equatable {
+    let line: EditorRows.KeyLine
+    let problem: Bool
+    let appPath: String?
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Keycap(symbol: line.symbol)
+            icon
+                .frame(width: 20, height: 20)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(line.title)
+                    .lineLimit(1)
+                if let subtitle = line.subtitle {
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+            }
+            Spacer(minLength: 4)
+            if problem {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .foregroundStyle(.red)
+            }
+        }
+        .padding(.vertical, 3)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(line.spoken + (problem ? ", needs fixing" : ""))
+    }
+
+    @ViewBuilder
+    private var icon: some View {
+        switch line.kind {
+        case .app?:
+            AppIconView(path: appPath, size: 20)
+        case .site?:
+            symbol("globe")
+        case .window?:
+            symbol(line.window == .leftHalf ? "rectangle.lefthalf.filled" : line.window == .rightHalf ? "rectangle.righthalf.filled" : "rectangle.fill")
+        case .url?:
+            symbol("link")
+        case nil:
+            symbol("circle.dashed")
+        }
+    }
+
+    private func symbol(_ name: String) -> some View {
+        Image(systemName: name)
+            .font(.system(size: 14))
+            .foregroundStyle(.secondary)
+    }
+}
+
+/// A key drawn as a key, as on the website.
+struct Keycap: View {
+    let symbol: String
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: 5, style: .continuous)
+        Text(symbol)
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(Color(nsColor: .labelColor))
+            .frame(minWidth: 22, minHeight: 20)
+            .padding(.horizontal, symbol.count > 1 ? 4 : 0)
+            .background(
+                shape
+                    .fill(Color(nsColor: .controlBackgroundColor))
+                    .overlay(shape.strokeBorder(Color(nsColor: .separatorColor)))
+                    .background(shape.fill(Color(nsColor: .tertiaryLabelColor)).offset(y: 1.5))
+            )
+            .padding(.bottom, 1.5)
+            .accessibilityHidden(true)
+    }
+}
+
+/// The free keys, shown as their symbols; the Add window uses it too.
+struct KeyPicker: View {
+    @Binding var key: String?
+    let free: [String]
+
+    var body: some View {
+        Picker("Caps Lock +", selection: $key) {
+            if key == nil {
+                Text("Choose…").tag(String?.none)
+            }
+            ForEach(free, id: \.self) { name in
+                Text(KeyNames.symbol(for: name)).tag(Optional(name))
+            }
+        }
+    }
+}
+
+struct KeyEditor: View {
+    @ObservedObject var model: EditorModel
+    let row: Int
+
+    var body: some View {
+        if let key = model.draft.key(row)?.key {
+            Form {
+                Section {
+                    KeyPicker(
+                        key: Binding(get: { key.key }, set: { if let name = $0 { model.setKey(row, name) } }),
+                        free: model.draft.freeKeys(for: row)
+                    )
+                    Picker("Does", selection: Binding(get: { key.action?.kind }, set: { model.setKind(row, $0) })) {
+                        Text("App").tag(Optional(ActionSource.Kind.app))
+                        Text("Site").tag(Optional(ActionSource.Kind.site))
+                        Text("Window").tag(Optional(ActionSource.Kind.window))
+                        Text("Link").tag(Optional(ActionSource.Kind.url))
+                    }
+                    .pickerStyle(.segmented)
+                    if let action = key.action {
+                        value(action)
+                    }
+                    notes(key.action)
+                }
+                Section {
+                    HStack {
+                        Spacer()
+                        Button("Remove Key", role: .destructive) { model.remove(key: row) }
+                    }
+                }
+            }
+            .formStyle(.grouped)
+        }
+    }
+
+    @ViewBuilder
+    private func value(_ action: ActionSource) -> some View {
+        let text = Binding(get: { action.value }, set: { model.setValue(row, $0) })
+        switch action.kind {
+        case .app:
+            LabeledContent("App") {
+                AppChooser(model: model, row: row, value: action.value)
+            }
+        case .site:
+            Picker("Site", selection: text) {
+                let sites = model.draft.sites.map(\.site).filter { !($0.name ?? "").isEmpty }
+                if !sites.contains(where: { $0.name == action.value }) {
+                    Text(action.value.isEmpty ? "Choose…" : action.value).tag(action.value)
+                }
+                ForEach(sites, id: \.name) { site in
+                    Text([site.name, site.account ?? site.profile].compactMap { $0 }.joined(separator: " · ")).tag(site.name ?? "")
+                }
+            }
+        case .window:
+            Picker("Position", selection: text) {
+                Text("Left half").tag(WindowPosition.leftHalf.rawValue)
+                Text("Right half").tag(WindowPosition.rightHalf.rawValue)
+                Text("Whole screen").tag(WindowPosition.maximize.rawValue)
+            }
+        case .url:
+            TextField("Link", text: text, prompt: Text("https://example.com or slack://open"))
+        }
+    }
+
+    /// What the key does on this Mac, or what's wrong with it.
+    @ViewBuilder
+    private func notes(_ action: ActionSource?) -> some View {
+        let problems = model.problems(key: row)
+        let note: String? = switch action?.kind {
+        case .site?:
+            model.draft.sites.first { $0.site.name == action?.value }.flatMap { model.landing(site: $0.id) }.map { "Lands in \($0)" }
+        case .app?, .url?:
+            model.finding(key: row).map(Self.describe)
+        default:
+            nil
+        }
+        let missing = model.finding(key: row).flatMap { $0.level == .problem && [.app, .url].contains(action?.kind) ? Self.describe($0) : nil }
+        let all = problems + (missing.map { [$0] } ?? [])
+        if !all.isEmpty || note != nil {
+            EditorNotes(note: missing == nil ? note : nil, problems: all)
+        }
+    }
+
+    /// A checkup line without the key it starts with: "app /Applications/iTerm.app".
+    private static func describe(_ finding: Finding) -> String {
+        finding.text.components(separatedBy: " → ").dropFirst().joined(separator: " → ")
+    }
+}

@@ -16,6 +16,7 @@ public enum EditorRows {
         public let kind: ActionSource.Kind?
         /// For an app key, the app's name or path as written; the window finds its icon by it.
         public let app: String?
+        public let window: WindowPosition?
         public let title: String
         public let subtitle: String?
         /// What VoiceOver reads for the whole line.
@@ -59,6 +60,7 @@ public enum EditorRows {
         var subtitle: String?
         var doing = "does nothing yet"
         var app: String?
+        var window: WindowPosition?
         if let action {
             let value = action.value.trimmingCharacters(in: .whitespaces)
             switch action.kind {
@@ -81,6 +83,7 @@ public enum EditorRows {
                 doing = "jumps to \(title)" + (subtitle.map { ", \($0)" } ?? "")
             case .window:
                 let position = WindowPosition(rawValue: value)
+                window = position
                 title = position.map(positionTitle) ?? (value.isEmpty ? "Choose a position" : value)
                 doing = "moves the front window to " + (position.map(positionSpoken) ?? title)
             case .url:
@@ -99,6 +102,7 @@ public enum EditorRows {
             symbol: symbol,
             kind: action?.kind,
             app: app,
+            window: window,
             title: title,
             subtitle: subtitle,
             spoken: "Caps Lock plus \(spokenKey(name)), \(doing)",
