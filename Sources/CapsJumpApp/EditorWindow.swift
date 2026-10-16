@@ -37,8 +37,8 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
         }
         let model = EditorModel()
         if showingProblems { model.selectFirstProblem() }
-        // The frame, style, toolbar and saved place first and the content last, so SwiftUI
-        // lays the window out once rather than once per change.
+        // The frame, style, toolbar and saved place before the content, so SwiftUI lays the
+        // window out once rather than once per change.
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 900, height: 600),
             styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
@@ -58,8 +58,11 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
         window.center()
         window.setFrameAutosaveName("CapsJumpConfig")
         let controller = NSHostingController(rootView: EditorView(model: model))
-        // The window sets its own size; the content only fills it.
+        // The window sets its own size and keeps its own toolbar; the content only fills it.
         controller.sizingOptions = []
+        if #available(macOS 14, *) {
+            controller.sceneBridgingOptions = []
+        }
         controller.view.frame = NSRect(origin: .zero, size: window.contentRect(forFrameRect: window.frame).size)
         window.contentViewController = controller
         self.window = window
