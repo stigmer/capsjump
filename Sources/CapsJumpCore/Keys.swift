@@ -18,6 +18,11 @@ public enum KeyNames {
     /// Every key name, in the order a reader expects: letters, digits, function keys, arrows.
     public static let all: [String] = letters.map(\.0) + digits.map(\.0) + functionKeys.map(\.0) + arrows.map(\.0)
 
+    /// How a picker shows a key: `G`, `5`, `F1`, `←`.
+    public static func symbol(for name: String) -> String {
+        ["left": "←", "right": "→", "up": "↑", "down": "↓"][name] ?? name.uppercased()
+    }
+
     /// The triggers a name stands for, or nil for an unknown name.
     public static func triggers(for name: String) -> [KeyTrigger]? {
         table[name]

@@ -90,6 +90,20 @@ public struct ProfileCatalog: Sendable, Equatable {
         profiles.filter { $0.directory != profile.directory && $0.windowLabel == profile.windowLabel }
     }
 
+    /// The profile a window title belongs to: the one whose label the title ends with,
+    /// the longest such label when one label ends another; nil when no label fits or
+    /// another profile shares it, or when there is no title. With one profile there is
+    /// nothing to tell apart, so no title is needed.
+    public func profile(forTitle title: String?) -> ChromeProfile? {
+        if profiles.count == 1 { return profiles[0] }
+        guard let title else { return nil }
+        let fitting = profiles.filter { title.hasSuffix(WindowPairing.labelSuffix($0.windowLabel)) }
+        guard let longest = fitting.max(by: { $0.windowLabel.count < $1.windowLabel.count }),
+              sharingLabel(with: longest).isEmpty
+        else { return nil }
+        return longest
+    }
+
     public enum LookupError: Error, Equatable, CustomStringConvertible {
         case notFound(account: String, known: [String])
         case ambiguous(account: String, directories: [String])

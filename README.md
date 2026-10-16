@@ -85,6 +85,7 @@ macOS keeps every app's shortcuts out of password fields, so the keys do nothing
 CapsJump puts its mark in the menu bar, dimmed while it doesn't have Caps Lock. Its menu:
 
 - **Pause Keys / Resume Keys**: gives Caps Lock back, or takes it again. A pause lasts until you resume, across restarts.
+- **Add Current Tab…**: turns the tab in front of Chrome into a site with a key. The page and its account come filled in; pick a key, click Add, and Caps Lock with that key lands there from then on. If the page is already one of your sites, it offers that site another key instead.
 - **Edit Config…**: opens `~/.capsjump.yaml` in your editor, writing a starter file first if there is none. Saving applies the change at once.
 - **Check Config**: shows what `capsjump check` shows.
 - **Start at Login**: whether CapsJump starts when you log in.

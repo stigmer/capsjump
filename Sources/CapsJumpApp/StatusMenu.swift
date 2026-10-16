@@ -1,7 +1,9 @@
 // The menu-bar icon: CapsJump's own mark (packaging/menubar.svg) as a template image,
-// so macOS colours it for the menu bar; dimmed while CapsJump doesn't have Caps Lock. Its menu says what the keys are doing, pauses and resumes them, opens
-// the config in an editor (writing the starter file first when there is none), shows what
-// `capsjump check` would, switches starting at login, and quits.
+// so macOS colours it for the menu bar; dimmed while CapsJump doesn't have Caps Lock. Its
+// menu says what the keys are doing, pauses and resumes them, turns the tab in front of
+// Chrome into a site with a key (while Chrome runs), opens the config in an editor
+// (writing the starter file first when there is none), shows what `capsjump check`
+// would, switches starting at login, and quits.
 
 import AppKit
 import CapsJumpChrome
@@ -13,9 +15,11 @@ import ServiceManagement
 final class StatusMenu: NSObject, NSMenuDelegate {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let keys: Keys
+    private let addCurrentTab: @MainActor () -> Void
 
-    init(keys: Keys) {
+    init(keys: Keys, addCurrentTab: @escaping @MainActor () -> Void) {
         self.keys = keys
+        self.addCurrentTab = addCurrentTab
         super.init()
         let menu = NSMenu()
         // Items are enabled by `menuNeedsUpdate`, not by whether their action has a target.
@@ -55,6 +59,9 @@ final class StatusMenu: NSObject, NSMenuDelegate {
             pause.isEnabled = status.active
             menu.addItem(pause)
         }
+        let addTab = action("Add Current Tab…", #selector(addTab))
+        addTab.isEnabled = ChromeLauncher.runningChrome != nil
+        menu.addItem(addTab)
         menu.addItem(action("Edit Config…", #selector(editConfig)))
         menu.addItem(action("Check Config", #selector(checkConfig)))
         menu.addItem(.separator())
@@ -87,16 +94,9 @@ final class StatusMenu: NSObject, NSMenuDelegate {
 
     @objc private func quit() { NSApp.terminate(nil) }
 
-    @objc private func editConfig() {
-        let url = Paths.config()
-        if !FileManager.default.fileExists(atPath: url.path) {
-            _ = try? ConfigFile(url: url).write(StarterConfig.config(catalog: try? Inputs.profiles()), replacing: nil)
-        }
-        if NSWorkspace.shared.urlForApplication(toOpen: url) != nil, NSWorkspace.shared.open(url) { return }
-        // No app claims .yaml files: plain text in TextEdit.
-        let textEdit = URL(fileURLWithPath: "/System/Applications/TextEdit.app")
-        NSWorkspace.shared.open([url], withApplicationAt: textEdit, configuration: NSWorkspace.OpenConfiguration())
-    }
+    @objc private func addTab() { addCurrentTab() }
+
+    @objc private func editConfig() { ConfigFileOpener.open() }
 
     @objc private func checkConfig() {
         let configPath = Paths.config()
@@ -125,6 +125,22 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         if alert.runModal() == .alertSecondButtonReturn {
             editConfig()
         }
+    }
+}
+
+/// The config in the editor that opens .yaml files, written as the starter first when there
+/// is none.
+@MainActor
+enum ConfigFileOpener {
+    static func open() {
+        let url = Paths.config()
+        if !FileManager.default.fileExists(atPath: url.path) {
+            _ = try? ConfigFile(url: url).write(StarterConfig.config(catalog: try? Inputs.profiles()), replacing: nil)
+        }
+        if NSWorkspace.shared.urlForApplication(toOpen: url) != nil, NSWorkspace.shared.open(url) { return }
+        // No app claims .yaml files: plain text in TextEdit.
+        let textEdit = URL(fileURLWithPath: "/System/Applications/TextEdit.app")
+        NSWorkspace.shared.open([url], withApplicationAt: textEdit, configuration: NSWorkspace.OpenConfiguration())
     }
 }
 

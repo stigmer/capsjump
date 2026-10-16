@@ -1,9 +1,11 @@
 // Runs the keys from launch to quit, and receives every capsjump:// link. Key actions and
 // links run one at a time, in arrival order: a site jumps, an app comes forward, a window
-// snaps, a link opens, and `_setup` asks for the permissions. Setup also runs by itself,
+// snaps, a link opens, `_setup` asks for the permissions, and Add Current Tab reads Chrome
+// before its window opens. Setup also runs by itself,
 // once per launch, so the prompts come up without anyone typing `capsjump setup`: when the
 // app is opened directly (not by a link) with a permission missing, and when a jump fails
-// for want of one. A launch by a link never adds a second round to the setup it asked for.
+// for want of one (or Add Current Tab does). A launch by a link never adds a second round
+// to the setup it asked for.
 // Quitting (from the menu bar too), logging out, SIGTERM and SIGINT all go through
 // `applicationWillTerminate`, which gives Caps Lock back.
 
@@ -25,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self?.enqueue { [weak self] in await self?.run(action) }
     }
     private var menu: StatusMenu?
+    private let addTab = AddTab()
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         notifier.install()
@@ -40,7 +43,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let menu = StatusMenu(keys: keys)
+        MainMenu.install()
+        let menu = StatusMenu(keys: keys) { [weak self] in self?.addCurrentTab() }
         keys.onChange = { [weak menu] in menu?.refresh() }
         self.menu = menu
         keys.start()
@@ -120,6 +124,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func addCurrentTab() {
+        enqueue { [self] in
+            do throws(ChromeError) {
+                addTab.open(try FrontTabReader.read())
+            } catch {
+                fail(error.description)
+                if error.isMissingPermission && !setupShown {
+                    await setup()
+                }
+            }
+        }
+    }
+
     private func setup() async {
         setupShown = true
         await Setup.run(notifier: notifier)
@@ -143,10 +160,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension JumpError {
     var isMissingPermission: Bool {
-        switch self {
-        case .chrome(_, .accessibilityDenied), .chrome(_, .automationDenied): true
-        default: false
-        }
+        if case let .chrome(_, error) = self { error.isMissingPermission } else { false }
+    }
+}
+
+extension ChromeError {
+    var isMissingPermission: Bool {
+        self == .accessibilityDenied || self == .automationDenied
     }
 }
 
