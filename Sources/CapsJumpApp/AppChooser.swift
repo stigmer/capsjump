@@ -169,12 +169,15 @@ private struct AppList: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
+                // A lazy stack builds only the rows in sight, where a List builds a table of all.
                 ScrollViewReader { scroller in
-                    List {
-                        group("Applications", shown.filter { !$0.system })
-                        group("System", shown.filter(\.system))
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 0, pinnedViews: .sectionHeaders) {
+                            group("Applications", shown.filter { !$0.system })
+                            group("System", shown.filter(\.system))
+                        }
+                        .padding(.vertical, 4)
                     }
-                    .listStyle(.plain)
                     .onChange(of: highlighted) { id in
                         if let id { scroller.scrollTo(id) }
                     }
@@ -194,21 +197,37 @@ private struct AppList: View {
     @ViewBuilder
     private func group(_ title: String, _ apps: [InstalledApp]) -> some View {
         if !apps.isEmpty {
-            Section(title) {
+            Section {
                 ForEach(apps) { app in
                     HStack(spacing: 8) {
                         AppIconView(path: app.path, size: 18)
                         Text(app.name)
+                            .foregroundStyle(app.path == highlighted ? Color.white : Color.primary)
                         Spacer()
                     }
-                    .padding(.vertical, 1)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .fill(app.path == highlighted ? Color.accentColor : Color.clear)
+                    )
+                    .padding(.horizontal, 6)
                     .contentShape(Rectangle())
-                    .listRowBackground(app.path == highlighted ? Color.accentColor.opacity(0.25) : Color.clear)
                     .onTapGesture { pick(app) }
+                    .onHover { if $0 { highlighted = app.path } }
                     .id(app.path)
                     .accessibilityElement(children: .combine)
                     .accessibilityAddTraits(.isButton)
                 }
+            } header: {
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 6)
+                    .padding(.bottom, 2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.regularMaterial)
             }
         }
     }
