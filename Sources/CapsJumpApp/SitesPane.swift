@@ -74,91 +74,96 @@ struct SiteLineView: View, Equatable {
     }
 }
 
-struct SiteEditor: View {
-    @ObservedObject var model: EditorModel
-    let id: Int
+/// The picked site's editor. It takes the site as values and calls the model only to edit,
+/// so an edit to anything else leaves it alone.
+struct SiteEditor: View, Equatable {
+    let form: EditorModel.SiteForm
+    let model: EditorModel
     @State private var advanced = false
 
+    nonisolated static func == (a: SiteEditor, b: SiteEditor) -> Bool {
+        a.form == b.form
+    }
+
     var body: some View {
-        if let site = model.draft.site(id)?.site {
-            let name = site.name.flatMap { $0.isEmpty ? nil : $0 }
-            Form {
-                Section {
-                    FieldRow(
-                        label: "Name",
-                        text: Binding(get: { site.name ?? "" }, set: { model.rename(id, $0) }),
-                        prompt: "github",
-                        problems: model.problems(site: id, .entry, .unknownKey, .name)
-                    )
-                    account(site)
-                    FieldRow(
-                        label: "Page",
-                        text: Binding(get: { site.open ?? "" }, set: { value in model.update(id) { $0.open = value } }),
-                        prompt: "https://github.com/",
-                        problems: model.problems(site: id, .open)
-                    )
-                } footer: {
-                    Text("Also the link capsjump://\(name ?? "<name>")")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Section("Keys") {
-                    let keys = model.draft.keysUsing(id)
-                    HStack(spacing: 6) {
-                        if keys.isEmpty {
-                            Text("No key jumps here yet.")
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Text("Caps Lock +")
-                            ForEach(keys, id: \.self) { Keycap(symbol: KeyNames.symbol(for: $0)) }
-                        }
-                        Spacer()
-                        Button("Add Key for This Site") { model.addKey(forSite: id) }
-                            .disabled(name == nil || model.draft.freeKeys().isEmpty)
+        let id = form.id
+        let site = form.site
+        let name = site.name.flatMap { $0.isEmpty ? nil : $0 }
+        Form {
+            Section {
+                FieldRow(
+                    label: "Name",
+                    text: Binding(get: { site.name ?? "" }, set: { model.rename(id, $0) }),
+                    prompt: "github",
+                    problems: form.nameProblems
+                )
+                account
+                FieldRow(
+                    label: "Page",
+                    text: Binding(get: { site.open ?? "" }, set: { value in model.update(id) { $0.open = value } }),
+                    prompt: "https://github.com/",
+                    problems: form.pageProblems
+                )
+            } footer: {
+                Text("Also the link capsjump://\(name ?? "<name>")")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Section("Keys") {
+                HStack(spacing: 6) {
+                    if form.keys.isEmpty {
+                        Text("No key jumps here yet.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Caps Lock +")
+                        ForEach(form.keys, id: \.self) { Keycap(symbol: KeyNames.symbol(for: $0)) }
                     }
-                }
-                Section {
-                    DisclosureGroup("Advanced", isExpanded: $advanced) {
-                        FieldRow(
-                            label: "Counts as open",
-                            text: Binding(get: { model.matchText(id) }, set: { model.setMatch(id, $0) }),
-                            prompt: model.defaultMatch(id) ?? "github.com/",
-                            note: model.draft.matchIsDefault(id)
-                                ? "A tab whose address starts with \(model.defaultMatch(id) ?? "the page's host") counts as this site. Give prefixes, most specific first, to narrow it."
-                                : "Prefixes without https://, most specific first, separated by commas.",
-                            problems: model.problems(site: id, .match)
-                        )
-                    }
-                }
-                Section {
-                    HStack {
-                        Spacer()
-                        Button("Remove Site…", role: .destructive) { model.remove(site: id, in: NSApp.keyWindow) }
-                    }
+                    Spacer()
+                    Button("Add Key for This Site") { model.addKey(forSite: id) }
+                        .disabled(!form.canAddKey)
                 }
             }
-            .formStyle(.grouped)
-            // One form serves every site, so a newly picked site opens Advanced only when it uses it.
-            .onAppear { advanced = !model.draft.matchIsDefault(id) }
-            .onChange(of: id) { id in advanced = !model.draft.matchIsDefault(id) }
+            Section {
+                DisclosureGroup("Advanced", isExpanded: $advanced) {
+                    FieldRow(
+                        label: "Counts as open",
+                        text: Binding(get: { form.matchText }, set: { model.setMatch(id, $0) }),
+                        prompt: form.defaultMatch ?? "github.com/",
+                        note: form.matchIsDefault
+                            ? "A tab whose address starts with \(form.defaultMatch ?? "the page's host") counts as this site. Give prefixes, most specific first, to narrow it."
+                            : "Prefixes without https://, most specific first, separated by commas.",
+                        problems: form.matchProblems
+                    )
+                }
+            }
+            Section {
+                HStack {
+                    Spacer()
+                    Button("Remove Site…", role: .destructive) { model.remove(site: id, in: NSApp.keyWindow) }
+                }
+            }
         }
+        .formStyle(.grouped)
+        // One form serves every site, so a newly picked site opens Advanced only when it uses it.
+        .onAppear { advanced = !form.matchIsDefault }
+        .onChange(of: id) { _ in advanced = !form.matchIsDefault }
     }
 
     @ViewBuilder
-    private func account(_ site: SiteSource) -> some View {
-        let problems = model.problems(site: id, .account, .profile, .accountOrProfile)
+    private var account: some View {
+        let id = form.id
         VStack(alignment: .leading, spacing: 4) {
-            if let catalog = model.catalog {
-                Picker("Account", selection: Binding(get: { model.profile(of: id) }, set: { model.setProfile(id, $0) })) {
+            if let profiles = form.profiles {
+                Picker("Account", selection: Binding(get: { form.profile }, set: { model.setProfile(id, $0) })) {
                     Text("Choose…").tag(String?.none)
-                    ForEach(catalog.profiles, id: \.directory) { profile in
+                    ForEach(profiles, id: \.directory) { profile in
                         Text(AddTabView.label(profile)).tag(Optional(profile.directory))
                     }
                 }
             } else {
-                TextField("Account", text: Binding(get: { site.account ?? "" }, set: { value in model.update(id) { $0.account = value } }), prompt: Text("you@work.com"))
+                TextField("Account", text: Binding(get: { form.site.account ?? "" }, set: { value in model.update(id) { $0.account = value } }), prompt: Text("you@work.com"))
             }
-            EditorNotes(note: model.landing(site: id).map { "Lands in \($0)" }, problems: problems)
+            EditorNotes(note: form.landing.map { "Lands in \($0)" }, problems: form.accountProblems)
         }
     }
 }

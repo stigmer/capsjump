@@ -53,3 +53,23 @@ import Testing
         ])
     }
 }
+
+@Suite struct FindingWordingTests {
+    private let lookup = Lookup(
+        home: "/Users/alex",
+        exists: { $0 == "/Applications/Slack.app" },
+        linkHandler: { $0.scheme == "slack" ? "Slack" : nil }
+    )
+
+    private func wording(_ key: String, _ action: KeyAction) -> String {
+        FormWording.finding(Checkup.key(KeyBinding(key: key, action: action), lookup: lookup))
+    }
+
+    @Test func aKeysCheckupReadsAsWhatTheFormNeeds() {
+        #expect(wording("a", .app(.name("Slack"))) == "Found at /Applications/Slack.app.")
+        #expect(wording("b", .app(.name("Nope"))) == "No Nope.app where CapsJump looks; pick it with Other….")
+        #expect(wording("c", .app(.path("~/Tools/Big.app"))) == "Nothing at /Users/alex/Tools/Big.app.")
+        #expect(wording("m", .url(URL(string: "slack://open")!)) == "Opens in Slack.")
+        #expect(wording("n", .url(URL(string: "zz://x")!)) == "No installed app opens zz links.")
+    }
+}

@@ -1,7 +1,9 @@
 // How a window words a problem the rules found. The rules speak about the file (`open`,
 // `sites[3]`, `keys:`); a form has fields called Page and Account, and pickers that
 // can't hold an unknown key. Each message the form can meet gets a sentence of its
-// own; any other keeps the rule's words, with `code` quoted as “code”.
+// own; any other keeps the rule's words, with `code` quoted as “code”. A key's checkup
+// line (`a` → app /Applications/Slack.app) reads as what the form needs to know: where
+// the app was found, or what opens the link.
 
 import Foundation
 
@@ -37,6 +39,23 @@ public enum FormWording {
         default:
             return quoted(message)
         }
+    }
+
+    /// A key's checkup line, without the key it starts with, as a sentence.
+    public static func finding(_ finding: Finding) -> String {
+        let line = finding.text.components(separatedBy: " → ").dropFirst().joined(separator: " → ")
+        if finding.level == .ok, line.hasPrefix("app ") {
+            return "Found at \(line.dropFirst(4))."
+        }
+        if finding.level == .ok, let opens = line.range(of: " (opens in "), line.hasSuffix(")") {
+            return "Opens in \(line[opens.upperBound...].dropLast())."
+        }
+        guard let colon = line.range(of: ": ") else { return quoted(line) }
+        let detail = String(line[colon.upperBound...])
+        if detail.hasSuffix("; give its path instead"), let app = detail.split(separator: " ").dropFirst().first {
+            return "No \(app) where CapsJump looks; pick it with Other…."
+        }
+        return quoted(detail.prefix(1).uppercased() + detail.dropFirst() + ".")
     }
 
     /// `code` as “code”.

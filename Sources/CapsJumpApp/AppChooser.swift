@@ -88,9 +88,12 @@ struct AppIconView: View {
 }
 
 struct AppChooser: View {
-    @ObservedObject var model: EditorModel
-    let row: Int
+    /// The app as written, and where the keys find it.
     let value: String
+    let path: String?
+    let apps: [InstalledApp]?
+    let pick: @MainActor (_ path: String) -> Void
+    let other: @MainActor () -> Void
     @State private var open = false
 
     var body: some View {
@@ -100,7 +103,7 @@ struct AppChooser: View {
                 open = true
             } label: {
                 HStack(spacing: 6) {
-                    AppIconView(path: model.appPath(value), size: 16)
+                    AppIconView(path: path, size: 16)
                     Text(value.isEmpty ? "Choose an App…" : value)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -109,15 +112,16 @@ struct AppChooser: View {
             }
             .popover(isPresented: $open, arrowEdge: .bottom) {
                 AppList(
-                    apps: model.apps,
+                    apps: apps,
                     picked: value,
                     pick: { app in
                         open = false
-                        model.setApp(row, path: app.path)
+                        pick(app.path)
                     },
                     other: {
                         open = false
-                        DispatchQueue.main.async { model.chooseOtherApp(row) }
+                        // After the popover has closed, so the panel isn't its child.
+                        Task { @MainActor in other() }
                     },
                     close: { open = false }
                 )

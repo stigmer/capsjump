@@ -255,8 +255,8 @@ struct EditorView: View {
                 ZStack {
                     if building(.sites) {
                         Group {
-                            if let id = model.selectedSite, model.draft.site(id) != nil {
-                                SiteEditor(model: model, id: id)
+                            if let form = model.selectedSite.flatMap(model.siteForm) {
+                                SiteEditor(form: form, model: model).equatable()
                             } else {
                                 EmptyNote(title: "Select a site", text: "Pick one in the list to edit it.")
                             }
@@ -265,8 +265,8 @@ struct EditorView: View {
                     }
                     if building(.keys) {
                         Group {
-                            if let row = model.selectedKey, model.draft.key(row) != nil {
-                                KeyEditor(model: model, row: row)
+                            if let form = model.selectedKey.flatMap(model.keyForm) {
+                                KeyEditor(form: form, apps: model.apps, model: model).equatable()
                             } else {
                                 EmptyNote(title: "Select a key", text: "Pick one in the list to edit it.")
                             }

@@ -405,6 +405,92 @@ final class EditorModel: ObservableObject {
         setApp(row, path: url.path)
     }
 
+    // MARK: What each editor shows
+
+    /// Everything the key editor shows, as values, so an editor whose key didn't change is
+    /// left alone by an edit elsewhere.
+    struct KeyForm: Equatable, Sendable {
+        struct SiteChoice: Equatable, Sendable {
+            let name: String
+            let label: String
+        }
+
+        let row: Int
+        let key: KeySource
+        let free: [String]
+        let sites: [SiteChoice]
+        let appPath: String?
+        let note: String?
+        let problems: [String]
+    }
+
+    func keyForm(_ row: Int) -> KeyForm? {
+        guard let key = draft.key(row)?.key else { return nil }
+        let action = key.action
+        let finding = [.app, .url].contains(action?.kind) ? finding(key: row) : nil
+        let missing = finding.flatMap { $0.level == .problem ? FormWording.finding($0) : nil }
+        let note: String? = switch action?.kind {
+        case .site?:
+            draft.sites.first { $0.site.name == action?.value }.flatMap { landing(site: $0.id) }.map { "Lands in \($0)" }
+        case .app?, .url?:
+            finding.flatMap { $0.level == .problem ? nil : FormWording.finding($0) }
+        default:
+            nil
+        }
+        return KeyForm(
+            row: row,
+            key: key,
+            free: draft.freeKeys(for: row),
+            // Only a site key lists the sites, so renaming one leaves every other key's editor alone.
+            sites: action?.kind != .site ? [] : draft.sites.compactMap { row in
+                guard let name = row.site.name, !name.isEmpty else { return nil }
+                return KeyForm.SiteChoice(name: name, label: [name, row.site.account ?? row.site.profile].compactMap { $0 }.joined(separator: " · "))
+            },
+            appPath: action?.kind == .app ? action.flatMap { appPath($0.value) } : nil,
+            note: note,
+            problems: problems(key: row) + (missing.map { [$0] } ?? [])
+        )
+    }
+
+    /// Everything the site editor shows, as values.
+    struct SiteForm: Equatable, Sendable {
+        let id: Int
+        let site: SiteSource
+        /// The profile folder the account picks, when Chrome's list could be read.
+        let profile: String?
+        let profiles: [ChromeProfile]?
+        let landing: String?
+        let keys: [String]
+        let canAddKey: Bool
+        let matchText: String
+        let defaultMatch: String?
+        let matchIsDefault: Bool
+        let nameProblems: [String]
+        let accountProblems: [String]
+        let pageProblems: [String]
+        let matchProblems: [String]
+    }
+
+    func siteForm(_ id: Int) -> SiteForm? {
+        guard let site = draft.site(id)?.site else { return nil }
+        return SiteForm(
+            id: id,
+            site: site,
+            profile: profile(of: id),
+            profiles: catalog?.profiles,
+            landing: landing(site: id),
+            keys: draft.keysUsing(id),
+            canAddKey: !(site.name ?? "").isEmpty && !draft.freeKeys().isEmpty,
+            matchText: matchText(id),
+            defaultMatch: defaultMatch(id),
+            matchIsDefault: draft.matchIsDefault(id),
+            nameProblems: problems(site: id, .entry, .unknownKey, .name),
+            accountProblems: problems(site: id, .account, .profile, .accountOrProfile),
+            pageProblems: problems(site: id, .open),
+            matchProblems: problems(site: id, .match)
+        )
+    }
+
     // MARK: Problems and findings
 
     func problems(site id: Int, _ fields: SiteSource.Field...) -> [String] {

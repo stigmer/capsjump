@@ -126,57 +126,72 @@ struct KeyPicker: View {
     }
 }
 
-struct KeyEditor: View {
-    @ObservedObject var model: EditorModel
-    let row: Int
+/// The picked key's editor. It takes the key as values and calls the model only to edit,
+/// so an edit to anything else leaves it alone.
+struct KeyEditor: View, Equatable {
+    let form: EditorModel.KeyForm
+    let apps: [InstalledApp]?
+    let model: EditorModel
+
+    nonisolated static func == (a: KeyEditor, b: KeyEditor) -> Bool {
+        a.form == b.form && a.apps == b.apps
+    }
 
     var body: some View {
-        if let key = model.draft.key(row)?.key {
-            Form {
-                Section {
-                    KeyPicker(
-                        key: Binding(get: { key.key }, set: { if let name = $0 { model.setKey(row, name) } }),
-                        free: model.draft.freeKeys(for: row)
-                    )
-                    Picker("Does", selection: Binding(get: { key.action?.kind }, set: { model.setKind(row, $0) })) {
-                        Text("App").tag(Optional(ActionSource.Kind.app))
-                        Text("Site").tag(Optional(ActionSource.Kind.site))
-                        Text("Window").tag(Optional(ActionSource.Kind.window))
-                        Text("Link").tag(Optional(ActionSource.Kind.url))
-                    }
-                    .pickerStyle(.segmented)
-                    if let action = key.action {
-                        value(action)
-                    }
-                    notes(key.action)
+        let row = form.row
+        let key = form.key
+        Form {
+            Section {
+                KeyPicker(
+                    key: Binding(get: { key.key }, set: { if let name = $0 { model.setKey(row, name) } }),
+                    free: form.free
+                )
+                Picker("Does", selection: Binding(get: { key.action?.kind }, set: { model.setKind(row, $0) })) {
+                    Text("App").tag(Optional(ActionSource.Kind.app))
+                    Text("Site").tag(Optional(ActionSource.Kind.site))
+                    Text("Window").tag(Optional(ActionSource.Kind.window))
+                    Text("Link").tag(Optional(ActionSource.Kind.url))
                 }
-                Section {
-                    HStack {
-                        Spacer()
-                        Button("Remove Key", role: .destructive) { model.remove(key: row) }
-                    }
+                .pickerStyle(.segmented)
+                if let action = key.action {
+                    value(action)
+                }
+                if !form.problems.isEmpty || form.note != nil {
+                    EditorNotes(note: form.note, problems: form.problems)
                 }
             }
-            .formStyle(.grouped)
+            Section {
+                HStack {
+                    Spacer()
+                    Button("Remove Key", role: .destructive) { model.remove(key: row) }
+                }
+            }
         }
+        .formStyle(.grouped)
     }
 
     @ViewBuilder
     private func value(_ action: ActionSource) -> some View {
+        let row = form.row
         let text = Binding(get: { action.value }, set: { model.setValue(row, $0) })
         switch action.kind {
         case .app:
             LabeledContent("App") {
-                AppChooser(model: model, row: row, value: action.value)
+                AppChooser(
+                    value: action.value,
+                    path: form.appPath,
+                    apps: apps,
+                    pick: { model.setApp(row, path: $0) },
+                    other: { model.chooseOtherApp(row) }
+                )
             }
         case .site:
             Picker("Site", selection: text) {
-                let sites = model.draft.sites.map(\.site).filter { !($0.name ?? "").isEmpty }
-                if !sites.contains(where: { $0.name == action.value }) {
+                if !form.sites.contains(where: { $0.name == action.value }) {
                     Text(action.value.isEmpty ? "Choose…" : action.value).tag(action.value)
                 }
-                ForEach(sites, id: \.name) { site in
-                    Text([site.name, site.account ?? site.profile].compactMap { $0 }.joined(separator: " · ")).tag(site.name ?? "")
+                ForEach(form.sites, id: \.name) { site in
+                    Text(site.label).tag(site.name)
                 }
             }
         case .window:
@@ -188,29 +203,5 @@ struct KeyEditor: View {
         case .url:
             TextField("Link", text: text, prompt: Text("https://example.com or slack://open"))
         }
-    }
-
-    /// What the key does on this Mac, or what's wrong with it.
-    @ViewBuilder
-    private func notes(_ action: ActionSource?) -> some View {
-        let problems = model.problems(key: row)
-        let note: String? = switch action?.kind {
-        case .site?:
-            model.draft.sites.first { $0.site.name == action?.value }.flatMap { model.landing(site: $0.id) }.map { "Lands in \($0)" }
-        case .app?, .url?:
-            model.finding(key: row).map(Self.describe)
-        default:
-            nil
-        }
-        let missing = model.finding(key: row).flatMap { $0.level == .problem && [.app, .url].contains(action?.kind) ? Self.describe($0) : nil }
-        let all = problems + (missing.map { [$0] } ?? [])
-        if !all.isEmpty || note != nil {
-            EditorNotes(note: missing == nil ? note : nil, problems: all)
-        }
-    }
-
-    /// A checkup line without the key it starts with: "app /Applications/iTerm.app".
-    private static func describe(_ finding: Finding) -> String {
-        finding.text.components(separatedBy: " → ").dropFirst().joined(separator: " → ")
     }
 }
