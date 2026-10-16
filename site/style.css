@@ -1,56 +1,57 @@
-/* CapsJump's website: colour tokens for light and dark, a single column that narrows to a
-   phone, and the looping Caps Lock + G demo (still, in its final frame, for reduced motion). */
+/* CapsJump's website: black and white like its mark, in light and dark; a single column
+   that narrows to a phone; and the looping Caps Lock + G demo (still, in its final frame,
+   for reduced motion). */
 
 :root {
-  --bg: #f7f7fc;
+  --bg: #fafafa;
   --surface: #ffffff;
-  --ink: #1b1f3b;
-  --muted: #5a5f7d;
-  --line: #e2e3f0;
-  --accent: #6e5cf0;
+  --ink: #0a0a0a;
+  --muted: #5c5c5c;
+  --line: #e5e5e5;
+  --accent: #0a0a0a;
   --accent-ink: #ffffff;
-  --accent-soft: #ece9ff;
+  --accent-soft: #ededed;
   --key: #ffffff;
-  --key-side: #c9cce8;
-  --tab: #eef0fa;
-  --code-bg: #1b1f3b;
-  --code-ink: #f4f5ff;
+  --key-side: #d4d4d4;
+  --tab: #f1f1f1;
+  --code-bg: #0a0a0a;
+  --code-ink: #f1f1f1;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #11132a;
-    --surface: #1b1f3b;
-    --ink: #f4f5ff;
-    --muted: #a9adcf;
-    --line: #2c3158;
-    --accent: #8c7cff;
-    --accent-ink: #11132a;
-    --accent-soft: #2a2950;
-    --key: #2a2f55;
-    --key-side: #0d0f22;
-    --tab: #262a4d;
-    --code-bg: #0b0d1f;
-    --code-ink: #f4f5ff;
+    --bg: #0a0a0a;
+    --surface: #161616;
+    --ink: #f1f1f1;
+    --muted: #a3a3a3;
+    --line: #2a2a2a;
+    --accent: #f1f1f1;
+    --accent-ink: #0a0a0a;
+    --accent-soft: #262626;
+    --key: #1f1f1f;
+    --key-side: #000000;
+    --tab: #222222;
+    --code-bg: #000000;
+    --code-ink: #f1f1f1;
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #11132a;
-  --surface: #1b1f3b;
-  --ink: #f4f5ff;
-  --muted: #a9adcf;
-  --line: #2c3158;
-  --accent: #8c7cff;
-  --accent-ink: #11132a;
-  --accent-soft: #2a2950;
-  --key: #2a2f55;
-  --key-side: #0d0f22;
-  --tab: #262a4d;
-  --code-bg: #0b0d1f;
-  --code-ink: #f4f5ff;
+  --bg: #0a0a0a;
+  --surface: #161616;
+  --ink: #f1f1f1;
+  --muted: #a3a3a3;
+  --line: #2a2a2a;
+  --accent: #f1f1f1;
+  --accent-ink: #0a0a0a;
+  --accent-soft: #262626;
+  --key: #1f1f1f;
+  --key-side: #000000;
+  --tab: #222222;
+  --code-bg: #000000;
+  --code-ink: #f1f1f1;
   color-scheme: dark;
 }
 

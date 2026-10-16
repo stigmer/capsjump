@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="packaging/icon.svg" width="160" alt="CapsJump icon: a Caps Lock key with an arc jumping off it">
+  <img src="packaging/icon.svg" width="160" alt="CapsJump icon: the Caps Lock arrow leaping off its bar">
 </p>
 
 <h1 align="center">CapsJump</h1>
@@ -8,8 +8,8 @@
 
 <p align="center">
   <a href="https://github.com/stigmer/capsjump/releases/latest"><img src="https://img.shields.io/github/v/release/stigmer/capsjump" alt="Latest release"></a>
-  <img src="https://img.shields.io/badge/macOS-13%2B-1B1F3B" alt="macOS 13 or later">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-8C7CFF" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/macOS-13%2B-0a0a0a" alt="macOS 13 or later">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-5c5c5c" alt="MIT license"></a>
 </p>
 
 <p align="center"><a href="https://stigmer.github.io/capsjump/">stigmer.github.io/capsjump</a></p>
