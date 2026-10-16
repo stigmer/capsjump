@@ -4,8 +4,7 @@ cask "capsjump" do
   version "@VERSION@"
   sha256 "@SHA256@"
 
-  url "https://github.com/stigmer/capsjump/releases/download/v#{version}/CapsJump-#{version}.zip",
-      verified: "github.com/stigmer/capsjump/"
+  url "https://github.com/stigmer/capsjump/releases/download/v#{version}/CapsJump-#{version}.zip"
   name "CapsJump"
   desc "Caps Lock shortcuts for apps, Chrome accounts, windows and links"
   homepage "https://stigmer.github.io/capsjump/"
