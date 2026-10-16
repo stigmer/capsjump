@@ -49,6 +49,7 @@ cp "$BIN/capsjump" "$APP/Contents/Helpers/capsjump"
 sed "s/@VERSION@/$VERSION/g" "$ROOT/packaging/Info.plist" > "$APP/Contents/Info.plist"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 cp "$ROOT/packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
+cp "$ROOT/packaging/MenuBarIcon.png" "$ROOT/packaging/MenuBarIcon@2x.png" "$APP/Contents/Resources/"
 
 for exe in "$APP/Contents/MacOS/CapsJump" "$APP/Contents/Helpers/capsjump"; do
   archs="$(lipo -archs "$exe")"

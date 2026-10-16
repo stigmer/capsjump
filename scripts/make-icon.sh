@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # Renders packaging/icon.svg into packaging/AppIcon.icns, the icon scripts/bundle.sh puts
-# in CapsJump.app. The .icns is committed so a build needs no SVG renderer; rerun this
+# in CapsJump.app, and packaging/menubar.svg into MenuBarIcon.png and MenuBarIcon@2x.png,
+# the menu-bar image beside it. The .icns is committed so a build needs no SVG renderer; rerun this
 # after changing the SVG. Needs rsvg-convert (brew install librsvg) and macOS's iconutil.
 
 set -euo pipefail
@@ -22,3 +23,8 @@ for size in 16 32 128 256 512; do
 done
 iconutil -c icns "$SET" -o "$ICNS"
 echo "make-icon: wrote $ICNS"
+
+MENUBAR="$ROOT/packaging/menubar.svg"
+rsvg-convert -w 18 -h 18 "$MENUBAR" -o "$ROOT/packaging/MenuBarIcon.png"
+rsvg-convert -w 36 -h 36 "$MENUBAR" -o "$ROOT/packaging/MenuBarIcon@2x.png"
+echo "make-icon: wrote $ROOT/packaging/MenuBarIcon.png and MenuBarIcon@2x.png"

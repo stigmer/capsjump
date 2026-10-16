@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- CapsJump's icon: the Caps Lock key's arrow, leaping up and away from its bar. One
-     near-black mark on a light tile, in the style of Stigmer's mark.
+<!-- CapsJump's icon: the Caps Lock key's arrow, outlined as on the key, leaping up and to
+     the right with three motion lines behind it. One near-black mark on a light tile, in
+     the style of Stigmer's mark; packaging/menubar.svg is the same mark for the menu bar.
      The source of packaging/AppIcon.icns; after changing it, run scripts/make-icon.sh.
      The artwork sits on Apple's macOS icon grid: an 824-unit rounded square centred on a
      1024 canvas, drawn here at 256 units and scaled onto that grid. -->
@@ -8,8 +9,14 @@
   <g transform="translate(128 128) scale(0.8521) translate(-128 -128)">
     <rect x="8" y="8" width="240" height="240" rx="56" fill="#f1f1f1"/>
     <g fill="#0a0a0a">
-      <path fill-rule="evenodd" transform="translate(146 104) rotate(24) scale(0.84) translate(-128 -97)" d="M128 36 L200 114 L160 114 L160 158 L96 158 L96 114 L56 114 Z M128 78 L156 104 L138 104 L138 136 L118 136 L118 104 L100 104 Z"/>
-      <rect x="54" y="184" width="96" height="24" rx="4"/>
+    <g transform="translate(128 128) scale(1.12) translate(-156 -110)">
+      <path fill-rule="evenodd" transform="translate(162 86) rotate(24) scale(0.78) translate(-128 -97)" d="M128 36 L200 114 L160 114 L160 158 L96 158 L96 114 L56 114 Z M128 78 L156 104 L138 104 L138 136 L118 136 L118 104 L100 104 Z"/>
+      <g transform="translate(142 130) rotate(24)">
+        <rect x="-21" y="12" width="9" height="26" rx="4.5"/>
+        <rect x="-4.5" y="12" width="9" height="40" rx="4.5"/>
+        <rect x="12" y="12" width="9" height="26" rx="4.5"/>
+      </g>
+    </g>
     </g>
   </g>
 </svg>

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="packaging/icon.svg" width="160" alt="CapsJump icon: the Caps Lock arrow leaping off its bar">
+  <img src="packaging/icon.svg" width="160" alt="CapsJump icon: the Caps Lock arrow leaping, with motion lines behind it">
 </p>
 
 <h1 align="center">CapsJump</h1>
@@ -82,7 +82,7 @@ macOS keeps every app's shortcuts out of password fields, so the keys do nothing
 
 ## Pause, quit or turn it off
 
-CapsJump puts a Caps Lock symbol in the menu bar: filled while it has Caps Lock, outlined when it doesn't. Its menu:
+CapsJump puts its mark in the menu bar, dimmed while it doesn't have Caps Lock. Its menu:
 
 - **Pause Keys / Resume Keys**: gives Caps Lock back, or takes it again. A pause lasts until you resume, across restarts.
 - **Edit Config…**: opens `~/.capsjump.yaml` in your editor, writing a starter file first if there is none. Saving applies the change at once.
@@ -130,7 +130,7 @@ Releases are signed with a Developer ID and notarized, so macOS keeps these gran
 | `capsjump logs [--last 2h]` | Show recent keys, jumps and failures from the macOS log. |
 | `capsjump version` | Print the version. |
 
-CapsJump runs from login, with a Caps Lock symbol in the menu bar and no Dock icon.
+CapsJump runs from login, with its mark in the menu bar and no Dock icon.
 
 ## Develop
 
@@ -151,7 +151,7 @@ Layout:
 - `Sources/CapsJumpSystem`: the live side of the keys: the Caps Lock mapping, the event tap, watching the config, moving windows, opening apps and links.
 - `Sources/CapsJumpApp`: the background app that runs the keys and receives `capsjump://` links.
 - `Sources/capsjump`: the CLI.
-- `packaging/icon.svg` is the icon's source; `scripts/make-icon.sh` renders it into `packaging/AppIcon.icns`.
+- `packaging/icon.svg` is the icon's source and `packaging/menubar.svg` the menu bar's; `scripts/make-icon.sh` renders them into `packaging/AppIcon.icns` and `packaging/MenuBarIcon*.png`.
 - `site/` is the website, hand-written with no build; `.github/workflows/pages.yaml` publishes it to GitHub Pages when it changes on `main`.
 - `scripts/bundle.sh` builds the app bundle; `scripts/notarize.sh` and `scripts/macos-import-signing-keychain.sh` are the release's signing steps.
 

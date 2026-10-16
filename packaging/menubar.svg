@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CapsJump's menu-bar mark: packaging/icon.svg's mark with no tile, in black on clear, so
+     macOS draws it as a template image in the menu bar's own colour. scripts/make-icon.sh
+     renders it to MenuBarIcon.png (18 pt) and MenuBarIcon@2x.png. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="48 48 160 160" width="18" height="18">
+  <g fill="#000000">
+    <g transform="translate(128 128) scale(1.12) translate(-156 -110)">
+      <path fill-rule="evenodd" transform="translate(162 86) rotate(24) scale(0.78) translate(-128 -97)" d="M128 36 L200 114 L160 114 L160 158 L96 158 L96 114 L56 114 Z M128 78 L156 104 L138 104 L138 136 L118 136 L118 104 L100 104 Z"/>
+      <g transform="translate(142 130) rotate(24)">
+        <rect x="-21" y="12" width="9" height="26" rx="4.5"/>
+        <rect x="-4.5" y="12" width="9" height="40" rx="4.5"/>
+        <rect x="12" y="12" width="9" height="26" rx="4.5"/>
+      </g>
+    </g>
+  </g>
+</svg>

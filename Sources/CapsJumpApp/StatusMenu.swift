@@ -1,5 +1,5 @@
-// The menu-bar icon: a Caps Lock symbol, filled while CapsJump has Caps Lock and outlined
-// when it doesn't. Its menu says what the keys are doing, pauses and resumes them, opens
+// The menu-bar icon: CapsJump's own mark (packaging/menubar.svg) as a template image,
+// so macOS colours it for the menu bar; dimmed while CapsJump doesn't have Caps Lock. Its menu says what the keys are doing, pauses and resumes them, opens
 // the config in an editor (writing the starter file first when there is none), shows what
 // `capsjump check` would, switches starting at login, and quits.
 
@@ -25,11 +25,18 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         refresh()
     }
 
-    func refresh() {
-        let active = keys.status.active
-        let image = NSImage(systemSymbolName: active ? "capslock.fill" : "capslock", accessibilityDescription: "CapsJump")
+    /// The mark from the bundle; Apple's Caps Lock symbol when run unbundled, in development.
+    private static let image: NSImage? = {
+        let image = Bundle.main.image(forResource: "MenuBarIcon")
+            ?? NSImage(systemSymbolName: "capslock", accessibilityDescription: nil)
         image?.isTemplate = true
-        item.button?.image = image
+        image?.accessibilityDescription = "CapsJump"
+        return image
+    }()
+
+    func refresh() {
+        item.button?.image = Self.image
+        item.button?.appearsDisabled = !keys.status.active
         item.button?.toolTip = "CapsJump: \(keys.status.title)"
     }
 
