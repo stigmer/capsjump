@@ -4,7 +4,7 @@
 
 <h1 align="center">CapsJump</h1>
 
-<p align="center">Transform your Caps Lock. Hold it and press a key to bring an app forward, land on a site in the right Chrome account, snap a window, or open a link.</p>
+<p align="center"><strong>Caps Lock finally has a job.</strong><br>Hold it and press a key to bring an app forward, land on a site in the right Chrome account, snap a window, or open a link.</p>
 
 <p align="center">
   <a href="https://github.com/stigmer/capsjump/releases/latest"><img src="https://img.shields.io/github/v/release/stigmer/capsjump" alt="Latest release"></a>
@@ -14,7 +14,7 @@
 
 <p align="center"><a href="https://stigmer.github.io/capsjump/">stigmer.github.io/capsjump</a></p>
 
-Hold Caps Lock and press S: your terminal comes forward. Caps Lock and G: the GitHub tab in your work Chrome account comes forward, or opens there if it isn't open yet. Caps Lock and ←: the front window takes the left half of the screen. Caps Lock and W: a Slack channel opens. One small file, `~/.capsjump.yaml`, says which key does what.
+Caps Lock has spent decades waiting for someone to SHOUT. CapsJump gives it a real job. Hold Caps Lock and press S: your terminal is just there. Caps Lock and G: the GitHub tab in your work Chrome account comes forward (not your personal one, never your personal one), or opens there if it isn't open yet. Caps Lock and ←: the front window takes the left half of the screen. Caps Lock and W: a Slack channel opens. One small file, `~/.capsjump.yaml`, says which key does what.
 
 ## Install
 
@@ -76,7 +76,7 @@ Edits apply as soon as the file is saved. Unknown keys are refused, so a typo is
 
 ## How Caps Lock becomes CapsJump's key
 
-While CapsJump runs, macOS's own key mapping (the one `hidutil` sets) turns Caps Lock into F18, a key no keyboard has, and CapsJump watches for it. Caps Lock then no longer types capitals and its light stays off. CapsJump gives Caps Lock back whenever it quits: from its own quit, at logout, when stopped, and when uninstalled with Homebrew. If it ever crashes, Caps Lock does nothing until CapsJump starts again or the Mac restarts.
+While CapsJump runs, macOS's own key mapping (the one `hidutil` sets) turns Caps Lock into F18, a key no keyboard has, and CapsJump watches for it. Caps Lock then no longer types capitals and its light stays off. Miss SHOUTING? Hold Shift, like everyone else. CapsJump gives Caps Lock back whenever it quits: from its own quit, at logout, when stopped, and when uninstalled with Homebrew. If it ever crashes, Caps Lock does nothing until CapsJump starts again or the Mac restarts.
 
 macOS keeps every app's shortcuts out of password fields, so the keys do nothing while one has focus and work again as soon as you leave it.
 
