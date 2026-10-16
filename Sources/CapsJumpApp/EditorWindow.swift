@@ -1,4 +1,4 @@
-// Edit Config…: one window, reused, laid out as the Mac's own apps are: Sites and Keys in a
+// Edit Config…: one window, kept for the app's life once opened, laid out as the Mac's own apps are: Sites and Keys in a
 // sidebar, the section's rows in a searchable list, and the picked row's editor beside it.
 // The toolbar is AppKit's (add, search, Save), because a SwiftUI toolbar reaches a window it
 // doesn't own only from macOS 14; the window's subtitle says whether there is anything to
@@ -9,6 +9,8 @@
 // Homebrew, logout) never waits on that question, because quitting is what gives Caps Lock
 // back, and the edits are lost. A file changed elsewhere reloads quietly when there are no
 // edits, and otherwise says so with Reload. A file CapsJump can't read opens on its problems.
+// Closing hides the window and stops watching the file; opening it again reads the file
+// afresh into the same window, so only the first open of a launch builds it.
 
 import AppKit
 import CapsJumpCore
@@ -28,18 +30,22 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
     func open(showingProblems: Bool = false) {
         Timings.untilIdle("open")
         if let window, let model {
+            if !window.isVisible { model.reopen() }
             if showingProblems { model.selectFirstProblem() }
             AppWindows.show(window)
             return
         }
         let model = EditorModel()
         if showingProblems { model.selectFirstProblem() }
-        let controller = NSHostingController(rootView: EditorView(model: model))
-        // The window sets its own size; the content only fills it.
-        controller.sizingOptions = []
-        let window = NSWindow(contentViewController: controller)
+        // The frame, style, toolbar and saved place first and the content last, so SwiftUI
+        // lays the window out once rather than once per change.
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 900, height: 600),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+            backing: .buffered,
+            defer: true
+        )
         window.title = "CapsJump Config"
-        window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
         window.toolbarStyle = .unified
         let toolbar = NSToolbar(identifier: "CapsJumpConfig")
         toolbar.delegate = self
@@ -47,11 +53,15 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
         toolbar.allowsUserCustomization = false
         window.toolbar = toolbar
         window.contentMinSize = NSSize(width: 760, height: 480)
-        window.setContentSize(NSSize(width: 900, height: 600))
         window.isReleasedWhenClosed = false
         window.delegate = self
         window.center()
         window.setFrameAutosaveName("CapsJumpConfig")
+        let controller = NSHostingController(rootView: EditorView(model: model))
+        // The window sets its own size; the content only fills it.
+        controller.sizingOptions = []
+        controller.view.frame = NSRect(origin: .zero, size: window.contentRect(forFrameRect: window.frame).size)
+        window.contentViewController = controller
         self.window = window
         self.model = model
         model.onChange = { [weak self] in self?.modelChanged() }
@@ -71,11 +81,7 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
 
     func windowWillClose(_ notification: Notification) {
         guard let window else { return }
-        model?.onChange = nil
         model?.close()
-        model = nil
-        searchItem = nil
-        self.window = nil
         AppWindows.closed(window)
     }
 
@@ -216,6 +222,13 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
 
 struct EditorView: View {
     @ObservedObject var model: EditorModel
+    /// The sections shown so far; each is built when first shown and then kept, so the
+    /// window opens building one and switching back and forth builds nothing.
+    @State private var built: Set<EditorModel.Section> = []
+
+    private func building(_ section: EditorModel.Section) -> Bool {
+        model.section == section || built.contains(section)
+    }
 
     var body: some View {
         switch model.state {
@@ -228,28 +241,42 @@ struct EditorView: View {
             } content: {
                 VStack(spacing: 0) {
                     banners
-                    switch model.section {
-                    case .sites: SiteList(model: model)
-                    case .keys: KeyList(model: model)
+                    ZStack {
+                        if building(.sites) {
+                            SiteList(model: model).shown(model.section == .sites)
+                        }
+                        if building(.keys) {
+                            KeyList(model: model).shown(model.section == .keys)
+                        }
                     }
                 }
                 .navigationSplitViewColumnWidth(min: 260, ideal: 300, max: 440)
             } detail: {
-                switch model.section {
-                case .sites:
-                    if let id = model.selectedSite, model.draft.site(id) != nil {
-                        SiteEditor(model: model, id: id).id(id)
-                    } else {
-                        EmptyNote(title: "Select a site", text: "Pick one in the list to edit it.")
+                ZStack {
+                    if building(.sites) {
+                        Group {
+                            if let id = model.selectedSite, model.draft.site(id) != nil {
+                                SiteEditor(model: model, id: id)
+                            } else {
+                                EmptyNote(title: "Select a site", text: "Pick one in the list to edit it.")
+                            }
+                        }
+                        .shown(model.section == .sites)
                     }
-                case .keys:
-                    if let row = model.selectedKey, model.draft.key(row) != nil {
-                        KeyEditor(model: model, row: row).id(row)
-                    } else {
-                        EmptyNote(title: "Select a key", text: "Pick one in the list to edit it.")
+                    if building(.keys) {
+                        Group {
+                            if let row = model.selectedKey, model.draft.key(row) != nil {
+                                KeyEditor(model: model, row: row)
+                            } else {
+                                EmptyNote(title: "Select a key", text: "Pick one in the list to edit it.")
+                            }
+                        }
+                        .shown(model.section == .keys)
                     }
                 }
             }
+            .onAppear { built.insert(model.section) }
+            .onChange(of: model.section) { section in built.insert(section) }
         }
     }
 
@@ -323,6 +350,15 @@ private struct EditorSidebar: View {
                 .monospacedDigit()
         }
         .tag(section)
+    }
+}
+
+extension View {
+    /// Shown, or kept built but out of sight, out of reach of clicks, Tab and VoiceOver.
+    func shown(_ visible: Bool) -> some View {
+        opacity(visible ? 1 : 0)
+            .allowsHitTesting(visible)
+            .accessibilityHidden(!visible)
     }
 }
 

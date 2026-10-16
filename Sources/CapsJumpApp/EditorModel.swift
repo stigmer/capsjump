@@ -83,9 +83,7 @@ final class EditorModel: ObservableObject {
         // Keys the first time: keys are the app's job, and Add Current Tab is the quick way to sites.
         section = UserDefaults.standard.string(forKey: Self.sectionDefault).flatMap(Section.init) ?? .keys
         load()
-        let watcher = ConfigWatcher(file: file.url) { [weak self] in self?.fileChanged() }
-        watcher.start()
-        self.watcher = watcher
+        watch()
         let home = lookup.home
         Task { [weak self] in
             let apps = await Task.detached(priority: .userInitiated) { InstalledApp.scan(home: home) }.value
@@ -93,9 +91,24 @@ final class EditorModel: ObservableObject {
         }
     }
 
+    /// Stops watching the file while the window is closed.
     func close() {
         watcher?.stop()
         watcher = nil
+    }
+
+    /// For the window opened again: the file as it is now, watched again, nothing searched.
+    func reopen() {
+        query = ""
+        load()
+        watch()
+    }
+
+    private func watch() {
+        guard watcher == nil else { return }
+        let watcher = ConfigWatcher(file: file.url) { [weak self] in self?.fileChanged() }
+        watcher.start()
+        self.watcher = watcher
     }
 
     var hasChanges: Bool {

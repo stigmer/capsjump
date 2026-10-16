@@ -72,7 +72,7 @@ struct KeyLineView: View, Equatable {
         case .site?:
             symbol("globe")
         case .window?:
-            symbol(line.window == .leftHalf ? "rectangle.lefthalf.filled" : line.window == .rightHalf ? "rectangle.righthalf.filled" : "rectangle.fill")
+            symbol(line.window == .leftHalf ? "rectangle.lefthalf.filled" : line.window == .rightHalf ? "rectangle.righthalf.filled" : "rectangle.inset.filled")
         case .url?:
             symbol("link")
         case nil:

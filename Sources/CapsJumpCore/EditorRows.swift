@@ -136,6 +136,7 @@ public enum EditorRows {
 
     /// Every word of the query is found in one field or another, ignoring case and accents.
     static func matches(_ words: [String], _ fields: [String]) -> Bool {
+        guard !words.isEmpty else { return true }
         let fields = fields.map(fold)
         return words.allSatisfy { word in fields.contains { $0.contains(word) } }
     }

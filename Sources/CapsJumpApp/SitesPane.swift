@@ -138,7 +138,9 @@ struct SiteEditor: View {
                 }
             }
             .formStyle(.grouped)
+            // One form serves every site, so a newly picked site opens Advanced only when it uses it.
             .onAppear { advanced = !model.draft.matchIsDefault(id) }
+            .onChange(of: id) { id in advanced = !model.draft.matchIsDefault(id) }
         }
     }
 
