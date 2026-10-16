@@ -220,78 +220,102 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
     }
 }
 
+/// The window's content. It watches nothing itself: each column watches the model, so an
+/// edit is laid out in the columns it shows in, not from the window down.
 struct EditorView: View {
-    @ObservedObject var model: EditorModel
-    /// The sections shown so far; each is built when first shown and then kept, so the
-    /// window opens building one and switching back and forth builds nothing.
-    @State private var built: Set<EditorModel.Section> = []
-
-    private func building(_ section: EditorModel.Section) -> Bool {
-        model.section == section || built.contains(section)
-    }
+    let model: EditorModel
 
     var body: some View {
-        switch model.state {
-        case let .unreadable(problems):
-            unreadable(problems)
-        case .editing:
-            NavigationSplitView {
-                EditorSidebar(model: model)
-                    .navigationSplitViewColumnWidth(min: 150, ideal: 170, max: 240)
-            } content: {
-                VStack(spacing: 0) {
-                    banners
-                    ZStack {
-                        if building(.sites) {
-                            SiteList(model: model).shown(model.section == .sites)
-                        }
-                        if building(.keys) {
-                            KeyList(model: model).shown(model.section == .keys)
-                        }
-                    }
-                }
+        NavigationSplitView {
+            EditorSidebar(model: model)
+                .navigationSplitViewColumnWidth(min: 150, ideal: 170, max: 240)
+        } content: {
+            ContentColumn(model: model)
                 .navigationSplitViewColumnWidth(min: 260, ideal: 300, max: 440)
-            } detail: {
-                ZStack {
-                    if building(.sites) {
-                        Group {
-                            if let form = model.selectedSite.flatMap(model.siteForm) {
-                                SiteEditor(form: form, model: model).equatable()
-                            } else {
-                                EmptyNote(title: "Select a site", text: "Pick one in the list to edit it.")
-                            }
-                        }
-                        .shown(model.section == .sites)
-                    }
-                    if building(.keys) {
-                        Group {
-                            if let form = model.selectedKey.flatMap(model.keyForm) {
-                                KeyEditor(form: form, apps: model.apps, model: model).equatable()
-                            } else {
-                                EmptyNote(title: "Select a key", text: "Pick one in the list to edit it.")
-                            }
-                        }
-                        .shown(model.section == .keys)
-                    }
+        } detail: {
+            DetailColumn(model: model)
+        }
+        .overlay { UnreadableCover(model: model) }
+    }
+}
+
+/// Which sections a column has built: each when first shown, then kept, so the window opens
+/// building one and switching back and forth builds nothing.
+private struct BuiltSections {
+    var shown: Set<EditorModel.Section> = []
+
+    func includes(_ section: EditorModel.Section, showing current: EditorModel.Section) -> Bool {
+        section == current || shown.contains(section)
+    }
+}
+
+/// The banners, then the section's list.
+private struct ContentColumn: View {
+    @ObservedObject var model: EditorModel
+    @State private var built = BuiltSections()
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if model.changedOutside {
+                Banner(text: "The file changed outside this window.", button: "Reload") { model.load() }
+            }
+            let fileProblems = model.fileProblems
+            if !fileProblems.isEmpty {
+                Banner(text: fileProblems.joined(separator: "\n"))
+            }
+            ZStack {
+                if built.includes(.sites, showing: model.section) {
+                    SiteList(model: model).shown(model.section == .sites)
+                }
+                if built.includes(.keys, showing: model.section) {
+                    KeyList(model: model).shown(model.section == .keys)
                 }
             }
-            .onAppear { built.insert(model.section) }
-            .onChange(of: model.section) { section in built.insert(section) }
         }
+        .onAppear { built.shown.insert(model.section) }
+        .onChange(of: model.section) { section in built.shown.insert(section) }
     }
+}
 
-    @ViewBuilder
-    private var banners: some View {
-        if model.changedOutside {
-            banner("The file changed outside this window.", button: "Reload") { model.load() }
+/// The picked row's editor, or a note when none is picked.
+private struct DetailColumn: View {
+    @ObservedObject var model: EditorModel
+    @State private var built = BuiltSections()
+
+    var body: some View {
+        ZStack {
+            if built.includes(.sites, showing: model.section) {
+                Group {
+                    if let form = model.selectedSite.flatMap(model.siteForm) {
+                        SiteEditor(form: form, model: model).equatable()
+                    } else {
+                        EmptyNote(title: "Select a site", text: "Pick one in the list to edit it.")
+                    }
+                }
+                .shown(model.section == .sites)
+            }
+            if built.includes(.keys, showing: model.section) {
+                Group {
+                    if let form = model.selectedKey.flatMap(model.keyForm) {
+                        KeyEditor(form: form, apps: model.apps, model: model).equatable()
+                    } else {
+                        EmptyNote(title: "Select a key", text: "Pick one in the list to edit it.")
+                    }
+                }
+                .shown(model.section == .keys)
+            }
         }
-        let fileProblems = model.fileProblems
-        if !fileProblems.isEmpty {
-            banner(fileProblems.joined(separator: "\n"), button: nil) {}
-        }
+        .onAppear { built.shown.insert(model.section) }
+        .onChange(of: model.section) { section in built.shown.insert(section) }
     }
+}
 
-    private func banner(_ text: String, button: String?, action: @escaping () -> Void) -> some View {
+private struct Banner: View {
+    let text: String
+    var button: String?
+    var action: () -> Void = {}
+
+    var body: some View {
         HStack {
             Text(text).fixedSize(horizontal: false, vertical: true)
             Spacer()
@@ -300,26 +324,35 @@ struct EditorView: View {
         .padding(10)
         .background(Color.orange.opacity(0.15))
     }
+}
 
-    private func unreadable(_ problems: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("CapsJump can't read its config").font(.headline)
-            Text("Fix these in the file itself, then Reload. Until then the keys stay as they were.")
-                .foregroundStyle(.secondary)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(problems, id: \.self) { Text($0).font(.callout.monospaced()).textSelection(.enabled) }
+/// A file CapsJump can't read covers the window with its problems.
+private struct UnreadableCover: View {
+    @ObservedObject var model: EditorModel
+
+    var body: some View {
+        if case let .unreadable(problems) = model.state {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("CapsJump can't read its config").font(.headline)
+                Text("Fix these in the file itself, then Reload. Until then the keys stay as they were.")
+                    .foregroundStyle(.secondary)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(problems, id: \.self) { Text($0).font(.callout.monospaced()).textSelection(.enabled) }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                HStack {
+                    Spacer()
+                    Button("Open Config File") { ConfigFileOpener.open() }
+                    Button("Reload") { model.load() }.keyboardShortcut(.defaultAction)
+                }
             }
-            HStack {
-                Spacer()
-                Button("Open Config File") { ConfigFileOpener.open() }
-                Button("Reload") { model.load() }.keyboardShortcut(.defaultAction)
-            }
+            .padding(20)
+            .padding(.top, 40)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(nsColor: .windowBackgroundColor))
         }
-        .padding(20)
-        .padding(.top, 40)
     }
 }
 

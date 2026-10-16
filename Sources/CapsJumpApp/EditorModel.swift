@@ -213,6 +213,14 @@ final class EditorModel: ObservableObject {
         }
     }
 
+    /// Applies an edit, and publishes it only when it changed something: a text field sets
+    /// its text more than once per keystroke, and each publish redraws the window.
+    private func edit(_ change: (inout ConfigDraft) -> Void) {
+        var next = draft
+        change(&next)
+        if next != draft { draft = next }
+    }
+
     // MARK: Lists
 
     var siteLines: [EditorRows.SiteLine] {
@@ -278,12 +286,12 @@ final class EditorModel: ObservableObject {
 
     func rename(_ id: Int, _ name: String) {
         Timings.untilIdle("keystroke")
-        draft.renameSite(id, to: name)
+        edit { $0.renameSite(id, to: name) }
     }
 
     func update(_ id: Int, _ change: (inout SiteSource) -> Void) {
         Timings.untilIdle("keystroke")
-        draft.updateSite(id, change)
+        edit { $0.updateSite(id, change) }
     }
 
     func profile(of id: Int) -> String? {
@@ -295,9 +303,11 @@ final class EditorModel: ObservableObject {
     func setProfile(_ id: Int, _ directory: String?) {
         guard let catalog, let directory, let profile = catalog.profile(directory: directory) else { return }
         let fields = SiteAccount.fields(for: profile, in: catalog)
-        draft.updateSite(id) {
-            $0.account = fields.account
-            $0.profile = fields.profile
+        edit {
+            $0.updateSite(id) {
+                $0.account = fields.account
+                $0.profile = fields.profile
+            }
         }
     }
 
@@ -309,7 +319,7 @@ final class EditorModel: ObservableObject {
     func setMatch(_ id: Int, _ text: String) {
         Timings.untilIdle("keystroke")
         let prefixes = text.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        draft.updateSite(id) { $0.match = prefixes.isEmpty ? nil : prefixes }
+        edit { $0.updateSite(id) { $0.match = prefixes.isEmpty ? nil : prefixes } }
     }
 
     /// The default prefix a site matches while `match` is left out.
@@ -360,12 +370,12 @@ final class EditorModel: ObservableObject {
     }
 
     func setKey(_ row: Int, _ key: String) {
-        _ = draft.bind(key, to: draft.key(row)?.key.action, row: row)
+        edit { _ = $0.bind(key, to: $0.key(row)?.key.action, row: row) }
     }
 
     func setKind(_ row: Int, _ kind: ActionSource.Kind?) {
         guard let kind else {
-            draft.setAction(row, nil)
+            edit { $0.setAction(row, nil) }
             return
         }
         guard draft.key(row)?.key.action?.kind != kind else { return }
@@ -380,7 +390,7 @@ final class EditorModel: ObservableObject {
     func setValue(_ row: Int, _ value: String) {
         Timings.untilIdle("keystroke")
         guard let kind = draft.key(row)?.key.action?.kind else { return }
-        draft.setAction(row, ActionSource(kind, value))
+        edit { $0.setAction(row, ActionSource(kind, value)) }
     }
 
     func remove(key row: Int) {
