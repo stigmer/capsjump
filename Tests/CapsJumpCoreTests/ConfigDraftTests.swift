@@ -73,6 +73,10 @@ import Testing
         #expect(draft.keys.map(\.key.action) == [ActionSource(.site, "gh"), ActionSource(.site, "gh"), ActionSource(.site, "prs"), ActionSource(.window, "maximize")])
         #expect(draft.brokenLinks == ["github"])
         #expect(draft.issues.isEmpty)
+        // Saved, the new name's link is the one that works.
+        var saved = draft
+        saved.markSaved()
+        #expect(saved.brokenLinks.isEmpty)
         // Typed back, the link works again.
         draft.renameSite(github, to: "github")
         #expect(draft.brokenLinks.isEmpty)
@@ -80,6 +84,24 @@ import Testing
         draft.updateSite(github) { $0.name = "other"; $0.open = "https://github.com/x" }
         #expect(draft.site(github)?.site.name == "github")
         #expect(draft.site(github)?.site.open == "https://github.com/x")
+    }
+
+    @Test func aNewNameTypedThroughAnotherSitesNameLeavesItsKeysAlone() {
+        var draft = draft(Self.file)
+        let added = draft.addSite(SiteSource(index: 2, name: "", open: "https://github.com/x"))
+        for typed in ["p", "pr", "prs", "prsx", "prs", "pr", "p", ""] {
+            draft.renameSite(added, to: typed)
+        }
+        #expect(draft.key(draft.keys[2].id)?.key.action == ActionSource(.site, "prs"))
+        // Cleared and retyped, a site keeps its keys.
+        let github = draft.sites[0].id
+        draft.renameSite(github, to: "")
+        draft.renameSite(github, to: "hub")
+        #expect(draft.keysUsing(github) == ["g", "h"])
+        #expect(draft.keys[0].key.action == ActionSource(.site, "hub"))
+        // The site the keys point to still carries them along.
+        #expect(draft.renameSite(draft.sites[1].id, to: "pulls") == ["p"])
+        #expect(draft.keys[2].key.action == ActionSource(.site, "pulls"))
     }
 
     @Test func removingASiteSaysWhichKeysUsedIt() {

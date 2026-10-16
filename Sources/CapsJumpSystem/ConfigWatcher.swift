@@ -1,7 +1,8 @@
 // Calls back within about 100 ms of any change to the config file: an edit in place, an
 // editor's save-by-replace, a delete, or the file appearing later. FSEvents watches the
 // file's own path (and, for a symlinked file, the file it points to), so nothing else on
-// the disk wakes the app.
+// the disk wakes the app. The app's own watcher runs for its life; the editing window's
+// runs while the window is open and is stopped when it closes.
 
 import CoreServices
 import Foundation
@@ -40,6 +41,16 @@ public final class ConfigWatcher {
         FSEventStreamSetDispatchQueue(stream, .main)
         FSEventStreamStart(stream)
         self.stream = stream
+    }
+
+    /// Stops the callbacks; required before the watcher goes away, since the stream holds
+    /// it unretained.
+    public func stop() {
+        guard let stream else { return }
+        FSEventStreamStop(stream)
+        FSEventStreamInvalidate(stream)
+        FSEventStreamRelease(stream)
+        self.stream = nil
     }
 
     fileprivate func changed() {

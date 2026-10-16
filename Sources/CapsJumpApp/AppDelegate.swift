@@ -7,7 +7,8 @@
 // for want of one (or Add Current Tab does). A launch by a link never adds a second round
 // to the setup it asked for.
 // Quitting (from the menu bar too), logging out, SIGTERM and SIGINT all go through
-// `applicationWillTerminate`, which gives Caps Lock back.
+// `applicationWillTerminate`, which gives Caps Lock back. Only CapsJump's own Quit items
+// ask about unsaved edits in the config window first; a quit from outside never waits.
 
 import AppKit
 import CapsJumpChrome
@@ -28,6 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
     private var menu: StatusMenu?
     private let addTab = AddTab()
+    private let editor = Editor()
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         notifier.install()
@@ -43,8 +45,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        MainMenu.install()
-        let menu = StatusMenu(keys: keys) { [weak self] in self?.addCurrentTab() }
+        MainMenu.install(quitTarget: self, quit: #selector(quitAsked(_:)))
+        let menu = StatusMenu(keys: keys, actions: StatusMenu.Actions(
+            addCurrentTab: { [weak self] in self?.addCurrentTab() },
+            editConfig: { [weak self] in self?.editor.open() },
+            quit: { [weak self] in self?.quitAsked(nil) }
+        ))
         keys.onChange = { [weak menu] in menu?.refresh() }
         self.menu = menu
         keys.start()
@@ -122,6 +128,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 await setup()
             }
         }
+    }
+
+    /// CapsJump's own Quit: settles unsaved edits first.
+    @objc func quitAsked(_ sender: Any?) {
+        guard editor.mayQuit() else { return }
+        NSApp.terminate(nil)
     }
 
     private func addCurrentTab() {

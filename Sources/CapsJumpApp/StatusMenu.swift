@@ -1,9 +1,9 @@
 // The menu-bar icon: CapsJump's own mark (packaging/menubar.svg) as a template image,
 // so macOS colours it for the menu bar; dimmed while CapsJump doesn't have Caps Lock. Its
 // menu says what the keys are doing, pauses and resumes them, turns the tab in front of
-// Chrome into a site with a key (while Chrome runs), opens the config in an editor
-// (writing the starter file first when there is none), shows what `capsjump check`
-// would, switches starting at login, and quits.
+// Chrome into a site with a key (while Chrome runs), opens the config's own window, opens
+// the file itself in an editor (writing the starter file first when there is none), shows
+// what `capsjump check` would, switches starting at login, and quits.
 
 import AppKit
 import CapsJumpChrome
@@ -15,11 +15,18 @@ import ServiceManagement
 final class StatusMenu: NSObject, NSMenuDelegate {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let keys: Keys
-    private let addCurrentTab: @MainActor () -> Void
+    private let actions: Actions
 
-    init(keys: Keys, addCurrentTab: @escaping @MainActor () -> Void) {
+    /// What the menu's items ask of the app.
+    struct Actions {
+        let addCurrentTab: @MainActor () -> Void
+        let editConfig: @MainActor () -> Void
+        let quit: @MainActor () -> Void
+    }
+
+    init(keys: Keys, actions: Actions) {
         self.keys = keys
-        self.addCurrentTab = addCurrentTab
+        self.actions = actions
         super.init()
         let menu = NSMenu()
         // Items are enabled by `menuNeedsUpdate`, not by whether their action has a target.
@@ -63,6 +70,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         addTab.isEnabled = ChromeLauncher.runningChrome != nil
         menu.addItem(addTab)
         menu.addItem(action("Edit Config…", #selector(editConfig)))
+        menu.addItem(action("Open Config File", #selector(openConfigFile)))
         menu.addItem(action("Check Config", #selector(checkConfig)))
         menu.addItem(.separator())
         let login = action("Start at Login", #selector(toggleLogin))
@@ -92,11 +100,13 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         LoginItem.set(SMAppService.mainApp.status != .enabled)
     }
 
-    @objc private func quit() { NSApp.terminate(nil) }
+    @objc private func quit() { actions.quit() }
 
-    @objc private func addTab() { addCurrentTab() }
+    @objc private func addTab() { actions.addCurrentTab() }
 
-    @objc private func editConfig() { ConfigFileOpener.open() }
+    @objc private func editConfig() { actions.editConfig() }
+
+    @objc private func openConfigFile() { ConfigFileOpener.open() }
 
     @objc private func checkConfig() {
         let configPath = Paths.config()

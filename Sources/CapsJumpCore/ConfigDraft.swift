@@ -16,6 +16,8 @@ public struct ConfigDraft: Sendable, Equatable {
     public struct KeyRow: Sendable, Equatable, Identifiable {
         public let id: Int
         public var key: KeySource
+        /// The site row a site key jumps to, so it follows that row through renames.
+        public fileprivate(set) var siteRow: Int?
     }
 
     /// Where a problem shows: beside a field of a row, or above the rows.
@@ -39,14 +41,16 @@ public struct ConfigDraft: Sendable, Equatable {
     public private(set) var sites: [SiteRow] = []
     public private(set) var keys: [KeyRow] = []
     private var nextID = 0
-    /// The site names the draft started from, whose links work today.
-    private let startingNames: [String]
+    /// The site names in the file as last read or saved, whose links work today.
+    private var startingNames: [String]
 
     /// From a source read without problems; positions become the places problems name.
     public init(_ source: ConfigSource) {
         startingNames = source.sites.compactMap(\.name)
         for site in source.sites { addSite(site) }
-        for key in source.keys { keys.append(KeyRow(id: takeID(), key: key)) }
+        for key in source.keys {
+            keys.append(KeyRow(id: takeID(), key: key, siteRow: siteRow(for: key.action)))
+        }
     }
 
     public var source: ConfigSource {
@@ -103,6 +107,11 @@ public struct ConfigDraft: Sendable, Equatable {
         return startingNames.filter { !names.contains($0) }
     }
 
+    /// After a save: the names as they are now are the ones whose links work.
+    public mutating func markSaved() {
+        startingNames = sites.compactMap(\.site.name)
+    }
+
     // MARK: Sites
 
     @discardableResult
@@ -120,16 +129,18 @@ public struct ConfigDraft: Sendable, Equatable {
         sites[index].site.name = name
     }
 
-    /// Renames the site and every key that names it, so keys follow a name as it is
-    /// typed; returns those keys.
+    /// Renames the site and the keys that jump to it, so keys follow a name as it is
+    /// typed, cleared and retyped included; returns those keys. A key follows the site row
+    /// it was bound to, never a name, so a site whose name passes through another's while
+    /// typed never takes that site's keys.
     @discardableResult
     public mutating func renameSite(_ id: Int, to name: String) -> [String] {
         guard let index = sites.firstIndex(where: { $0.id == id }) else { return [] }
         let old = sites[index].site.name
         sites[index].site.name = name
-        guard let old, old != name else { return [] }
+        guard old != name else { return [] }
         var moved: [String] = []
-        for row in keys.indices where keys[row].key.action == ActionSource(.site, old) {
+        for row in keys.indices where keys[row].siteRow == id {
             keys[row].key.action = ActionSource(.site, name)
             moved.append(keys[row].key.key)
         }
@@ -138,16 +149,19 @@ public struct ConfigDraft: Sendable, Equatable {
 
     /// The keys that jump to the site.
     public func keysUsing(_ id: Int) -> [String] {
-        guard let name = site(id)?.site.name else { return [] }
-        return keys.filter { $0.key.action == ActionSource(.site, name) }.map(\.key.key)
+        keys.filter { $0.siteRow == id }.map(\.key.key)
     }
 
     /// Removes the site, and its keys only when asked; returns the keys that used it.
+    /// Keys kept name a site that is gone, which the rules then report.
     @discardableResult
     public mutating func removeSite(_ id: Int, removingKeys: Bool) -> [String] {
         let using = keysUsing(id)
-        if removingKeys, let name = site(id)?.site.name {
-            keys.removeAll { $0.key.action == ActionSource(.site, name) }
+        if removingKeys {
+            keys.removeAll { $0.siteRow == id }
+        }
+        for row in keys.indices where keys[row].siteRow == id {
+            keys[row].siteRow = nil
         }
         sites.removeAll { $0.id == id }
         return using
@@ -164,17 +178,27 @@ public struct ConfigDraft: Sendable, Equatable {
         }
         if let row, let index = keys.firstIndex(where: { $0.id == row }) {
             keys[index].key.key = key
-            keys[index].key.action = action
+            if keys[index].key.action != action {
+                keys[index].key.action = action
+                keys[index].siteRow = siteRow(for: action)
+            }
             return .bound(row: row)
         }
         let id = takeID()
-        keys.append(KeyRow(id: id, key: KeySource(index: keys.count, key: key, action: action)))
+        keys.append(KeyRow(id: id, key: KeySource(index: keys.count, key: key, action: action), siteRow: siteRow(for: action)))
         return .bound(row: id)
     }
 
     public mutating func setAction(_ row: Int, _ action: ActionSource?) {
-        guard let index = keys.firstIndex(where: { $0.id == row }) else { return }
+        guard let index = keys.firstIndex(where: { $0.id == row }), keys[index].key.action != action else { return }
         keys[index].key.action = action
+        keys[index].siteRow = siteRow(for: action)
+    }
+
+    /// The row a site action names: the first site of that name, as the rules resolve it.
+    private func siteRow(for action: ActionSource?) -> Int? {
+        guard let action, action.kind == .site else { return nil }
+        return sites.first { $0.site.name == action.value }?.id
     }
 
     public mutating func removeKey(_ row: Int) {

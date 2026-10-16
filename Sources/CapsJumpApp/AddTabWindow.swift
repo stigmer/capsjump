@@ -93,31 +93,15 @@ final class AddTabModel: ObservableObject {
         guard case let .newSite(id) = subject else { return [] }
         return draft.issues.compactMap { issue in
             guard case let .site(row, field) = issue.spot, row == id, fields.contains(field) else { return nil }
-            // The file's wording names the fields; the window has an account picker instead.
-            return field == .accountOrProfile ? "Pick the account this tab is in." : Self.formWording(issue.message)
+            return FormWording.text(issue.message)
         }
     }
 
     var keyProblems: [String] {
         draft.issues.compactMap { issue in
             guard case let .key(row, _) = issue.spot, row == keyRow else { return nil }
-            return Self.formWording(issue.message)
+            return FormWording.text(issue.message)
         }
-    }
-
-    /// A rule's message as a form shows it: `code` quoted as “code”.
-    static func formWording(_ message: String) -> String {
-        var quoted = ""
-        var open = true
-        for character in message {
-            if character == "`" {
-                quoted.append(open ? "“" : "”")
-                open.toggle()
-            } else {
-                quoted.append(character)
-            }
-        }
-        return quoted
     }
 
     /// Where the site lands, once it is valid: "Profile 1, windows labelled “Alex (acme.dev)”".

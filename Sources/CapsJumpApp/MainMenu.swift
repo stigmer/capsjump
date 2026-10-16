@@ -7,12 +7,15 @@ import AppKit
 
 @MainActor
 enum MainMenu {
-    static func install() {
+    /// `quit` on `quitTarget` is CapsJump's own Quit, which asks about unsaved edits.
+    static func install(quitTarget: AnyObject, quit: Selector) {
+        let quitItem = item("Quit CapsJump", quit, "q")
+        quitItem.target = quitTarget
         let bar = NSMenu()
         bar.addItem(submenu("CapsJump", [
             item("Hide CapsJump", #selector(NSApplication.hide(_:)), "h"),
             .separator(),
-            item("Quit CapsJump", #selector(NSApplication.terminate(_:)), "q"),
+            quitItem,
         ]))
         bar.addItem(submenu("Edit", [
             item("Undo", Selector(("undo:")), "z"),

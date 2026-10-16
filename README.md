@@ -31,6 +31,15 @@ capsjump init
 
 ## Configure
 
+The quickest way: open a page in Chrome and pick **Add Current Tab…** from CapsJump's menu, or open **Edit Config…** for a window with every site and key. Each field there is checked as you type, by the same rules `capsjump check` uses, and saving applies at once.
+
+<p align="center">
+  <img src="site/editor-sites.png" width="420" alt="Edit Config…, Sites tab: a site's name, its Chrome account picked from a list, and the page it opens">
+  <img src="site/editor-keys.png" width="420" alt="Edit Config…, Keys tab: each key with what it does, picked from lists">
+</p>
+
+Underneath it's one small file, `~/.capsjump.yaml`, which you can also edit by hand:
+
 ```yaml
 sites:
 - name: github
@@ -72,7 +81,7 @@ While Caps Lock is held, a key with nothing bound does nothing. A file with no `
 - `open`: the page opened when no tab matches.
 - `match`: URL prefixes without the scheme, most specific first. A tab matches when its URL (without `https://` and `www.`) starts with one. The default is the `open` URL's host, e.g. `claude.ai/`.
 
-This is the layout CapsJump itself writes, and a file in it never loses anything when CapsJump saves it. Edits apply as soon as the file is saved. Unknown keys are refused, so a typo is reported instead of being ignored. A broken edit keeps the keys you had and says what is wrong in a notification, and `capsjump check` lists every problem with its line.
+This is the layout CapsJump itself writes, and a file in it never loses anything when CapsJump saves it. A file with comments or a layout of its own is rewritten only after CapsJump asks. Edits apply as soon as the file is saved. Unknown keys are refused, so a typo is reported instead of being ignored. A broken edit keeps the keys you had and says what is wrong in a notification, and `capsjump check` lists every problem with its line.
 
 ## How Caps Lock becomes CapsJump's key
 
@@ -86,10 +95,11 @@ CapsJump puts its mark in the menu bar, dimmed while it doesn't have Caps Lock. 
 
 - **Pause Keys / Resume Keys**: gives Caps Lock back, or takes it again. A pause lasts until you resume, across restarts.
 - **Add Current Tab…**: turns the tab in front of Chrome into a site with a key. The page and its account come filled in; pick a key, click Add, and Caps Lock with that key lands there from then on. If the page is already one of your sites, it offers that site another key instead.
-- **Edit Config…**: opens `~/.capsjump.yaml` in your editor, writing a starter file first if there is none. Saving applies the change at once.
-- **Check Config**: shows what `capsjump check` shows.
+- **Edit Config…**: a window with a Sites tab and a Keys tab. Accounts, apps, sites and window positions are picked from lists, problems show under their field as you type, and Save (⌘S) applies at once. Rename a site and its keys come along. Close or quit with unsaved changes and it asks first.
+- **Open Config File**: opens `~/.capsjump.yaml` in your editor, writing a starter file first if there is none. Saving applies the change at once.
+- **Check Config**: shows what `capsjump check` shows, with a button to Edit Config….
 - **Start at Login**: whether CapsJump starts when you log in.
-- **Quit CapsJump**: gives Caps Lock back. It starts again at the next login, unless Start at Login is off.
+- **Quit CapsJump**: gives Caps Lock back. It starts again at the next login, unless Start at Login is off. Quitting from outside (`capsjump quit`, Homebrew, logging out) never waits on unsaved changes in the window; it drops them, because Caps Lock coming back matters more.
 
 From a terminal: `capsjump pause`, `capsjump resume` and `capsjump quit`. To remove it: `brew uninstall --cask capsjump`, which quits it first.
 
