@@ -14,6 +14,9 @@ cask "capsjump" do
   app "CapsJump.app"
   binary "#{appdir}/CapsJump.app/Contents/Helpers/capsjump"
 
+  # Quitting gives Caps Lock back; an app removed while running would leave it mapped.
+  uninstall quit: "ai.stigmer.capsjump"
+
   caveats <<~EOS
     Grant CapsJump its permissions once (they survive upgrades):
       capsjump setup

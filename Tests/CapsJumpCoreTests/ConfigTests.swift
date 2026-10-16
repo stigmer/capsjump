@@ -140,6 +140,11 @@ import Testing
         #expect(text.contains("#   kim@initech.com  (Profile 26)"))
         let config = try ConfigParser.parse(text)
         #expect(config.sites.first?.account == "alex@acme.dev")
+        #expect(config.keys == [
+            KeyBinding(key: "left", action: .window(.leftHalf)),
+            KeyBinding(key: "right", action: .window(.rightHalf)),
+            KeyBinding(key: "f", action: .window(.maximize)),
+        ])
         #expect(try ConfigParser.parse(StarterConfig.render(catalog: nil)).sites.count == 1)
     }
 }

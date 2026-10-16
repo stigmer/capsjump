@@ -1,6 +1,7 @@
 // The capsjump command: writes and checks the config, lists Chrome's profiles, and
 // hands links to CapsJump.app. It never talks to Chrome itself: the app holds the
-// permissions, so `jump` and `setup` go through macOS's link handling to it.
+// permissions, so `jump` and `setup` go through macOS's link handling to it. `check` also
+// reads whether the app runs and whether Caps Lock is mapped, the two things the keys need.
 
 import AppKit
 import ArgumentParser
@@ -12,8 +13,8 @@ import CapsJumpCore
 struct CapsJump: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "capsjump",
-        abstract: "Bring a site's tab forward in the right Chrome account, or open it there.",
-        discussion: "Sites live in ~/.capsjump.yaml; each is the link capsjump://<name>.",
+        abstract: "Shortcuts built around Caps Lock: apps, Chrome sites in the right account, windows and links.",
+        discussion: "Keys and sites live in ~/.capsjump.yaml. Hold Caps Lock and press a key; each site is also the link capsjump://<name>.",
         version: Version.current,
         subcommands: [Init.self, Profiles.self, Check.self, Jump.self, Setup.self, Logs.self, VersionCommand.self]
     )
@@ -54,7 +55,7 @@ struct Profiles: ParsableCommand {
 }
 
 struct Check: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Validate the config, resolve every site, and confirm CapsJump.app receives the links.")
+    static let configuration = CommandConfiguration(abstract: "Validate the config, resolve every site and key, and confirm CapsJump.app runs them.")
 
     func run() throws {
         let configPath = Paths.config()
@@ -63,9 +64,11 @@ struct Check: ParsableCommand {
             configText: try? String(contentsOf: configPath, encoding: .utf8),
             configPath: configPath.path,
             localState: FileManager.default.contents(atPath: statePath.path),
-            localStatePath: statePath.path
+            localStatePath: statePath.path,
+            lookup: Lookup.thisMac
         )
         findings.append(LinkHandler.finding())
+        findings += KeyState.findings(config: try? Inputs.config())
         for finding in findings {
             print("\(finding.level.rawValue.padding(toLength: 8, withPad: " ", startingAt: 0))\(finding.text)")
         }

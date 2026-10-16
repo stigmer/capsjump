@@ -1,10 +1,12 @@
-// Asks for all three permissions at once, attributed to CapsJump itself, then shows
-// one alert with each permission's state. Automation can be asked for only while Chrome
-// runs, so setup starts Chrome first when it is closed.
+// Asks for all three permissions at once, attributed to CapsJump itself, registers the
+// app to start at login so the keys are there from the moment the Mac starts, then shows
+// one alert with each one's state. Automation can be asked for only while Chrome runs, so
+// setup starts Chrome first when it is closed.
 
 import AppKit
 import CapsJumpChrome
 import CapsJumpCore
+import ServiceManagement
 
 @MainActor
 enum Setup {
@@ -27,10 +29,27 @@ enum Setup {
             chromeProblem = error.description
         }
         let notifications = await notifier.request()
-        show(accessibility: accessibility, automation: automation, chromeProblem: chromeProblem, notifications: notifications)
+        let login = startAtLogin()
+        show(accessibility: accessibility, automation: automation, chromeProblem: chromeProblem, notifications: notifications, login: login)
     }
 
-    private static func show(accessibility: PermissionState, automation: PermissionState, chromeProblem: String?, notifications: PermissionState) {
+    /// Registers the app as a login item; turned off again in System Settings › General ›
+    /// Login Items & Extensions.
+    private static func startAtLogin() -> SMAppService.Status {
+        let service = SMAppService.mainApp
+        if service.status != .enabled {
+            try? service.register()
+        }
+        return service.status
+    }
+
+    private static func show(
+        accessibility: PermissionState,
+        automation: PermissionState,
+        chromeProblem: String?,
+        notifications: PermissionState,
+        login: SMAppService.Status
+    ) {
         let alert = NSAlert()
         let ready = accessibility == .granted && automation == .granted
         alert.messageText = ready ? "CapsJump is ready" : "CapsJump needs a permission"
@@ -38,12 +57,16 @@ enum Setup {
             "Accessibility: \(accessibility.rawValue)",
             "Automation of Chrome: \(chromeProblem ?? automation.rawValue)",
             "Notifications: \(notifications.rawValue)",
+            "Starts at login: \(login == .enabled ? "yes" : login == .requiresApproval ? "waiting for approval" : "no")",
         ]
         if accessibility != .granted {
             lines.append("\nTurn CapsJump on under Privacy & Security › Accessibility.")
         }
         if automation == .denied {
             lines.append("\nTurn on Google Chrome under CapsJump in Privacy & Security › Automation.")
+        }
+        if login == .requiresApproval {
+            lines.append("\nTurn CapsJump on under General › Login Items & Extensions.")
         }
         if !ready {
             lines.append("\nThen run `capsjump setup` again to confirm.")
