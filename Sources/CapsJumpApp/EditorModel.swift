@@ -21,7 +21,9 @@ final class EditorModel: ObservableObject {
     @Published private(set) var state = State.editing
     /// The file changed elsewhere while this window had edits of its own.
     @Published private(set) var changedOutside = false
-    @Published var tab = 0
+    @Published var tab = 0 {
+        didSet { Timings.untilIdle("switch") }
+    }
 
     let file = ConfigFile()
     let catalog = try? Inputs.profiles()
@@ -143,6 +145,7 @@ final class EditorModel: ObservableObject {
     }
 
     func rename(_ id: Int, _ name: String) {
+        Timings.untilIdle("keystroke")
         draft.renameSite(id, to: name)
     }
 
@@ -211,6 +214,7 @@ final class EditorModel: ObservableObject {
     }
 
     func setValue(_ row: Int, _ value: String) {
+        Timings.untilIdle("keystroke")
         guard let kind = draft.key(row)?.key.action?.kind else { return }
         draft.setAction(row, ActionSource(kind, value))
     }

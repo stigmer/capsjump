@@ -16,6 +16,7 @@ final class Editor: NSObject, NSWindowDelegate {
     private var model: EditorModel?
 
     func open() {
+        Timings.untilIdle("open")
         if let window {
             AppWindows.show(window)
             return
