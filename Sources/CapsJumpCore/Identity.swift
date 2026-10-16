@@ -1,19 +1,19 @@
-// The names Nightcrawler is known by to macOS and the paths it reads. The bundle
+// The names CapsJump is known by to macOS and the paths it reads. The bundle
 // identifier is what macOS records Accessibility and Automation grants against, so it
-// never changes after the first release.
+// was fixed at CapsJump's first release (0.2.0) and never changes after it.
 
 import Foundation
 
 public enum Identity {
-    public static let bundleID = "ai.stigmer.nightcrawler"
-    public static let scheme = "nightcrawler"
+    public static let bundleID = "ai.stigmer.capsjump"
+    public static let scheme = "capsjump"
     public static let chromeBundleID = "com.google.Chrome"
 }
 
 public enum Paths {
-    /// `~/.nightcrawler.yaml`, beside karayaml's `~/.kara.yaml` so both dotfiles travel together.
+    /// `~/.capsjump.yaml`: a dotfile in the home folder, so it travels with the others.
     public static func config(home: URL = FileManager.default.homeDirectoryForCurrentUser) -> URL {
-        home.appendingPathComponent(".nightcrawler.yaml")
+        home.appendingPathComponent(".capsjump.yaml")
     }
 
     /// Chrome's `Local State`, which maps each profile folder to its account.

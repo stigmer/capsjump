@@ -1,4 +1,4 @@
-// The file `nightcrawler init` writes: one commented example site, and this Mac's Chrome
+// The file `capsjump init` writes: one commented example site, and this Mac's Chrome
 // accounts listed as comments so the account to type is in front of the reader.
 
 import Foundation
@@ -6,7 +6,7 @@ import Foundation
 public enum StarterConfig {
     public static func render(catalog: ProfileCatalog?) -> String {
         var lines = [
-            "# Nightcrawler: each site is a link, nightcrawler://<name>, that brings forward the",
+            "# CapsJump: each site is a link, capsjump://<name>, that brings forward the",
             "# site's tab in its Chrome account or opens the site there.",
             "#",
             "#   name     the link's name: lower-case letters, digits and hyphens",
@@ -16,7 +16,7 @@ public enum StarterConfig {
             "#   match    optional: URL prefixes without the scheme, most specific first;",
             "#            defaults to the open URL's host, e.g. github.com/",
             "#",
-            "# This file is read on every jump; `nightcrawler check` validates it.",
+            "# This file is read on every jump; `capsjump check` validates it.",
         ]
         if let catalog {
             lines.append("#")

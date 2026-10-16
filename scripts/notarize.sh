@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# Notarizes a signed Nightcrawler.app, staples the ticket to it, proves the result the
+# Notarizes a signed CapsJump.app, staples the ticket to it, proves the result the
 # way Gatekeeper will judge it, and zips the stapled app for release. A zip can't carry a
 # ticket, so the app inside it does: submit a zip of the app, staple the app, zip again.
 # The order follows github.com/stigmer/stigmer's client-apps/desktop/scripts/
 # macos-notarize-dmg.sh.
 #
-# Usage: scripts/notarize.sh <Nightcrawler.app> <out.zip>
+# Usage: scripts/notarize.sh <CapsJump.app> <out.zip>
 #
 # Environment:
 #   APPLE_API_KEY          App Store Connect API key id
@@ -23,7 +23,7 @@ fail() {
 }
 
 [ "$(uname -s)" = Darwin ] || fail "notarytool is macOS-only"
-[ $# -eq 2 ] || { echo "usage: notarize.sh <Nightcrawler.app> <out.zip>" >&2; exit 2; }
+[ $# -eq 2 ] || { echo "usage: notarize.sh <CapsJump.app> <out.zip>" >&2; exit 2; }
 APP="$1"
 ZIP="$2"
 [ -d "$APP" ] || fail "app bundle not found: $APP"
@@ -33,13 +33,13 @@ done
 [ -f "$APPLE_API_KEY_PATH" ] || fail "notarization key not found: $APPLE_API_KEY_PATH"
 
 # Both executables must carry the identity before anything is uploaded.
-for exe in "$APP/Contents/MacOS/Nightcrawler" "$APP/Contents/Helpers/nightcrawler"; do
+for exe in "$APP/Contents/MacOS/CapsJump" "$APP/Contents/Helpers/capsjump"; do
   codesign -dvv "$exe" 2>&1 | grep -qF "Authority=$APPLE_SIGNING_IDENTITY" \
     || fail "$exe is not signed by \"$APPLE_SIGNING_IDENTITY\""
 done
 
 notary_auth=(--key "$APPLE_API_KEY_PATH" --key-id "$APPLE_API_KEY" --issuer "$APPLE_API_ISSUER")
-SUBMISSION="$(mktemp -d)/Nightcrawler-submission.zip"
+SUBMISSION="$(mktemp -d)/CapsJump-submission.zip"
 ditto -c -k --keepParent "$APP" "$SUBMISSION"
 
 echo "notarize: submitting (timeout ${NOTARY_TIMEOUT:-30m})"

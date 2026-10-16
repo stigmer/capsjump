@@ -1,10 +1,10 @@
-// The two permissions a jump needs, read and asked for on Nightcrawler's own behalf:
+// The two permissions a jump needs, read and asked for on CapsJump's own behalf:
 // Accessibility (window titles, raising a window) and Automation of Chrome (tabs).
 
 import AppKit
 import ApplicationServices
 import Carbon
-import NightcrawlerCore
+import CapsJumpCore
 
 public enum PermissionState: String, Sendable {
     case granted
@@ -22,7 +22,7 @@ public enum Permissions {
         return AXIsProcessTrustedWithOptions(options) ? .granted : .denied
     }
 
-    /// Whether Nightcrawler may send Chrome Apple Events; with `ask`, macOS shows its
+    /// Whether CapsJump may send Chrome Apple Events; with `ask`, macOS shows its
     /// request without any command reaching Chrome. Blocks while the request is up, so it
     /// runs off the main thread.
     public static func automation(ask: Bool) async -> PermissionState {

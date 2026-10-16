@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Nightcrawler's icon: a faded browser window jumps, along a dotted arc, to a bright one.
+<!-- CapsJump's icon: a faded browser window jumps, along a dotted arc, to a bright one.
      The source of packaging/AppIcon.icns; after changing it, run scripts/make-icon.sh.
      The artwork sits on Apple's macOS icon grid: an 824-unit rounded square centred on a
      1024 canvas, drawn here at 256 units and scaled onto that grid. -->

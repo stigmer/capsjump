@@ -4,7 +4,7 @@
 
 import Foundation
 import Testing
-@testable import NightcrawlerCore
+@testable import CapsJumpCore
 
 let localState = """
 {"profile": {
@@ -105,11 +105,11 @@ func site(_ name: String = "s", account: String? = nil, profile: String? = nil, 
     }
 
     @Test func linkParsing() throws {
-        #expect(try Link.parse(URL(string: "nightcrawler://github")!) == .site("github"))
-        #expect(try Link.parse(URL(string: "NightCrawler://GitHub/")!) == .site("github"))
+        #expect(try Link.parse(URL(string: "capsjump://github")!) == .site("github"))
+        #expect(try Link.parse(URL(string: "CAPSJUMP://GitHub/")!) == .site("github"))
         #expect(try Link.parse(Link.setupURL) == .setup)
-        #expect(throws: Link.ParseError.unknownAction("_x")) { try Link.parse(URL(string: "nightcrawler://_x")!) }
+        #expect(throws: Link.ParseError.unknownAction("_x")) { try Link.parse(URL(string: "capsjump://_x")!) }
         #expect(throws: Link.ParseError.self) { try Link.parse(URL(string: "tabjump://github")!) }
-        #expect(throws: Link.ParseError.self) { try Link.parse(URL(string: "nightcrawler:")!) }
+        #expect(throws: Link.ParseError.self) { try Link.parse(URL(string: "capsjump:")!) }
     }
 }

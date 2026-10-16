@@ -1,31 +1,31 @@
-// The CLI's helpers: which app receives nightcrawler:// links, the version of the bundle
+// The CLI's helpers: which app receives capsjump:// links, the version of the bundle
 // this binary ships in, and plain-text tables.
 
 import AppKit
 import ArgumentParser
 import Foundation
-import NightcrawlerCore
+import CapsJumpCore
 
 enum LinkHandler {
-    /// The app macOS hands nightcrawler:// links to, or nil when none claims them.
+    /// The app macOS hands capsjump:// links to, or nil when none claims them.
     static var app: URL? {
         Link.url(forSite: "check").flatMap { NSWorkspace.shared.urlForApplication(toOpen: $0) }
     }
 
     static func finding() -> Finding {
         guard let app else {
-            return Finding(.problem, "no app receives \(Identity.scheme):// links; install Nightcrawler.app and open it once")
+            return Finding(.problem, "no app receives \(Identity.scheme):// links; install CapsJump.app and open it once")
         }
         let id = Bundle(url: app)?.bundleIdentifier ?? "unknown"
         guard id == Identity.bundleID else {
-            return Finding(.problem, "\(Identity.scheme):// links go to \(app.path) (\(id)), not Nightcrawler")
+            return Finding(.problem, "\(Identity.scheme):// links go to \(app.path) (\(id)), not CapsJump")
         }
         return Finding(.ok, "\(Identity.scheme):// links go to \(app.path)")
     }
 
     static func open(_ url: URL) throws {
         guard app != nil else {
-            throw ValidationError("no app receives \(Identity.scheme):// links; install Nightcrawler.app and open it once")
+            throw ValidationError("no app receives \(Identity.scheme):// links; install CapsJump.app and open it once")
         }
         guard NSWorkspace.shared.open(url) else {
             throw ValidationError("macOS did not open \(url.absoluteString)")
@@ -34,13 +34,13 @@ enum LinkHandler {
 }
 
 enum Version {
-    /// The version in the Info.plist of the Nightcrawler.app this binary sits in
-    /// (Contents/Helpers/nightcrawler), following Homebrew's symlink to it.
+    /// The version in the Info.plist of the CapsJump.app this binary sits in
+    /// (Contents/Helpers/capsjump), following Homebrew's symlink to it.
     static var current: String {
         guard let executable = Bundle.main.executableURL?.resolvingSymlinksInPath() else { return "dev" }
         let plist = executable.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("Info.plist")
         guard let info = NSDictionary(contentsOf: plist), let version = info["CFBundleShortVersionString"] as? String else {
-            return "dev (not inside Nightcrawler.app)"
+            return "dev (not inside CapsJump.app)"
         }
         return version
     }

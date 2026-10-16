@@ -1,18 +1,18 @@
 <p align="center">
-  <img src="packaging/icon.svg" width="160" alt="Nightcrawler icon: a browser window jumping to another">
+  <img src="packaging/icon.svg" width="160" alt="CapsJump icon: a browser window jumping to another">
 </p>
 
-<h1 align="center">Nightcrawler</h1>
+<h1 align="center">CapsJump</h1>
 
 <p align="center">Jump to a site's tab in the right Chrome account, or open it there.</p>
 
 <p align="center">
-  <a href="https://github.com/stigmer/nightcrawler/releases/latest"><img src="https://img.shields.io/github/v/release/stigmer/nightcrawler" alt="Latest release"></a>
+  <a href="https://github.com/stigmer/capsjump/releases/latest"><img src="https://img.shields.io/github/v/release/stigmer/capsjump" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/macOS-13%2B-1B1F3B" alt="macOS 13 or later">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-8C7CFF" alt="MIT license"></a>
 </p>
 
-You use Chrome with several accounts (work, a client, personal), each in its own profile. You want one key to bring up GitHub in the work account: the GitHub tab already open there if there is one, otherwise a new one in that account's window. Nightcrawler does that from a link, `nightcrawler://github`, so any launcher that can open a link (karayaml, Raycast, Alfred, a Shortcut, `open` in a terminal) gets it.
+You use Chrome with several accounts (work, a client, personal), each in its own profile. You want one key to bring up GitHub in the work account: the GitHub tab already open there if there is one, otherwise a new one in that account's window. CapsJump does that from a link, `capsjump://github`, so any launcher that can open a link (karayaml, Raycast, Alfred, a Shortcut, `open` in a terminal) gets it.
 
 Named after the X-Men character who teleports.
 
@@ -20,14 +20,14 @@ Named after the X-Men character who teleports.
 
 ```sh
 brew trust stigmer/tap
-brew install --cask stigmer/tap/nightcrawler
-nightcrawler setup
-nightcrawler init
+brew install --cask stigmer/tap/capsjump
+capsjump setup
+capsjump init
 ```
 
 - `brew trust` is asked once per machine: Homebrew 7 loads casks only from taps you trust.
-- `nightcrawler setup` asks for the app's permissions once; upgrades keep them.
-- `nightcrawler init` writes `~/.nightcrawler.yaml`, listing your Chrome accounts. Edit it, then run `nightcrawler check`.
+- `capsjump setup` asks for the app's permissions once; upgrades keep them.
+- `capsjump init` writes `~/.capsjump.yaml`, listing your Chrome accounts. Edit it, then run `capsjump check`.
 
 ## Configure
 
@@ -43,7 +43,7 @@ sites:
 ```
 
 - `name`: the link's name, lower-case letters, digits and hyphens.
-- `account`: the account's email, or the profile's name for a profile with no signed-in account. `nightcrawler profiles` lists both.
+- `account`: the account's email, or the profile's name for a profile with no signed-in account. `capsjump profiles` lists both.
 - `profile`: a profile folder (`Profile 26`) instead of, or as well as, `account`, for when two profiles share an account or a name.
 - `open`: the page opened when no tab matches.
 - `match`: URL prefixes without the scheme, most specific first. A tab matches when its URL (without `https://` and `www.`) starts with one. The default is the `open` URL's host, e.g. `claude.ai/`.
@@ -56,10 +56,10 @@ With [karayaml](https://github.com/swarupdonepudi/karayaml) 0.0.20 or later:
 
 ```yaml
 - key: g
-  url: nightcrawler://github
+  url: capsjump://github
 ```
 
-From anywhere else: `open nightcrawler://github`, or `nightcrawler jump github`.
+From anywhere else: `open capsjump://github`, or `capsjump jump github`.
 
 ## What a jump does
 
@@ -67,13 +67,13 @@ From anywhere else: `open nightcrawler://github`, or `nightcrawler jump github`.
 2. If Chrome is running, looks through that profile's windows, front to back, for a tab whose URL matches the first `match` prefix, then the next, preferring a window's active tab. It brings that tab and its window to the front.
 3. Otherwise it opens the `open` page in that profile: a new tab in its window, or a new window, starting Chrome if needed.
 
-Chrome's scripting interface doesn't say which profile a window belongs to, but its window title does (it ends in `– <profile label>`), and macOS Accessibility reads that title. Nightcrawler pairs each Chrome window with its title, so a window's profile is known without guessing. Accessibility lists only the windows on the current Space, so Nightcrawler sees only those: from a full-screen window or another desktop, a site whose tab is in a window elsewhere gets a new tab instead of being focused. Keep Chrome's windows on one desktop and out of full screen for jumps to find them. If two profiles carry the same label, their windows can't be told apart, so their sites always open a new tab; `nightcrawler check` says when that applies.
+Chrome's scripting interface doesn't say which profile a window belongs to, but its window title does (it ends in `– <profile label>`), and macOS Accessibility reads that title. CapsJump pairs each Chrome window with its title, so a window's profile is known without guessing. Accessibility lists only the windows on the current Space, so CapsJump sees only those: from a full-screen window or another desktop, a site whose tab is in a window elsewhere gets a new tab instead of being focused. Keep Chrome's windows on one desktop and out of full screen for jumps to find them. If two profiles carry the same label, their windows can't be told apart, so their sites always open a new tab; `capsjump check` says when that applies.
 
 If a permission is missing, the jump fails with a notification. It never opens a duplicate tab instead.
 
 ## Permissions
 
-Nightcrawler asks for three, all at once, with `nightcrawler setup`, or by itself the first time a jump finds one missing:
+CapsJump asks for three, all at once, with `capsjump setup`, or by itself the first time a jump finds one missing:
 
 - **Accessibility**, to read Chrome's window titles and raise a window.
 - **Automation of Google Chrome**, to read and switch tabs.
@@ -85,15 +85,15 @@ Releases are signed with a Developer ID and notarized, so macOS keeps these gran
 
 | Command | |
 | --- | --- |
-| `nightcrawler init` | Write a starter `~/.nightcrawler.yaml`. Never overwrites. |
-| `nightcrawler profiles` | List Chrome's profiles: folder, account, name and window label. |
-| `nightcrawler check` | Validate the file, resolve every site, and confirm Nightcrawler.app receives the links. Exits non-zero on a problem. |
-| `nightcrawler jump <site>` | Jump, exactly as the link does. |
-| `nightcrawler setup` | Ask for the permissions and show each one's state. |
-| `nightcrawler logs [--last 2h]` | Show recent jumps and failures from the macOS log. |
-| `nightcrawler version` | Print the version. |
+| `capsjump init` | Write a starter `~/.capsjump.yaml`. Never overwrites. |
+| `capsjump profiles` | List Chrome's profiles: folder, account, name and window label. |
+| `capsjump check` | Validate the file, resolve every site, and confirm CapsJump.app receives the links. Exits non-zero on a problem. |
+| `capsjump jump <site>` | Jump, exactly as the link does. |
+| `capsjump setup` | Ask for the permissions and show each one's state. |
+| `capsjump logs [--last 2h]` | Show recent jumps and failures from the macOS log. |
+| `capsjump version` | Print the version. |
 
-Nightcrawler stays running in the background after its first jump (no Dock icon or menu), so later jumps are immediate.
+CapsJump stays running in the background after its first jump (no Dock icon or menu), so later jumps are immediate.
 
 ## Develop
 
@@ -101,18 +101,18 @@ Requires Xcode 16 or later (Swift 6).
 
 ```sh
 make test            # unit tests (Swift Testing)
-make app             # .build/bundle/Nightcrawler.app, universal, signed ad hoc
+make app             # .build/bundle/CapsJump.app, universal, signed ad hoc
 make install-local   # install that build to ~/Applications and the CLI to ~/.local/bin
 ```
 
-A local build is signed ad hoc, and macOS ties its permissions to that exact build, so every rebuild asks for them again: `make install-local` clears the old entries, then run `nightcrawler setup`. Released builds don't have this problem.
+A local build is signed ad hoc, and macOS ties its permissions to that exact build, so every rebuild asks for them again: `make install-local` clears the old entries, then run `capsjump setup`. Released builds don't have this problem.
 
 Layout:
 
-- `Sources/NightcrawlerCore`: all the rules (config, Chrome profiles, links, window pairing, choosing a tab), with no system calls. Every test is here.
-- `Sources/NightcrawlerChrome`: the live side: Apple Events to Chrome, Accessibility, launching Chrome, permissions.
-- `Sources/NightcrawlerApp`: the background app that receives `nightcrawler://` links.
-- `Sources/nightcrawler`: the CLI.
+- `Sources/CapsJumpCore`: all the rules (config, Chrome profiles, links, window pairing, choosing a tab), with no system calls. Every test is here.
+- `Sources/CapsJumpChrome`: the live side: Apple Events to Chrome, Accessibility, launching Chrome, permissions.
+- `Sources/CapsJumpApp`: the background app that receives `capsjump://` links.
+- `Sources/capsjump`: the CLI.
 - `packaging/icon.svg` is the icon's source; `scripts/make-icon.sh` renders it into `packaging/AppIcon.icns`.
 - `scripts/bundle.sh` builds the app bundle; `scripts/notarize.sh` and `scripts/macos-import-signing-keychain.sh` are the release's signing steps.
 

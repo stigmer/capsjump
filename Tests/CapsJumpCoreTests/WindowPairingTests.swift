@@ -4,7 +4,7 @@
 
 import Foundation
 import Testing
-@testable import NightcrawlerCore
+@testable import CapsJumpCore
 
 private func title(_ page: String, _ label: String) -> String {
     "\(page) - Google Chrome \u{2013} \(label)"

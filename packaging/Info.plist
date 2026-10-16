@@ -5,17 +5,17 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Nightcrawler</string>
+	<string>CapsJump</string>
 	<key>CFBundleExecutable</key>
-	<string>Nightcrawler</string>
+	<string>CapsJump</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>ai.stigmer.nightcrawler</string>
+	<string>ai.stigmer.capsjump</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Nightcrawler</string>
+	<string>CapsJump</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -26,10 +26,10 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>ai.stigmer.nightcrawler</string>
+			<string>ai.stigmer.capsjump</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>nightcrawler</string>
+				<string>capsjump</string>
 			</array>
 		</dict>
 	</array>
@@ -40,7 +40,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Nightcrawler reads Chrome's tabs to bring forward the one a link names.</string>
+	<string>CapsJump reads Chrome's tabs to bring forward the one a link names.</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 </dict>

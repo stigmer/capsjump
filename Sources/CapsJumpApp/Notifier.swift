@@ -3,7 +3,7 @@
 // and the unified log still carries every failure.
 
 import AppKit
-import NightcrawlerChrome
+import CapsJumpChrome
 import UserNotifications
 
 @MainActor
@@ -37,12 +37,12 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     func post(_ message: String) {
         guard let center else { return }
         let content = UNMutableNotificationContent()
-        content.title = "Nightcrawler"
+        content.title = "CapsJump"
         content.body = message
         center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
     }
 
-    /// Shows notifications even while a Nightcrawler alert is in front.
+    /// Shows notifications even while a CapsJump alert is in front.
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification

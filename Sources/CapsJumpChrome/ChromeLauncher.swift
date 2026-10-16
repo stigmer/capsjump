@@ -4,7 +4,7 @@
 // starts Chrome when none runs. Done through NSWorkspace, so no process is spawned.
 
 import AppKit
-import NightcrawlerCore
+import CapsJumpCore
 
 @MainActor
 public enum ChromeLauncher {

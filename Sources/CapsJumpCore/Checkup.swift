@@ -1,4 +1,4 @@
-// What `nightcrawler check` reports about the config and Chrome's profiles: every problem,
+// What `capsjump check` reports about the config and Chrome's profiles: every problem,
 // and for each site the profile and window label it resolves to.
 
 import Foundation
@@ -23,7 +23,7 @@ public enum Checkup {
     /// `configText` and `localState` are nil when their files are missing.
     public static func run(configText: String?, configPath: String, localState: Data?, localStatePath: String) -> [Finding] {
         guard let configText else {
-            return [Finding(.problem, "no config at \(configPath); run `nightcrawler init`")]
+            return [Finding(.problem, "no config at \(configPath); run `capsjump init`")]
         }
         let config: Config
         do {

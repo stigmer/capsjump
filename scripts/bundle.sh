@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Builds Nightcrawler.app: a universal (arm64 + x86_64) release build of the app and the
+# Builds CapsJump.app: a universal (arm64 + x86_64) release build of the app and the
 # CLI, put into one bundle and signed.
 #
-#   Contents/MacOS/Nightcrawler     the app that receives nightcrawler:// links
-#   Contents/Helpers/nightcrawler   the CLI (Homebrew links it onto PATH); it can't sit in
+#   Contents/MacOS/CapsJump     the app that receives capsjump:// links
+#   Contents/Helpers/capsjump   the CLI (Homebrew links it onto PATH); it can't sit in
 #                                   MacOS/ beside the app, because the Mac's case-insensitive
 #                                   file system can't hold both names in one folder
 #
@@ -41,16 +41,16 @@ build=(swift build --package-path "$ROOT" -c release --arch arm64 --arch x86_64)
 "${build[@]}"
 BIN="$("${build[@]}" --show-bin-path)"
 
-APP="$OUT/Nightcrawler.app"
+APP="$OUT/CapsJump.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Helpers" "$APP/Contents/Resources"
-cp "$BIN/NightcrawlerApp" "$APP/Contents/MacOS/Nightcrawler"
-cp "$BIN/nightcrawler" "$APP/Contents/Helpers/nightcrawler"
+cp "$BIN/CapsJumpApp" "$APP/Contents/MacOS/CapsJump"
+cp "$BIN/capsjump" "$APP/Contents/Helpers/capsjump"
 sed "s/@VERSION@/$VERSION/g" "$ROOT/packaging/Info.plist" > "$APP/Contents/Info.plist"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 cp "$ROOT/packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
-for exe in "$APP/Contents/MacOS/Nightcrawler" "$APP/Contents/Helpers/nightcrawler"; do
+for exe in "$APP/Contents/MacOS/CapsJump" "$APP/Contents/Helpers/capsjump"; do
   archs="$(lipo -archs "$exe")"
   [[ "$archs" == *x86_64* && "$archs" == *arm64* ]] || fail "$exe is not universal: $archs"
 done
@@ -61,8 +61,8 @@ if [ -n "$IDENTITY" ]; then
 else
   sign=(codesign --force --options runtime --sign -)
 fi
-"${sign[@]}" --identifier ai.stigmer.nightcrawler.cli "$APP/Contents/Helpers/nightcrawler"
-"${sign[@]}" --entitlements "$ROOT/packaging/Nightcrawler.entitlements" "$APP"
+"${sign[@]}" --identifier ai.stigmer.capsjump.cli "$APP/Contents/Helpers/capsjump"
+"${sign[@]}" --entitlements "$ROOT/packaging/CapsJump.entitlements" "$APP"
 codesign --verify --strict --deep --verbose=1 "$APP"
 
 echo "bundle: built $APP ($VERSION, ${IDENTITY:-ad hoc})"

@@ -1,10 +1,10 @@
-// Asks for all three permissions at once, attributed to Nightcrawler itself, then shows
+// Asks for all three permissions at once, attributed to CapsJump itself, then shows
 // one alert with each permission's state. Automation can be asked for only while Chrome
 // runs, so setup starts Chrome first when it is closed.
 
 import AppKit
-import NightcrawlerChrome
-import NightcrawlerCore
+import CapsJumpChrome
+import CapsJumpCore
 
 @MainActor
 enum Setup {
@@ -33,20 +33,20 @@ enum Setup {
     private static func show(accessibility: PermissionState, automation: PermissionState, chromeProblem: String?, notifications: PermissionState) {
         let alert = NSAlert()
         let ready = accessibility == .granted && automation == .granted
-        alert.messageText = ready ? "Nightcrawler is ready" : "Nightcrawler needs a permission"
+        alert.messageText = ready ? "CapsJump is ready" : "CapsJump needs a permission"
         var lines = [
             "Accessibility: \(accessibility.rawValue)",
             "Automation of Chrome: \(chromeProblem ?? automation.rawValue)",
             "Notifications: \(notifications.rawValue)",
         ]
         if accessibility != .granted {
-            lines.append("\nTurn Nightcrawler on under Privacy & Security › Accessibility.")
+            lines.append("\nTurn CapsJump on under Privacy & Security › Accessibility.")
         }
         if automation == .denied {
-            lines.append("\nTurn on Google Chrome under Nightcrawler in Privacy & Security › Automation.")
+            lines.append("\nTurn on Google Chrome under CapsJump in Privacy & Security › Automation.")
         }
         if !ready {
-            lines.append("\nThen run `nightcrawler setup` again to confirm.")
+            lines.append("\nThen run `capsjump setup` again to confirm.")
         }
         alert.informativeText = lines.joined(separator: "\n")
 

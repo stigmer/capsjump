@@ -1,12 +1,12 @@
-// Receives every nightcrawler:// link and runs them one at a time, in arrival order: a
+// Receives every capsjump:// link and runs them one at a time, in arrival order: a
 // site link jumps, `_setup` asks for the permissions. Setup also runs by itself, once per
-// launch, so the prompts come up without anyone typing `nightcrawler setup`: when the app
+// launch, so the prompts come up without anyone typing `capsjump setup`: when the app
 // is opened directly (not by a link) with a permission missing, and when a jump fails for
 // want of one. A launch by a link never adds a second round to the setup it asked for.
 
 import AppKit
-import NightcrawlerChrome
-import NightcrawlerCore
+import CapsJumpChrome
+import CapsJumpCore
 import os
 
 @MainActor

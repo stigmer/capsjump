@@ -1,26 +1,26 @@
-// The nightcrawler command: writes and checks the config, lists Chrome's profiles, and
-// hands links to Nightcrawler.app. It never talks to Chrome itself: the app holds the
+// The capsjump command: writes and checks the config, lists Chrome's profiles, and
+// hands links to CapsJump.app. It never talks to Chrome itself: the app holds the
 // permissions, so `jump` and `setup` go through macOS's link handling to it.
 
 import AppKit
 import ArgumentParser
 import Foundation
-import NightcrawlerChrome
-import NightcrawlerCore
+import CapsJumpChrome
+import CapsJumpCore
 
 @main
-struct Nightcrawler: ParsableCommand {
+struct CapsJump: ParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "nightcrawler",
+        commandName: "capsjump",
         abstract: "Bring a site's tab forward in the right Chrome account, or open it there.",
-        discussion: "Sites live in ~/.nightcrawler.yaml; each is the link nightcrawler://<name>.",
+        discussion: "Sites live in ~/.capsjump.yaml; each is the link capsjump://<name>.",
         version: Version.current,
         subcommands: [Init.self, Profiles.self, Check.self, Jump.self, Setup.self, Logs.self, VersionCommand.self]
     )
 }
 
 struct Init: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Write a starter ~/.nightcrawler.yaml listing this Mac's Chrome accounts.")
+    static let configuration = CommandConfiguration(abstract: "Write a starter ~/.capsjump.yaml listing this Mac's Chrome accounts.")
 
     func run() throws {
         let path = Paths.config()
@@ -31,9 +31,9 @@ struct Init: ParsableCommand {
         try StarterConfig.render(catalog: catalog).write(to: path, atomically: true, encoding: .utf8)
         print("wrote \(path.path)")
         if catalog == nil {
-            print("note: Chrome's profiles could not be read, so none are listed; `nightcrawler profiles` lists them once Chrome has run")
+            print("note: Chrome's profiles could not be read, so none are listed; `capsjump profiles` lists them once Chrome has run")
         }
-        print("next: edit it, then run `nightcrawler check`")
+        print("next: edit it, then run `capsjump check`")
     }
 }
 
@@ -54,7 +54,7 @@ struct Profiles: ParsableCommand {
 }
 
 struct Check: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Validate the config, resolve every site, and confirm Nightcrawler.app receives the links.")
+    static let configuration = CommandConfiguration(abstract: "Validate the config, resolve every site, and confirm CapsJump.app receives the links.")
 
     func run() throws {
         let configPath = Paths.config()
@@ -78,7 +78,7 @@ struct Check: ParsableCommand {
 struct Jump: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Jump to a site, exactly as its link does.")
 
-    @Argument(help: "The site's name in ~/.nightcrawler.yaml.")
+    @Argument(help: "The site's name in ~/.capsjump.yaml.")
     var site: String
 
     func run() throws {
@@ -94,16 +94,16 @@ struct Jump: ParsableCommand {
 }
 
 struct Setup: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Ask macOS for Nightcrawler's permissions (Accessibility, Automation of Chrome, notifications).")
+    static let configuration = CommandConfiguration(abstract: "Ask macOS for CapsJump's permissions (Accessibility, Automation of Chrome, notifications).")
 
     func run() throws {
         try LinkHandler.open(Link.setupURL)
-        print("Nightcrawler is asking for its permissions; its alert lists each one's state.")
+        print("CapsJump is asking for its permissions; its alert lists each one's state.")
     }
 }
 
 struct Logs: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Show Nightcrawler's recent log: every jump and every failure.")
+    static let configuration = CommandConfiguration(abstract: "Show CapsJump's recent log: every jump and every failure.")
 
     @Option(name: .long, help: "How far back to read, as `log show --last` takes it: 30m, 2h, 1d.")
     var last = "1h"
@@ -121,7 +121,7 @@ struct Logs: ParsableCommand {
 }
 
 struct VersionCommand: ParsableCommand {
-    static let configuration = CommandConfiguration(commandName: "version", abstract: "Print Nightcrawler's version.")
+    static let configuration = CommandConfiguration(commandName: "version", abstract: "Print CapsJump's version.")
 
     func run() {
         print(Version.current)

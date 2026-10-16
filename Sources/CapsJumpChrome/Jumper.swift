@@ -2,7 +2,7 @@
 // gather Chrome's windows and titles, let Core decide, and carry the decision out.
 
 import AppKit
-import NightcrawlerCore
+import CapsJumpCore
 
 public enum Outcome: Sendable, Equatable, CustomStringConvertible {
     case focused(site: String, windowID: String, tabIndex: Int)
@@ -30,11 +30,11 @@ public enum JumpError: LocalizedError, Equatable, CustomStringConvertible {
     public var description: String {
         switch self {
         case let .noConfig(path):
-            "no config at \(path); run `nightcrawler init`"
+            "no config at \(path); run `capsjump init`"
         case let .unreadable(path, reason):
             "could not read \(path): \(reason)"
         case let .config(error):
-            "the config has problems (`nightcrawler check` lists them):\n\(error)"
+            "the config has problems (`capsjump check` lists them):\n\(error)"
         case let .unknownSite(name, known):
             "no site `\(name)` in the config" + (known.isEmpty ? "" : "; it has: \(known.joined(separator: ", "))")
         case let .profiles(reason):

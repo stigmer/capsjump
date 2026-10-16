@@ -3,7 +3,7 @@
 
 import Foundation
 import Testing
-@testable import NightcrawlerCore
+@testable import CapsJumpCore
 
 @Suite struct ConfigTests {
     @Test func parsesSitesWithDefaultsAndExplicitMatch() throws {

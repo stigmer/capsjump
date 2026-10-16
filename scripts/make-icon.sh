@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Renders packaging/icon.svg into packaging/AppIcon.icns, the icon scripts/bundle.sh puts
-# in Nightcrawler.app. The .icns is committed so a build needs no SVG renderer; rerun this
+# in CapsJump.app. The .icns is committed so a build needs no SVG renderer; rerun this
 # after changing the SVG. Needs rsvg-convert (brew install librsvg) and macOS's iconutil.
 
 set -euo pipefail

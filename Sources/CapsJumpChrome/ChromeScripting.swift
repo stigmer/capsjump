@@ -5,7 +5,7 @@
 
 import AppKit
 import Carbon
-import NightcrawlerCore
+import CapsJumpCore
 
 @MainActor
 public final class ChromeScripting {

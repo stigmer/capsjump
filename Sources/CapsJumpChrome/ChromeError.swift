@@ -16,9 +16,9 @@ public enum ChromeError: Error, Equatable, CustomStringConvertible {
         case .notInstalled:
             "Google Chrome is not installed"
         case .automationDenied:
-            "Nightcrawler may not control Chrome; allow it in System Settings › Privacy & Security › Automation, or run `nightcrawler setup`"
+            "CapsJump may not control Chrome; allow it in System Settings › Privacy & Security › Automation, or run `capsjump setup`"
         case .accessibilityDenied:
-            "Nightcrawler has no Accessibility permission; turn it on in System Settings › Privacy & Security › Accessibility, or run `nightcrawler setup`"
+            "CapsJump has no Accessibility permission; turn it on in System Settings › Privacy & Security › Accessibility, or run `capsjump setup`"
         case .windowGone:
             "Chrome, or the window, closed during the jump"
         case let .script(code, message):

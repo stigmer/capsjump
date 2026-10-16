@@ -1,5 +1,5 @@
-// The config file, ~/.nightcrawler.yaml: one entry per site, naming the link
-// (nightcrawler://<name>), the Chrome account it lives in, the page to open and the URL
+// The config file, ~/.capsjump.yaml: one entry per site, naming the link
+// (capsjump://<name>), the Chrome account it lives in, the page to open and the URL
 // prefixes that count as already open. Parsing walks the YAML tree itself rather than
 // decoding with Codable, because Codable ignores unknown keys and a typo such as `acount:`
 // must be refused, not dropped. Every problem in the file is reported at once.
@@ -8,7 +8,7 @@ import Foundation
 import Yams
 
 public struct Site: Sendable, Equatable {
-    /// The link's host: `nightcrawler://<name>`.
+    /// The link's host: `capsjump://<name>`.
     public let name: String
     /// An account email, or a profile's name when it has no signed-in account.
     public let account: String?
@@ -190,10 +190,10 @@ public enum ConfigParser {
 public enum SiteName {
     /// Why a name can't be a site's, or nil when it can. Names are link hosts, so they
     /// keep to lower-case letters, digits and inner hyphens; `_` is reserved for the
-    /// app's own actions (`nightcrawler://_setup`).
+    /// app's own actions (`capsjump://_setup`).
     public static func problem(with name: String) -> String? {
         if name.hasPrefix("_") {
-            return "name `\(name)` starts with `_`, which is reserved for Nightcrawler's own actions"
+            return "name `\(name)` starts with `_`, which is reserved for CapsJump's own actions"
         }
         let allowed = Set("abcdefghijklmnopqrstuvwxyz0123456789-")
         guard !name.isEmpty, name.allSatisfy(allowed.contains), name.first != "-", name.last != "-" else {

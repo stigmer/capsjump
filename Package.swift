@@ -1,19 +1,19 @@
 // swift-tools-version: 6.0
 //
-// Nightcrawler: one Mac app that brings forward a site's tab in the right Chrome
-// account, or opens it there. NightcrawlerCore is the pure logic and carries every
-// test; NightcrawlerChrome is the live side (Apple Events, Accessibility, launching
-// Chrome); NightcrawlerApp receives nightcrawler:// links; nightcrawler is the CLI.
-// scripts/bundle.sh puts the app and the CLI into one Nightcrawler.app.
+// CapsJump: one Mac app that brings forward a site's tab in the right Chrome
+// account, or opens it there. CapsJumpCore is the pure logic and carries every
+// test; CapsJumpChrome is the live side (Apple Events, Accessibility, launching
+// Chrome); CapsJumpApp receives capsjump:// links; capsjump is the CLI.
+// scripts/bundle.sh puts the app and the CLI into one CapsJump.app.
 
 import PackageDescription
 
 let package = Package(
-    name: "Nightcrawler",
+    name: "CapsJump",
     platforms: [.macOS(.v13)],
     products: [
-        .executable(name: "NightcrawlerApp", targets: ["NightcrawlerApp"]),
-        .executable(name: "nightcrawler", targets: ["nightcrawler"]),
+        .executable(name: "CapsJumpApp", targets: ["CapsJumpApp"]),
+        .executable(name: "capsjump", targets: ["capsjump"]),
     ],
     dependencies: [
         .package(url: "https://github.com/jpsim/Yams.git", exact: "6.2.2"),
@@ -21,28 +21,28 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "NightcrawlerCore",
+            name: "CapsJumpCore",
             dependencies: [.product(name: "Yams", package: "Yams")]
         ),
         .target(
-            name: "NightcrawlerChrome",
-            dependencies: ["NightcrawlerCore"]
+            name: "CapsJumpChrome",
+            dependencies: ["CapsJumpCore"]
         ),
         .executableTarget(
-            name: "NightcrawlerApp",
-            dependencies: ["NightcrawlerCore", "NightcrawlerChrome"]
+            name: "CapsJumpApp",
+            dependencies: ["CapsJumpCore", "CapsJumpChrome"]
         ),
         .executableTarget(
-            name: "nightcrawler",
+            name: "capsjump",
             dependencies: [
-                "NightcrawlerCore",
-                "NightcrawlerChrome",
+                "CapsJumpCore",
+                "CapsJumpChrome",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
         .testTarget(
-            name: "NightcrawlerCoreTests",
-            dependencies: ["NightcrawlerCore"]
+            name: "CapsJumpCoreTests",
+            dependencies: ["CapsJumpCore"]
         ),
     ]
 )

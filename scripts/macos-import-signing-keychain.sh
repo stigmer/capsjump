@@ -4,7 +4,7 @@
 # macos-import-signing-keychain.sh at commit 89fe599eac, with its apple-ca/ folder; a
 # release workflow in another repository can't call it in place. Keep the copy unchanged
 # below this note, so a fix there is a plain re-copy here. Its mentions of Tauri describe
-# the desktop app's lane; Nightcrawler signs with codesign directly (scripts/bundle.sh).
+# the desktop app's lane; CapsJump signs with codesign directly (scripts/bundle.sh).
 #
 # Imports the Developer ID Application certificate into a dedicated keychain
 # that codesign can use without prompting, on a CI runner or a laptop alike.

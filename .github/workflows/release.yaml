@@ -1,4 +1,4 @@
-# Releases Nightcrawler when a v<x.y.z> tag is pushed: tests, a universal build signed with
+# Releases CapsJump when a v<x.y.z> tag is pushed: tests, a universal build signed with
 # the Developer ID, notarization and stapling, a GitHub release carrying the zip, and the
 # cask in github.com/stigmer/homebrew-tap updated to it.
 #
@@ -79,7 +79,7 @@ jobs:
           P12="$RUNNER_TEMP/certificate.p12"
           echo -n "$APPLE_CERTIFICATE" | base64 --decode > "$P12"
           chmod 600 "$P12"
-          scripts/macos-import-signing-keychain.sh "$P12" "$RUNNER_TEMP/nightcrawler-signing.keychain-db"
+          scripts/macos-import-signing-keychain.sh "$P12" "$RUNNER_TEMP/capsjump-signing.keychain-db"
           rm -f "$P12"
 
       - name: Install the notarization key
@@ -107,7 +107,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          scripts/notarize.sh "$RUNNER_TEMP/bundle/Nightcrawler.app" "dist/Nightcrawler-$VERSION.zip"
+          scripts/notarize.sh "$RUNNER_TEMP/bundle/CapsJump.app" "dist/CapsJump-$VERSION.zip"
 
       - name: Publish the GitHub release
         env:
@@ -115,8 +115,8 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          gh release create "v$VERSION" "dist/Nightcrawler-$VERSION.zip" \
-            --repo "$GITHUB_REPOSITORY" --title "Nightcrawler $VERSION" --generate-notes
+          gh release create "v$VERSION" "dist/CapsJump-$VERSION.zip" \
+            --repo "$GITHUB_REPOSITORY" --title "CapsJump $VERSION" --generate-notes
 
       - name: Checkout homebrew-tap
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -131,12 +131,12 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          sha="$(shasum -a 256 "dist/Nightcrawler-$VERSION.zip" | cut -d' ' -f1)"
+          sha="$(shasum -a 256 "dist/CapsJump-$VERSION.zip" | cut -d' ' -f1)"
           mkdir -p homebrew-tap/Casks
-          sed -e "s/@VERSION@/$VERSION/" -e "s/@SHA256@/$sha/" packaging/nightcrawler.rb.in > homebrew-tap/Casks/nightcrawler.rb
+          sed -e "s/@VERSION@/$VERSION/" -e "s/@SHA256@/$sha/" packaging/capsjump.rb.in > homebrew-tap/Casks/capsjump.rb
           cd homebrew-tap
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/nightcrawler.rb
-          git commit -m "Update nightcrawler to $VERSION"
+          git add Casks/capsjump.rb
+          git commit -m "Update capsjump to $VERSION"
           git push
