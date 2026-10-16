@@ -18,6 +18,8 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         self.keys = keys
         super.init()
         let menu = NSMenu()
+        // Items are enabled by `menuNeedsUpdate`, not by whether their action has a target.
+        menu.autoenablesItems = false
         menu.delegate = self
         item.menu = menu
         refresh()

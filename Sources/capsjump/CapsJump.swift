@@ -139,11 +139,15 @@ struct QuitCommand: ParsableCommand {
     }
 }
 
+struct NotRunning: Error, CustomStringConvertible {
+    var description: String { "CapsJump.app isn't running; open it, or run `capsjump setup`" }
+}
+
 /// The app, reached by link only while it runs, so pausing never starts it.
 enum RunningApp {
     static func open(_ url: URL) throws {
         guard KeyState.appIsRunning else {
-            throw ValidationError("CapsJump.app isn't running; open it, or run `capsjump setup`")
+            throw NotRunning()
         }
         try LinkHandler.open(url)
     }

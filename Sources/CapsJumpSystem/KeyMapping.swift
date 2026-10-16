@@ -1,7 +1,9 @@
 // The system's key mapping that turns Caps Lock into F18, through the HID event system's
 // public property (what `hidutil property --set` drives). Only CapsJump's own entry is
 // ever added or removed, so a mapping someone else set survives. The mapping lasts until
-// it is removed or the Mac restarts, so the app removes it whenever it quits.
+// it is removed or the Mac restarts, so the app removes it whenever it quits. Taking Caps
+// Lock also switches its lock off: once mapped, the key can no longer switch it off, so a
+// lock left on would type capitals until CapsJump let go.
 
 import CapsJumpCore
 import Foundation
@@ -25,9 +27,24 @@ public enum KeyMapping {
         var after = before.filter { !isOurs($0) }
         if takeCapsLock {
             after.append([source: NSNumber(value: CapsLock.usage), destination: NSNumber(value: CapsLock.targetUsage)])
+            unlockCapsLock()
         }
         guard (after as NSArray) != (before as NSArray) else { return true }
         return IOHIDEventSystemClientSetProperty(client, kIOHIDUserKeyUsageMapKey as CFString, after as CFArray)
+    }
+
+    /// Switches the Caps Lock lock off, as pressing the key would.
+    private static func unlockCapsLock() {
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching(kIOHIDSystemClass))
+        guard service != 0 else { return }
+        defer { IOObjectRelease(service) }
+        var connect: io_connect_t = 0
+        guard IOServiceOpen(service, mach_task_self_, UInt32(kIOHIDParamConnectType), &connect) == KERN_SUCCESS else { return }
+        defer { IOServiceClose(connect) }
+        var locked = false
+        if IOHIDGetModifierLockState(connect, Int32(kIOHIDCapsLockState), &locked) == KERN_SUCCESS, locked {
+            IOHIDSetModifierLockState(connect, Int32(kIOHIDCapsLockState), false)
+        }
     }
 
     private static func client() -> IOHIDEventSystemClient {
