@@ -254,7 +254,7 @@ struct WelcomeView: View {
                 }
                 HStack(spacing: 12) {
                     Button("Turn On Starter Keys") { model.turnOnStarterKeys() }
-                        .buttonStyle(.borderedProminent)
+                        .prominent(model.accessibility)
                         .disabled(!model.accessibility)
                     Button("Set Up My Own…") { model.actions.editConfig(false) }
                         .disabled(!model.accessibility)
@@ -375,6 +375,19 @@ struct WelcomeView: View {
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
+    }
+}
+
+extension View {
+    /// The prominent style for the button of the step at hand, the plain one otherwise, so
+    /// only one button in the window stands out.
+    @ViewBuilder
+    fileprivate func prominent(_ isCurrent: Bool) -> some View {
+        if isCurrent {
+            buttonStyle(.borderedProminent)
+        } else {
+            buttonStyle(.bordered)
+        }
     }
 }
 
