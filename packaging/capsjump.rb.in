@@ -7,7 +7,7 @@ cask "capsjump" do
   url "https://github.com/whysosuresh/capsjump/releases/download/v#{version}/CapsJump-#{version}.zip"
   name "CapsJump"
   desc "Caps Lock shortcuts for apps, Chrome accounts, windows and links"
-  homepage "https://whysosuresh.github.io/capsjump/"
+  homepage "https://capsjump.com/"
 
   depends_on macos: :ventura
 

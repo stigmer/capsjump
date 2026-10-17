@@ -12,7 +12,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-5c5c5c" alt="MIT license"></a>
 </p>
 
-<p align="center"><a href="https://whysosuresh.github.io/capsjump/">whysosuresh.github.io/capsjump</a></p>
+<p align="center"><a href="https://capsjump.com/">capsjump.com</a></p>
 
 Caps Lock has spent decades waiting for someone to SHOUT. CapsJump gives it a real job. Hold Caps Lock and press S: your terminal is just there. Caps Lock and G: the GitHub tab in your work Chrome account comes forward (not your personal one, never your personal one), or opens there if it isn't open yet. Caps Lock and ←: the front window takes the left half of the screen. Caps Lock and W: a Slack channel opens. One small file, `~/.capsjump.yaml`, says which key does what.
 

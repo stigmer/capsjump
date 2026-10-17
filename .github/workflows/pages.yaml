@@ -1,4 +1,4 @@
-# Publishes site/ to GitHub Pages (whysosuresh.github.io/capsjump) when it changes on main, or
+# Publishes site/ to GitHub Pages (capsjump.com) when it changes on main, or
 # on demand. The site is hand-written and has no build step, so the folder is uploaded as is.
 
 name: Pages
