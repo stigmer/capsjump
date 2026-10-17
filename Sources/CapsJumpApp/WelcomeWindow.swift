@@ -359,7 +359,7 @@ struct WelcomeView: View {
             if let mark = StatusMenu.mark {
                 Image(nsImage: mark).accessibilityHidden(true)
             }
-            Text("CapsJump lives in the menu bar; its menu has everything here.")
+            Text("CapsJump lives in the menu bar.")
                 .foregroundStyle(.secondary)
             Spacer()
             Text("Version \(AppVersion.current)")
