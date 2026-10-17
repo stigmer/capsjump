@@ -444,6 +444,11 @@ final class EditorModel: ObservableObject {
         selectedKey = row
     }
 
+    /// What a key pressed into the field of `row` (nil for a key not set yet) means now.
+    func pressed(_ trigger: KeyTrigger, _ modifiers: PressedKey.Modifiers, _ typed: String?, row: Int?, clears: Bool) -> PressedKey.Outcome {
+        PressedKey.decide(trigger, modifiers: modifiers, typed: typed, row: row, clears: clears, in: draft)
+    }
+
     func setKey(_ row: Int, _ key: String) {
         edit { _ = $0.bind(key, to: $0.key(row)?.key.action, row: row) }
     }
@@ -521,7 +526,6 @@ final class EditorModel: ObservableObject {
 
         let row: Int
         let key: KeySource
-        let free: [String]
         let sites: [SiteChoice]
         let appPath: String?
         let note: String?
@@ -544,7 +548,6 @@ final class EditorModel: ObservableObject {
         return KeyForm(
             row: row,
             key: key,
-            free: draft.freeKeys(for: row),
             // Only a site key lists the sites, so renaming one leaves every other key's editor alone.
             sites: action?.kind != .site ? [] : draft.sites.compactMap { row in
                 guard let name = row.site.name, !name.isEmpty else { return nil }
@@ -561,22 +564,18 @@ final class EditorModel: ObservableObject {
         struct KeyChoice: Equatable, Sendable {
             let row: Int
             let key: String
-            let free: [String]
             let problems: [String]
         }
 
         let line: EditorRows.WindowLine
         let keys: [KeyChoice]
-        /// The keys no row holds, for a move with none.
-        let free: [String]
     }
 
     func windowForm(_ move: WindowPosition) -> WindowForm {
         let line = EditorRows.window(move, in: draft)
         return WindowForm(
             line: line,
-            keys: line.keys.map { WindowForm.KeyChoice(row: $0.row, key: $0.key, free: draft.freeKeys(for: $0.row), problems: problems(key: $0.row)) },
-            free: line.keys.isEmpty ? draft.freeKeys() : []
+            keys: line.keys.map { WindowForm.KeyChoice(row: $0.row, key: $0.key, problems: problems(key: $0.row)) }
         )
     }
 

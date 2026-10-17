@@ -1,8 +1,9 @@
 // The keys a shortcut can name and what the event tap sees for each. A name is a key's
 // place on a US keyboard, held as its macOS virtual key code; f1–f12 also carry what
 // Apple's top row sends without fn (brightness, Mission Control, media and volume), as
-// measured on a Magic Keyboard, so `f1` works with and without fn. Caps Lock itself
-// reaches the tap as F18, through the HID mapping in `CapsLock`.
+// measured on a Magic Keyboard, so `f1` works with and without fn. Every trigger belongs
+// to one name, so a pressed key reads back as its name. Caps Lock itself reaches the tap
+// as F18, through the HID mapping in `CapsLock`.
 
 import Foundation
 
@@ -27,6 +28,16 @@ public enum KeyNames {
     public static func triggers(for name: String) -> [KeyTrigger]? {
         table[name]
     }
+
+    /// The name a trigger stands for, or nil for a key no name covers.
+    public static func name(for trigger: KeyTrigger) -> String? {
+        names[trigger]
+    }
+
+    private static let names: [KeyTrigger: String] = Dictionary(
+        table.flatMap { name, triggers in triggers.map { ($0, name) } },
+        uniquingKeysWith: { first, _ in first }
+    )
 
     private static let table: [String: [KeyTrigger]] = {
         var table: [String: [KeyTrigger]] = [:]

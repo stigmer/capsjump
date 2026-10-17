@@ -4,7 +4,10 @@
 // swallowed when its key-down was, even after Caps Lock is let go, and so are that key's
 // repeats while it stays down, so no app sees half a key. Everything else passes
 // untouched. Whether Caps Lock is held comes with each event, asked of the system, never
-// remembered here, so a missed key-up can't leave keys swallowed.
+// remembered here, so a missed key-up can't leave keys swallowed. While a key field in
+// CapsJump's own window listens, a key pressed with Caps Lock is swallowed the same way
+// but heard instead of run, so the field gets the key and nothing jumps. One field listens
+// at a time: the last to ask, and only it can stop.
 
 import Foundation
 
@@ -33,6 +36,8 @@ public enum KeyDecision: Sendable, Equatable {
     case pass
     case swallow
     case run(KeyAction)
+    /// Swallowed and handed to the listening key field; nothing runs.
+    case heard(KeyTrigger)
 }
 
 public struct KeyRules: Sendable {
@@ -40,6 +45,10 @@ public struct KeyRules: Sendable {
     public var bindings: [KeyTrigger: KeyAction]
     /// Keys whose key-down was swallowed and whose key-up hasn't come yet.
     public private(set) var swallowed: Set<KeyTrigger> = []
+    /// The key field listening, if any.
+    public private(set) var listener: ObjectIdentifier?
+
+    public var isListening: Bool { listener != nil }
 
     public init(bindings: [KeyTrigger: KeyAction] = [:]) {
         self.bindings = bindings
@@ -54,6 +63,18 @@ public struct KeyRules: Sendable {
             }
         }
         return table
+    }
+
+    /// Hands every key pressed with Caps Lock to `owner` until it stops; a field listening
+    /// before is replaced.
+    public mutating func listen(_ owner: ObjectIdentifier) {
+        listener = owner
+    }
+
+    /// Ends `owner`'s listening; a field that was replaced changes nothing. With no owner,
+    /// ends whoever listens.
+    public mutating func stopListening(_ owner: ObjectIdentifier? = nil) {
+        if owner == nil || owner == listener { listener = nil }
     }
 
     public mutating func decide(_ event: KeyEvent) -> KeyDecision {
@@ -73,7 +94,9 @@ public struct KeyRules: Sendable {
             }
             guard event.capsHeld else { return .pass }
             swallowed.insert(event.trigger)
-            guard !event.isRepeat, let action = bindings[event.trigger] else { return .swallow }
+            guard !event.isRepeat else { return .swallow }
+            if listener != nil { return .heard(event.trigger) }
+            guard let action = bindings[event.trigger] else { return .swallow }
             return .run(action)
         }
     }

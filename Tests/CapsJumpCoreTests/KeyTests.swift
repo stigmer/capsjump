@@ -38,6 +38,21 @@ import Testing
         #expect(KeyNames.triggers(for: name) == nil)
     }
 
+    @Test func everyTriggerReadsBackAsItsName() {
+        for name in KeyNames.all {
+            for trigger in KeyNames.triggers(for: name) ?? [] {
+                #expect(KeyNames.name(for: trigger) == name, "\(trigger)")
+            }
+        }
+        #expect(KeyNames.name(for: .media(1)) == "f11")
+        #expect(KeyNames.name(for: .key(0x7E)) == "up")
+    }
+
+    @Test(arguments: [KeyTrigger.key(0x31), .key(0x24), .key(CapsLock.keyCode), .key(0x35), .media(99)])
+    func unknownTriggers(trigger: KeyTrigger) {
+        #expect(KeyNames.name(for: trigger) == nil)
+    }
+
     @Test func capsLockBecomesF18() {
         #expect(CapsLock.usage == 0x7_0000_0039)
         #expect(CapsLock.targetUsage == 0x7_0000_006D)

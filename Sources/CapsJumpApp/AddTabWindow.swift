@@ -79,8 +79,9 @@ final class AddTabModel: ObservableObject {
         }
     }
 
-    var freeKeys: [String] {
-        draft.freeKeys(for: keyRow)
+    /// What a key pressed into the key field means now.
+    func pressed(_ trigger: KeyTrigger, _ modifiers: PressedKey.Modifiers, _ typed: String?) -> PressedKey.Outcome {
+        PressedKey.decide(trigger, modifiers: modifiers, typed: typed, row: keyRow, clears: false, in: draft)
     }
 
     /// The keys that already land on the existing site.
@@ -165,16 +166,16 @@ struct AddTabView: View {
                         EditorNotes(note: model.landing.map { "Lands in \($0)" }, problems: model.problems(.account, .profile, .accountOrProfile))
                     }
                     FieldRow(label: "Page", text: $model.page, prompt: "https://", problems: model.problems(.open, .match))
-                    keyPicker
+                    keyField
                 }
                 .formStyle(.grouped)
                 // A grouped form scrolls, so it has no height of its own; this window fits its content.
                 .fixedSize(horizontal: false, vertical: true)
             case let .existing(name):
                 heading("That's already your site \(name)", model.keysAlready.isEmpty
-                    ? "Pick a key, and Caps Lock with it lands right here."
+                    ? "Choose a key, and Caps Lock with it lands right here."
                     : "Caps Lock + \(model.keysAlready.map(KeyNames.symbol(for:)).joined(separator: " or ")) lands here already. Want another key too?")
-                Form { keyPicker }
+                Form { keyField }
                     .formStyle(.grouped)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -202,17 +203,22 @@ struct AddTabView: View {
         .padding([.horizontal, .top], 20)
     }
 
-    private var keyPicker: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            KeyPicker(key: Binding(get: { model.key }, set: { key in afterUpdate { model.key = key } }), free: model.freeKeys)
-            EditorNotes(note: nil, problems: model.keyProblems)
-        }
+    private var keyField: some View {
+        KeyRecorder(
+            key: model.key,
+            unset: "Choose a key",
+            decide: { model.pressed($0, $1, $2) },
+            onUse: { model.key = $0 },
+            problems: model.keyProblems
+        )
     }
 }
 
 /// Opens the Add window for the tab Chrome showed, after the cases that need no window.
 @MainActor
 final class AddTab: NSObject, NSWindowDelegate {
+    /// How the key field reaches the keys; the app sets it before the window opens.
+    var listening = KeyListening.none
     private var window: NSWindow?
     private var expected: String?
 
@@ -271,7 +277,7 @@ final class AddTab: NSObject, NSWindowDelegate {
             onCancel: { [weak self] in self?.window?.close() },
             onAdd: { [weak self] in self?.save(model) }
         )
-        let window = NSWindow(contentViewController: NSHostingController(rootView: view))
+        let window = NSWindow(contentViewController: NSHostingController(rootView: view.environment(\.keyListening, listening)))
         window.title = "Add Current Tab"
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false

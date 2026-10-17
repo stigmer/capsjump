@@ -52,6 +52,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             quit: { [weak self] in self?.quitAsked(nil) }
         ))
         keys.onChange = { [weak menu] in menu?.refresh() }
+        editor.listening = keys.listening
+        addTab.listening = keys.listening
         self.menu = menu
         keys.start()
         guard notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool == true else { return }

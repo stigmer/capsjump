@@ -1,7 +1,8 @@
 // Every rule of the event tap: Caps Lock is swallowed, a bound key runs once, an unbound
 // key does nothing while Caps Lock is held, a swallowed press swallows its key-up and
-// repeats, and nothing is touched when no key is bound. Then where each window move puts
-// the window.
+// repeats, and nothing is touched when no key is bound. While a key field listens, a key
+// pressed with Caps Lock is heard instead of run, swallowed all the same, and only the
+// field listening can stop it. Then where each window move puts the window.
 
 import Foundation
 import Testing
@@ -111,6 +112,54 @@ import Testing
         #expect(rules.decide(KeyEvent(down, .down, capsHeld: true)) == .run(.window(.bottomHalf)))
         #expect(rules.decide(KeyEvent(down, .up, capsHeld: true)) == .swallow)
         #expect(rules.decide(KeyEvent(up, .down, capsHeld: false)) == .pass)
+    }
+
+    private final class Field {}
+
+    @Test func aListeningFieldHearsKeysInsteadOfRunningThem() throws {
+        var rules = try rules()
+        let field = Field()
+        rules.listen(ObjectIdentifier(field))
+        #expect(rules.isListening)
+        // Bound or not, the key is heard and nothing runs.
+        #expect(rules.decide(KeyEvent(g, .down, capsHeld: true)) == .heard(g))
+        #expect(rules.decide(KeyEvent(x, .down, capsHeld: true)) == .heard(x))
+        #expect(rules.decide(KeyEvent(volumeUp, .down, capsHeld: true)) == .heard(volumeUp))
+        // Its repeats and key-up are swallowed as a run key's are.
+        #expect(rules.decide(KeyEvent(g, .down, isRepeat: true, capsHeld: true)) == .swallow)
+        #expect(rules.decide(KeyEvent(g, .up, capsHeld: true)) == .swallow)
+        #expect(rules.decide(KeyEvent(x, .up, capsHeld: false)) == .swallow)
+        #expect(rules.decide(KeyEvent(volumeUp, .up, capsHeld: true)) == .swallow)
+        #expect(rules.swallowed.isEmpty)
+        // Caps Lock itself, and keys without it, are as before.
+        #expect(rules.decide(KeyEvent(caps, .down, capsHeld: true)) == .swallow)
+        #expect(rules.decide(KeyEvent(g, .down, capsHeld: false)) == .pass)
+        rules.stopListening(ObjectIdentifier(field))
+        #expect(!rules.isListening)
+        #expect(rules.decide(KeyEvent(g, .down, capsHeld: true)) == .run(site))
+    }
+
+    @Test func onlyTheFieldListeningCanStop() throws {
+        var rules = try rules()
+        let first = Field()
+        let second = Field()
+        rules.listen(ObjectIdentifier(first))
+        rules.listen(ObjectIdentifier(second))
+        // The first field was replaced; its stop is late and changes nothing.
+        rules.stopListening(ObjectIdentifier(first))
+        #expect(rules.listener == ObjectIdentifier(second))
+        #expect(rules.decide(KeyEvent(g, .down, capsHeld: true)) == .heard(g))
+        // Stopping with no owner ends whoever listens.
+        rules.stopListening()
+        #expect(!rules.isListening)
+        #expect(rules.decide(KeyEvent(g, .up, capsHeld: true)) == .swallow)
+        #expect(rules.decide(KeyEvent(g, .down, capsHeld: true)) == .run(site))
+    }
+
+    @Test func withNoKeysBoundAListeningFieldGetsTheKeyFromItsWindow() {
+        var rules = KeyRules()
+        rules.listen(ObjectIdentifier(Field()))
+        #expect(rules.decide(KeyEvent(g, .down, capsHeld: true)) == .pass)
     }
 
     @Test func aPressHeldAcrossAReloadThatDropsEveryKeyStillEndsSwallowed() throws {

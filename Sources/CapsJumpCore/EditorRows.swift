@@ -240,7 +240,8 @@ public enum EditorRows {
         }
     }
 
-    private static func spokenKey(_ name: String) -> String {
+    /// A key name as VoiceOver should say it: `G`, `F1`, `Up Arrow`.
+    public static func spokenKey(_ name: String) -> String {
         ["left": "Left Arrow", "right": "Right Arrow", "up": "Up Arrow", "down": "Down Arrow"][name] ?? KeyNames.symbol(for: name)
     }
 }

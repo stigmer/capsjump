@@ -18,6 +18,8 @@ import SwiftUI
 
 @MainActor
 final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchFieldDelegate, NSMenuItemValidation, NSToolbarItemValidation {
+    /// How key fields reach the keys; the app sets it before the window opens.
+    var listening = KeyListening.none
     private var window: NSWindow?
     private var model: EditorModel?
     private var searchItem: NSSearchToolbarItem?
@@ -57,7 +59,7 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
         window.delegate = self
         window.center()
         window.setFrameAutosaveName("CapsJumpConfig")
-        let controller = NSHostingController(rootView: EditorView(model: model))
+        let controller = NSHostingController(rootView: EditorView(model: model).environment(\.keyListening, listening))
         // The window sets its own size and keeps its own toolbar; the content only fills it.
         controller.sizingOptions = []
         if #available(macOS 14, *) {

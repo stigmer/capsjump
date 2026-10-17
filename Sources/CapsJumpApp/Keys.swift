@@ -5,11 +5,15 @@
 // handles, and `stop` gives it back. Without Accessibility the tap is refused; the keys
 // then start by themselves within two seconds of it being granted. A pause (from the menu
 // bar or `capsjump pause`) gives Caps Lock back and lasts until resumed, across restarts.
-// Every change of state calls `onChange`, which redraws the menu-bar icon.
+// Every change of state calls `onChange`, which redraws the menu-bar icon. A key field in
+// CapsJump's own window can ask for the keys pressed with Caps Lock instead of their
+// actions; that ends whenever CapsJump stops being the active app, so no field left
+// listening can keep the keys from working elsewhere.
 
 import CapsJumpChrome
 import CapsJumpCore
 import CapsJumpSystem
+import AppKit
 import ApplicationServices
 import Foundation
 import os
@@ -29,6 +33,17 @@ final class Keys {
     init(notifier: Notifier, onAction: @escaping @MainActor (KeyAction) -> Void) {
         self.notifier = notifier
         layer = KeyLayer(onAction: onAction)
+        NotificationCenter.default.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.layer.stopListening() }
+        }
+    }
+
+    /// What key fields use to hear the keys pressed with Caps Lock.
+    var listening: KeyListening {
+        KeyListening(
+            listen: { [weak self] owner, heard in self?.layer.listen(owner, heard) },
+            stop: { [weak self] owner in self?.layer.stopListening(owner) }
+        )
     }
 
     /// Reads the config, starts watching it, and starts the tap when a key is bound. Safe

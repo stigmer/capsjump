@@ -1,10 +1,10 @@
 // The Windows section: every move CapsJump can make, always all of them in the same order,
 // each a line with its picture, its name and the keys that do it, or "Off" with the key it
 // would take dimmed; beside it the picked move's editor. The editor draws the move from
-// WindowLayout's own arithmetic, so the picture is the move, and sets its key from the keys
-// no other row holds: None turns it off, and a move with none offers its usual key in one
+// WindowLayout's own arithmetic, so the picture is the move, and sets its key by pressing
+// it in the key field: Delete turns it off, and a move with none offers its usual key in one
 // click while that key is free. A second key for one move, which only the file can write,
-// is shown and kept as a second picker. A list line takes values, not the model.
+// is shown and kept as a second field. A list line takes values, not the model.
 
 import CapsJumpCore
 import SwiftUI
@@ -89,18 +89,22 @@ struct WindowEditor: View, Equatable {
             }
             Section {
                 ForEach(form.keys, id: \.row) { choice in
-                    VStack(alignment: .leading, spacing: 4) {
-                        MoveKeyPicker(
-                            key: Binding(get: { choice.key }, set: { key in afterUpdate { model.setKey(move, row: choice.row, key) } }),
-                            free: choice.free
-                        )
-                        EditorNotes(note: nil, problems: choice.problems)
-                    }
+                    KeyRecorder(
+                        key: choice.key,
+                        unset: "None",
+                        decide: { model.pressed($0, $1, $2, row: choice.row, clears: true) },
+                        onUse: { model.setKey(move, row: choice.row, $0) },
+                        onClear: { model.setKey(move, row: choice.row, nil) },
+                        problems: choice.problems
+                    )
                 }
                 if form.keys.isEmpty {
-                    MoveKeyPicker(
-                        key: Binding(get: { nil }, set: { key in afterUpdate { model.setKey(move, row: nil, key) } }),
-                        free: form.free
+                    KeyRecorder(
+                        key: nil,
+                        unset: "None",
+                        decide: { model.pressed($0, $1, $2, row: nil, clears: true) },
+                        onUse: { model.setKey(move, row: nil, $0) },
+                        onClear: {}
                     )
                     let symbol = KeyNames.symbol(for: line.suggested)
                     if line.suggestedFree {
@@ -115,21 +119,6 @@ struct WindowEditor: View, Equatable {
             }
         }
         .formStyle(.grouped)
-    }
-}
-
-/// The free keys as their symbols, None first; None turns the key off.
-private struct MoveKeyPicker: View {
-    @Binding var key: String?
-    let free: [String]
-
-    var body: some View {
-        Picker("Caps Lock +", selection: $key) {
-            Text("None").tag(String?.none)
-            ForEach(free, id: \.self) { name in
-                Text(KeyNames.symbol(for: name)).tag(Optional(name))
-            }
-        }
     }
 }
 

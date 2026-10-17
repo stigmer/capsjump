@@ -1,6 +1,6 @@
 // The Keys section: the list of keys in the keyboard's order, each a line that reads like the
 // key (a keycap, the action's icon, what it does), and beside it the picked key's editor.
-// A key is picked from the keys no other row holds; what it does is an app (through the
+// A key is set by pressing it in the key field; what it does is an app (through the
 // app chooser), one of the sites, or a link. Keys that move the window are in Windows; one
 // naming a move CapsJump doesn't know stays here, with its problem and no kind picked. The editor says what the
 // key will do on this Mac, or what's wrong under its field. A site key's line shows the
@@ -125,23 +125,6 @@ struct Keycap: View {
     }
 }
 
-/// The free keys, shown as their symbols; the Add window uses it too.
-struct KeyPicker: View {
-    @Binding var key: String?
-    let free: [String]
-
-    var body: some View {
-        Picker("Caps Lock +", selection: $key) {
-            if key == nil {
-                Text("Choose…").tag(String?.none)
-            }
-            ForEach(free, id: \.self) { name in
-                Text(KeyNames.symbol(for: name)).tag(Optional(name))
-            }
-        }
-    }
-}
-
 /// The picked key's editor. It takes the key as values and calls the model only to edit,
 /// so an edit to anything else leaves it alone.
 struct KeyEditor: View, Equatable {
@@ -158,9 +141,11 @@ struct KeyEditor: View, Equatable {
         let key = form.key
         Form {
             Section {
-                KeyPicker(
-                    key: Binding(get: { key.key }, set: { name in afterUpdate { if let name { model.setKey(row, name) } } }),
-                    free: form.free
+                KeyRecorder(
+                    key: key.key,
+                    unset: "Choose a key",
+                    decide: { model.pressed($0, $1, $2, row: row, clears: false) },
+                    onUse: { model.setKey(row, $0) }
                 )
                 Picker("Does", selection: Binding(get: { key.action?.kind == .window ? nil : key.action?.kind }, set: { kind in afterUpdate { model.setKind(row, kind) } })) {
                     Text("App").tag(Optional(ActionSource.Kind.app))
