@@ -1,7 +1,8 @@
 // Each Chrome account's picture in the config window, the round face or letter Chrome shows
 // in its own profile menu, drawn beside the account's text wherever the text is. The Google
 // picture Chrome saved is read off the main thread and kept for as long as the window is
-// open; opening the window again asks afresh, as site icons do. Until it is read, and when
+// open, then forgotten as site icons are (a line already drawn keeps its picture until it
+// redraws, stigmer/capsjump#24). Until it is read, and when
 // there is none, Chrome's own stand-in: a person's outline on a disc in the profile's
 // colours (system greys when Chrome records none), so a row never shows an empty slot. The
 // picture crosses from the reading thread as bytes and becomes an image on the main one.
