@@ -149,8 +149,14 @@ import Testing
             KeyBinding(key: "f", action: .window(.maximize)),
         ])
 
-        let offline = StarterConfig.render(catalog: nil)
-        #expect(ConfigWriter.isCanonical(offline))
-        #expect(try ConfigParser.parse(offline).sites.first?.account == "you@example.com")
+        // Without Chrome's accounts there is no example site: a made-up account would be
+        // the first problem a new config shows.
+        for catalog in [nil, ProfileCatalog(profiles: [])] {
+            let offline = StarterConfig.render(catalog: catalog)
+            #expect(ConfigWriter.isCanonical(offline))
+            let read = try ConfigParser.parse(offline)
+            #expect(read.sites.isEmpty)
+            #expect(read.keys == config.keys)
+        }
     }
 }

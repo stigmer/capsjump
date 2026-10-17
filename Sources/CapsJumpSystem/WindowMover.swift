@@ -15,7 +15,7 @@ public enum WindowError: Error, Equatable, CustomStringConvertible {
     public var description: String {
         switch self {
         case .accessibilityDenied:
-            "CapsJump has no Accessibility permission, so it can't move windows; run `capsjump setup`"
+            "CapsJump has no Accessibility permission, so it can't move windows; click to finish setting up"
         case .noFrontApp:
             "no app is in front to move a window of"
         case let .noWindow(app):

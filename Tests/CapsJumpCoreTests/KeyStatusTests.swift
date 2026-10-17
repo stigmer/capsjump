@@ -1,4 +1,5 @@
-// What the menu bar's first line and icon say in each state of the app.
+// What the menu bar's first line and icon say in each state of the app, and the step each
+// state asks for.
 
 import Foundation
 import Testing
@@ -11,32 +12,56 @@ import Testing
     ])
     private let noKeys = Config(sites: [])
 
+    private func status(
+        paused: Bool = false,
+        config: Config?,
+        broken: Bool = false,
+        tap: Bool = true,
+        accessibility: Bool = true
+    ) -> KeyStatus {
+        KeyStatus.of(paused: paused, config: config, configBroken: broken, tapRunning: tap, accessibility: accessibility)
+    }
+
     @Test func onCountsTheKeys() {
-        #expect(KeyStatus.of(paused: false, config: twoKeys, configBroken: false, tapRunning: true)
-            == KeyStatus(title: "On: 2 keys on Caps Lock", active: true))
+        #expect(status(config: twoKeys) == KeyStatus(title: "On: 2 keys on Caps Lock", active: true))
         let one = Config(sites: [], keys: [KeyBinding(key: "f", action: .window(.maximize))])
-        #expect(KeyStatus.of(paused: false, config: one, configBroken: false, tapRunning: true).title == "On: 1 key on Caps Lock")
+        #expect(status(config: one).title == "On: 1 key on Caps Lock")
     }
 
-    @Test func pausedGivesCapsLockBack() {
-        #expect(KeyStatus.of(paused: true, config: twoKeys, configBroken: false, tapRunning: true)
-            == KeyStatus(title: "Paused; Caps Lock works as usual", active: false))
+    @Test func noConfigIsNotSetUpAndAsksForTheNextStep() {
+        #expect(status(config: nil, tap: false, accessibility: false)
+            == KeyStatus(title: "Not set up yet", active: false, needsYou: true, nextStep: .allowAccessibility))
+        #expect(status(config: nil, tap: false, accessibility: true)
+            == KeyStatus(title: "Not set up yet", active: false, needsYou: true, nextStep: .chooseKeys))
+        #expect(status(config: nil, tap: false).needsSetup)
     }
 
-    @Test func noKeysAndNoConfigTakeNothing() {
-        #expect(KeyStatus.of(paused: false, config: noKeys, configBroken: false, tapRunning: false).title == "No keys yet; Caps Lock works as usual")
-        #expect(KeyStatus.of(paused: false, config: nil, configBroken: false, tapRunning: false) == KeyStatus(title: "No config yet", active: false))
+    @Test func pausedGivesCapsLockBackAndAsksNothing() {
+        let paused = status(paused: true, config: twoKeys)
+        #expect(paused == KeyStatus(title: "Paused; Caps Lock works as usual", active: false, nextStep: .resume))
+        #expect(!paused.needsYou)
+        #expect(!paused.needsSetup)
     }
 
-    @Test func withoutTheTapTheKeysAreOff() {
-        #expect(KeyStatus.of(paused: false, config: twoKeys, configBroken: false, tapRunning: false)
-            == KeyStatus(title: "Needs Accessibility; keys are off", active: false))
+    @Test func aFileWithNoKeysIsAChoice() {
+        #expect(status(config: noKeys, tap: false, accessibility: false)
+            == KeyStatus(title: "No keys; Caps Lock works as usual", active: false))
     }
 
-    @Test func aBrokenEditAddsALineAndKeepsTheKeys() {
-        let status = KeyStatus.of(paused: false, config: twoKeys, configBroken: true, tapRunning: true)
-        #expect(status.active)
-        #expect(status.problem == "The config has a problem; Check Config lists it")
-        #expect(KeyStatus.of(paused: false, config: nil, configBroken: true, tapRunning: false).title == "The config has a problem")
+    @Test func boundKeysWithoutTheTapWaitForAccessibility() {
+        let waiting = status(config: twoKeys, tap: false, accessibility: false)
+        #expect(waiting == KeyStatus(title: "Needs Accessibility; keys are off", active: false, needsYou: true, nextStep: .allowAccessibility))
+        #expect(waiting.needsSetup)
+    }
+
+    @Test func aBrokenEditAddsALineKeepsTheKeysAndAsksForAFix() {
+        let broken = status(config: twoKeys, broken: true)
+        #expect(broken.active)
+        #expect(broken.needsYou)
+        #expect(broken.nextStep == .fixConfig)
+        #expect(!broken.needsSetup)
+        #expect(broken.problem == "The config has a problem; Check Config lists it")
+        #expect(status(config: nil, broken: true, tap: false)
+            == KeyStatus(title: "The config has a problem", active: false, needsYou: true, nextStep: .fixConfig))
     }
 }

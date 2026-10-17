@@ -1,4 +1,6 @@
 // What can go wrong talking to Chrome, each case worded for the person who has to fix it.
+// Only the app talks to Chrome, so these reach people as its notifications; the two
+// permission cases open the Welcome window when clicked.
 
 import Foundation
 
@@ -16,9 +18,9 @@ public enum ChromeError: Error, Equatable, CustomStringConvertible {
         case .notInstalled:
             "Google Chrome is not installed"
         case .automationDenied:
-            "CapsJump may not control Chrome; allow it in System Settings › Privacy & Security › Automation, or run `capsjump setup`"
+            "CapsJump may not control Chrome; click to allow it, or turn on Google Chrome under CapsJump in System Settings › Privacy & Security › Automation"
         case .accessibilityDenied:
-            "CapsJump has no Accessibility permission; turn it on in System Settings › Privacy & Security › Accessibility, or run `capsjump setup`"
+            "CapsJump has no Accessibility permission; click to finish setting up"
         case .windowGone:
             "Chrome, or the window, closed during the jump"
         case let .script(code, message):

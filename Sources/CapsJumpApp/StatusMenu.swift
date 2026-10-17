@@ -1,9 +1,13 @@
 // The menu-bar icon: CapsJump's own mark (packaging/menubar.svg) as a template image,
-// so macOS colours it for the menu bar; dimmed while CapsJump doesn't have Caps Lock. Its
-// menu says what the keys are doing, pauses and resumes them, turns the tab in front of
-// Chrome into a site with a key (while Chrome runs), opens the config's own window, opens
-// the file itself in an editor (writing the starter file first when there is none), shows
-// what `capsjump check` would, switches starting at login, and quits.
+// so macOS colours it for the menu bar; dimmed while CapsJump doesn't have Caps Lock, and
+// with a small dot while something waits on the person (not set up yet, Accessibility
+// missing, a broken config), so a pause, which is a choice, never looks like a problem.
+// Its menu opens with the version and what the keys are doing, then the one step that
+// would move things on (Finish Setting Up…, Resume Keys, Fix the Config…); Pause shows
+// only while there are keys to pause. Below: turn the tab in front of Chrome into a site
+// with a key (while Chrome runs), the config's own window, the file itself in an editor
+// (writing the starter file first when there is none), what `capsjump check` would show,
+// the Welcome window, starting at login, About and Quit.
 
 import AppKit
 import CapsJumpChrome
@@ -22,6 +26,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         let addCurrentTab: @MainActor () -> Void
         /// Opens the config window; true picks the first row with a problem.
         let editConfig: @MainActor (_ showingProblems: Bool) -> Void
+        let openWelcome: @MainActor () -> Void
         let quit: @MainActor () -> Void
     }
 
@@ -38,7 +43,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     }
 
     /// The mark from the bundle; Apple's Caps Lock symbol when run unbundled, in development.
-    private static let image: NSImage? = {
+    static let mark: NSImage? = {
         let image = Bundle.main.image(forResource: "MenuBarIcon")
             ?? NSImage(systemSymbolName: "capslock", accessibilityDescription: nil)
         image?.isTemplate = true
@@ -46,26 +51,56 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         return image
     }()
 
+    /// The mark with a dot at its lower right, cut free of the mark by a clear ring so it
+    /// reads at 18 points; a template too, so it takes the menu bar's colour.
+    private static let markWithDot: NSImage? = mark.map { mark in
+        let image = NSImage(size: mark.size, flipped: false) { rect in
+            mark.draw(in: rect)
+            let radius = rect.width * 0.17
+            let dot = NSRect(x: rect.maxX - radius * 2, y: rect.minY, width: radius * 2, height: radius * 2)
+            NSGraphicsContext.current?.compositingOperation = .clear
+            NSBezierPath(ovalIn: dot.insetBy(dx: -1.5, dy: -1.5)).fill()
+            NSGraphicsContext.current?.compositingOperation = .sourceOver
+            NSColor.black.setFill()
+            NSBezierPath(ovalIn: dot).fill()
+            return true
+        }
+        image.isTemplate = true
+        image.accessibilityDescription = "CapsJump, needs you"
+        return image
+    }
+
     func refresh() {
-        item.button?.image = Self.image
-        item.button?.appearsDisabled = !keys.status.active
-        item.button?.toolTip = "CapsJump: \(keys.status.title)"
+        let status = keys.status
+        item.button?.image = status.needsYou ? Self.markWithDot : Self.mark
+        item.button?.appearsDisabled = !status.active
+        item.button?.toolTip = "CapsJump \(AppVersion.current): \(status.title)"
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
         let status = keys.status
+        menu.addItem(label("CapsJump \(AppVersion.current)"))
         menu.addItem(label(status.title))
         if let problem = status.problem {
             menu.addItem(label(problem))
         }
         menu.addItem(.separator())
-        if Pause.isOn {
+        switch status.nextStep {
+        case .allowAccessibility, .chooseKeys:
+            menu.addItem(action("Finish Setting Up…", #selector(openWelcome)))
+        case .fixConfig:
+            menu.addItem(action("Fix the Config…", #selector(showProblems)))
+        case .resume:
             menu.addItem(action("Resume Keys", #selector(resume)))
-        } else {
-            let pause = action("Pause Keys", #selector(pause))
-            pause.isEnabled = status.active
-            menu.addItem(pause)
+        case nil:
+            break
+        }
+        if status.active {
+            menu.addItem(action("Pause Keys", #selector(pause)))
+        }
+        if status.nextStep != nil || status.active {
+            menu.addItem(.separator())
         }
         let addTab = action("Add Current Tab…", #selector(addTab))
         addTab.isEnabled = ChromeLauncher.runningChrome != nil
@@ -73,11 +108,15 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         menu.addItem(action("Edit Config…", #selector(editConfig)))
         menu.addItem(action("Open Config File", #selector(openConfigFile)))
         menu.addItem(action("Check Config", #selector(checkConfig)))
+        if !status.needsSetup {
+            menu.addItem(action("Getting Started…", #selector(openWelcome)))
+        }
         menu.addItem(.separator())
         let login = action("Start at Login", #selector(toggleLogin))
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
         menu.addItem(login)
         menu.addItem(.separator())
+        menu.addItem(action("About CapsJump", #selector(about)))
         menu.addItem(action("Quit CapsJump", #selector(quit), key: "q"))
     }
 
@@ -106,6 +145,12 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     @objc private func addTab() { actions.addCurrentTab() }
 
     @objc private func editConfig() { actions.editConfig(false) }
+
+    @objc private func showProblems() { actions.editConfig(true) }
+
+    @objc private func openWelcome() { actions.openWelcome() }
+
+    @objc private func about() { AboutPanel.show() }
 
     @objc private func openConfigFile() { ConfigFileOpener.open() }
 

@@ -1,11 +1,13 @@
 // Runs the keys from launch to quit, and receives every capsjump:// link. Key actions and
 // links run one at a time, in arrival order: a site jumps, an app comes forward, a window
-// snaps, a link opens, `_setup` asks for the permissions, and Add Current Tab reads Chrome
-// before its window opens. Setup also runs by itself,
-// once per launch, so the prompts come up without anyone typing `capsjump setup`: when the
-// app is opened directly (not by a link) with a permission missing, and when a jump fails
-// for want of one (or Add Current Tab does). A launch by a link never adds a second round
-// to the setup it asked for.
+// snaps, a link opens, `_setup` opens the Welcome window, and Add Current Tab reads Chrome
+// before its window opens. The Welcome window also opens by itself: on a launch from
+// Finder, Spotlight or login while CapsJump isn't set up (until the person has closed it
+// once), when the app is opened again while it runs and isn't set up (set up, the config
+// window opens instead), and once per launch when a jump or Add Current Tab fails for want
+// of a permission. Nothing asks for a permission until the person presses its button there.
+// Every key that runs without a failure is reported to the Welcome window, whose last step
+// waits for one.
 // Quitting (from the menu bar too), logging out, SIGTERM and SIGINT all go through
 // `applicationWillTerminate`, which gives Caps Lock back. Only CapsJump's own Quit items
 // ask about unsaved edits in the config window first; a quit from outside never waits.
@@ -22,7 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let jumper = Jumper()
     private let notifier = Notifier()
     private var tail: Task<Void, Never>?
-    private var setupShown = false
+    private var welcomeShownForFailure = false
     private var signalSources: [DispatchSourceSignal] = []
     private lazy var keys = Keys(notifier: notifier) { [weak self] action in
         self?.enqueue { [weak self] in await self?.run(action) }
@@ -30,6 +32,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menu: StatusMenu?
     private let addTab = AddTab()
     private let editor = Editor()
+    private lazy var welcome = Welcome(keys: keys, notifier: notifier) { [weak self] showingProblems in
+        self?.editor.open(showingProblems: showingProblems)
+    }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         notifier.install()
@@ -49,20 +54,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = StatusMenu(keys: keys, actions: StatusMenu.Actions(
             addCurrentTab: { [weak self] in self?.addCurrentTab() },
             editConfig: { [weak self] showingProblems in self?.editor.open(showingProblems: showingProblems) },
+            openWelcome: { [weak self] in self?.welcome.open() },
             quit: { [weak self] in self?.quitAsked(nil) }
         ))
-        keys.onChange = { [weak menu] in menu?.refresh() }
+        keys.onChange = { [weak self, weak menu] in
+            menu?.refresh()
+            self?.welcome.keysChanged()
+        }
+        notifier.openWelcome = { [weak self] in self?.welcome.open() }
         editor.listening = keys.listening
         addTab.listening = keys.listening
         self.menu = menu
         keys.start()
         guard notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool == true else { return }
-        enqueue { [self] in
-            if await Setup.somethingMissing(notifier: notifier) {
-                logger.notice("launch: a permission is missing; running setup")
-                await setup()
-            }
+        if keys.status.needsSetup && !WelcomeMemory.closedOnce {
+            logger.notice("launch: not set up yet; opening the Welcome window")
+            welcome.open()
         }
+    }
+
+    /// Opened again from Finder or Spotlight while running: a menu-bar app answers with a
+    /// window rather than nothing.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if keys.status.needsSetup {
+            welcome.open()
+        } else {
+            editor.open()
+        }
+        return false
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -86,7 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         switch link {
         case .setup:
             logger.notice("setup requested")
-            await setup()
+            welcome.open()
         case .pause:
             keys.pause()
         case .resume:
@@ -98,10 +117,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func run(_ action: KeyAction) async {
         logger.notice("key: \(action.description, privacy: .public)")
+        let frontApp = NSWorkspace.shared.frontmostApplication?.localizedName
         do {
             switch action {
             case let .site(name):
-                await jump(to: name)
+                guard await jump(to: name) else { return }
             case let .app(target):
                 try await Launcher.open(target)
             case let .url(url):
@@ -109,26 +129,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case let .window(position):
                 try WindowMover.move(position)
             }
+            welcome.keyWorked(WelcomeWording.worked(action, frontApp: frontApp))
         } catch let error as LaunchError {
             fail(error.description)
         } catch let error as WindowError {
-            fail(error.description)
+            fail(error.description, opensWelcome: error == .accessibilityDenied)
+            if error == .accessibilityDenied { openWelcomeForFailure("A window key needed Accessibility.") }
         } catch {
             fail("\(error)")
         }
     }
 
-    private func jump(to name: String) async {
+    /// True when the jump landed; a link's jump has no one waiting on it.
+    @discardableResult
+    private func jump(to name: String) async -> Bool {
         let started = ContinuousClock.now
         do {
             let outcome = try await jumper.jump(to: name)
             let elapsed = ContinuousClock.now - started
             logger.notice("jump \(outcome.description, privacy: .public) in \(elapsed.milliseconds, privacy: .public) ms")
+            return true
         } catch {
-            fail(error.description)
-            if error.isMissingPermission && !setupShown {
-                await setup()
+            fail(error.description, opensWelcome: error.isMissingPermission)
+            if error.isMissingPermission {
+                openWelcomeForFailure("The site \(name) needed \(error.missingPermission).")
             }
+            return false
         }
     }
 
@@ -148,23 +174,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             do throws(ChromeError) {
                 addTab.open(try FrontTabReader.read())
             } catch {
-                fail(error.description)
-                if error.isMissingPermission && !setupShown {
-                    await setup()
+                fail(error.description, opensWelcome: error.isMissingPermission)
+                if error.isMissingPermission {
+                    openWelcomeForFailure("Add Current Tab needed \(error.missingPermission).")
                 }
             }
         }
     }
 
-    private func setup() async {
-        setupShown = true
-        await Setup.run(notifier: notifier)
-        keys.start()
+    /// Opens the Welcome window for a key that failed for want of a permission, once per
+    /// launch; the notification, clicked, opens it any time.
+    private func openWelcomeForFailure(_ notice: String) {
+        guard !welcomeShownForFailure else { return }
+        welcomeShownForFailure = true
+        welcome.open(notice: notice)
     }
 
-    private func fail(_ message: String) {
+    private func fail(_ message: String, opensWelcome: Bool = false) {
         logger.error("\(message, privacy: .public)")
-        notifier.post(message)
+        notifier.post(message, opensWelcome: opensWelcome)
     }
 
     /// Runs `job` after every job enqueued before it.
@@ -181,11 +209,20 @@ extension JumpError {
     var isMissingPermission: Bool {
         if case let .chrome(_, error) = self { error.isMissingPermission } else { false }
     }
+
+    var missingPermission: String {
+        if case let .chrome(_, error) = self { error.missingPermission } else { "a permission" }
+    }
 }
 
 extension ChromeError {
     var isMissingPermission: Bool {
         self == .accessibilityDenied || self == .automationDenied
+    }
+
+    /// The permission, as the Welcome window's rows name it.
+    var missingPermission: String {
+        self == .automationDenied ? "access to Chrome" : "Accessibility"
     }
 }
 

@@ -23,7 +23,7 @@ struct CapsJump: ParsableCommand {
 }
 
 struct Init: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Write a starter ~/.capsjump.yaml in this Mac's first Chrome account.")
+    static let configuration = CommandConfiguration(abstract: "Write a starter ~/.capsjump.yaml: the window keys, and an example site in this Mac's first Chrome account.")
 
     func run() throws {
         let path = Paths.config()
@@ -34,7 +34,7 @@ struct Init: ParsableCommand {
         try ConfigFile(url: path).write(StarterConfig.config(catalog: catalog), replacing: nil)
         print("wrote \(path.path)")
         if catalog == nil {
-            print("note: Chrome's profiles could not be read, so the example site says you@example.com; `capsjump profiles` lists the real accounts once Chrome has run")
+            print("note: Chrome's profiles could not be read, so the file has the window keys and no example site; `capsjump profiles` lists the accounts once Chrome has run")
         }
         print("next: edit it, then run `capsjump check`")
     }
@@ -99,11 +99,11 @@ struct Jump: ParsableCommand {
 }
 
 struct Setup: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Ask macOS for CapsJump's permissions (Accessibility, Automation of Chrome, notifications).")
+    static let configuration = CommandConfiguration(abstract: "Open CapsJump's Welcome window, which asks for its permissions one at a time and turns on its first keys.")
 
     func run() throws {
         try LinkHandler.open(Link.setupURL)
-        print("CapsJump is asking for its permissions; its alert lists each one's state.")
+        print("CapsJump's Welcome window is open; each step there ticks itself when it's done.")
     }
 }
 

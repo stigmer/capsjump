@@ -20,13 +20,19 @@ Caps Lock has spent decades waiting for someone to SHOUT. CapsJump gives it a re
 
 ```sh
 brew install --cask whysosuresh/tap/capsjump
-capsjump setup
-capsjump init
+open -a CapsJump
 ```
 
+CapsJump opens a short Welcome window, three steps that tick themselves as you go:
+
+1. **Let CapsJump hear Caps Lock.** Allow it in the Accessibility list macOS shows; the step ticks the moment you do. Upgrades keep the permission.
+2. **Choose your keys.** One click turns on the starter keys (Caps Lock with the arrows snaps the front window to a half, with F it fills the screen), or set up your own. Nothing takes Caps Lock before this, and the step says so plainly: while CapsJump has keys, Caps Lock no longer types capitals (Shift still does).
+3. **Try it.** Click any window, hold Caps Lock and press ←.
+
+Below them, if you like: access to Chrome (for sites in the right account), notifications (so a key that can't do its job says why) and starting at login, each asked only when you click it. Close the window whenever you like; until CapsJump is set up, its menu-bar mark carries a small dot and its menu starts with **Finish Setting Up…**, and opening CapsJump again brings the window back.
+
 - Homebrew loads a cask from outside its own taps only once you trust it; naming the cask in full, as above, trusts this one cask and nothing else.
-- `capsjump setup` asks for the app's permissions once (upgrades keep them) and starts CapsJump at login.
-- `capsjump init` writes a starter `~/.capsjump.yaml` in your first Chrome account; `capsjump profiles` lists the others. Edit it, then run `capsjump check`.
+- From a terminal instead: `capsjump setup` opens the same Welcome window, `capsjump init` writes the starter `~/.capsjump.yaml` (the window keys, and an example site in your first Chrome account), `capsjump profiles` lists Chrome's accounts and `capsjump check` checks the file.
 
 ### Moving from stigmer/tap
 
@@ -118,14 +124,16 @@ macOS keeps every app's shortcuts out of password fields, so the keys do nothing
 
 ## Pause, quit or turn it off
 
-CapsJump puts its mark in the menu bar, dimmed while it doesn't have Caps Lock. Its menu:
+CapsJump puts its mark in the menu bar: filled while it has Caps Lock, dimmed while it doesn't (paused, or no keys), and with a small dot while something waits on you (not set up yet, Accessibility missing, or a config with a problem). Its menu starts with CapsJump's version and what the keys are doing, then the one thing that would move things on, when there is one: **Finish Setting Up…**, **Resume Keys** or **Fix the Config…**. Then:
 
-- **Pause Keys / Resume Keys**: gives Caps Lock back, or takes it again. A pause lasts until you resume, across restarts.
+- **Pause Keys**: gives Caps Lock back until you choose Resume Keys. A pause lasts across restarts. Shown while there are keys to pause.
 - **Add Current Tab…**: turns the tab in front of Chrome into a site with a key. The page and its account come filled in, with a free key suggested; to change it, click the key and press the one you want. Click Add, and Caps Lock with that key lands there from then on. If the page is already one of your sites, it offers that site another key instead.
 - **Edit Config…**: a window with Sites, Keys and Windows in a sidebar, a searchable list of each, and an editor for the one you pick. Keys holds the keys that take you somewhere (an app, a site with its own icon, a link); Windows lists every move CapsJump can make, each with the key that does it, which you can change or turn off. Accounts (each with its picture, as Chrome's profile menu shows it) and sites are picked from lists, apps from a searchable list with their icons; a key is set by clicking its field and pressing the key, alone or with Caps Lock held, and a key that is taken or that CapsJump can't use is explained right there (Escape cancels, and in Windows Delete turns the move's key off); problems show under their field as you type, and Save (⌘S) applies at once. Rename a site and its keys come along. ⌘N adds, ⌫ removes (in Windows, turns the move's key off), ⌘F searches, ⌘1, ⌘2 and ⌘3 switch between Sites, Keys and Windows. Close or quit with unsaved changes and it asks first.
 - **Open Config File**: opens `~/.capsjump.yaml` in your editor, writing a starter file first if there is none. Saving applies the change at once.
 - **Check Config**: shows what `capsjump check` shows, with a button to Edit Config….
+- **Getting Started…**: the Welcome window again, with every permission's state.
 - **Start at Login**: whether CapsJump starts when you log in.
+- **About CapsJump**: the version, in macOS's own About panel.
 - **Quit CapsJump**: gives Caps Lock back. It starts again at the next login, unless Start at Login is off. Quitting from outside (`capsjump quit`, Homebrew, logging out) never waits on unsaved changes in the window; it drops them, because Caps Lock coming back matters more.
 
 From a terminal: `capsjump pause`, `capsjump resume` and `capsjump quit`. To remove it: `brew uninstall --cask capsjump`, which quits it first.

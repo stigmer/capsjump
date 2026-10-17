@@ -18,10 +18,7 @@ cask "capsjump" do
   uninstall quit: "ai.stigmer.capsjump"
 
   caveats <<~EOS
-    Grant CapsJump its permissions once (they survive upgrades):
-      capsjump setup
-    Then write your keys and sites, and check them:
-      capsjump init
-      capsjump check
+    Open CapsJump to finish setting up; its Welcome window walks you through it:
+      open -a CapsJump
   EOS
 end

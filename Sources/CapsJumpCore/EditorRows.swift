@@ -215,7 +215,7 @@ public enum EditorRows {
         [site.account, site.profile].compactMap { $0?.trimmingCharacters(in: .whitespaces) }.first { !$0.isEmpty }
     }
 
-    private static func appName(_ path: String) -> String {
+    static func appName(_ path: String) -> String {
         let file = path.split(separator: "/").last.map(String.init) ?? path
         return file.hasSuffix(".app") ? String(file.dropLast(4)) : file
     }
@@ -230,7 +230,7 @@ public enum EditorRows {
         }
     }
 
-    private static func positionSpoken(_ position: WindowPosition) -> String {
+    static func positionSpoken(_ position: WindowPosition) -> String {
         switch position {
         case .leftHalf: "the left half"
         case .rightHalf: "the right half"

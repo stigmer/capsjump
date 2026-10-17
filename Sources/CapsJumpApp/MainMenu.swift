@@ -3,7 +3,8 @@
 // work in a text field. File, Delete, Find and View are the config window's (new, save,
 // remove, search, Sites and Keys); like every item here they go to the first responder, so
 // the config window answers them and they grey out while another window is in front. After
-// the last window closes CapsJump goes back to living in the menu bar alone.
+// the last window closes CapsJump goes back to living in the menu bar alone. Here too: the
+// version the app was built as, and the About panel that shows it.
 
 import AppKit
 
@@ -16,7 +17,11 @@ enum MainMenu {
         let quitItem = item("Quit CapsJump", quit, "q")
         quitItem.target = quitTarget
         let bar = NSMenu()
+        let about = NSMenuItem(title: "About CapsJump", action: #selector(AboutPanel.show(_:)), keyEquivalent: "")
+        about.target = AboutPanel.target
         bar.addItem(submenu("CapsJump", [
+            about,
+            .separator(),
             item("Hide CapsJump", #selector(NSApplication.hide(_:)), "h"),
             .separator(),
             quitItem,
@@ -87,5 +92,30 @@ enum AppWindows {
         if open.isEmpty {
             NSApp.setActivationPolicy(.accessory)
         }
+    }
+}
+
+/// The version this build of CapsJump.app carries, stamped from VERSION by
+/// scripts/bundle.sh; "dev" when run unbundled.
+enum AppVersion {
+    static var current: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
+    }
+}
+
+/// macOS's own About panel, brought to the front: CapsJump's icon, name and version.
+@MainActor
+final class AboutPanel: NSObject {
+    /// What the app menu's About item is sent to.
+    static let target = AboutPanel()
+
+    static func show() {
+        NSApp.activate(ignoringOtherApps: true)
+        // An empty build number keeps the panel from repeating the version in brackets.
+        NSApp.orderFrontStandardAboutPanel(options: [.applicationVersion: AppVersion.current, .version: ""])
+    }
+
+    @objc func show(_ sender: Any?) {
+        Self.show()
     }
 }

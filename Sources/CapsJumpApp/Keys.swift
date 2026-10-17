@@ -2,10 +2,11 @@
 // on every change the watcher reports; a good file swaps the bindings and takes or gives
 // back Caps Lock to match, and a broken one keeps the last good bindings and says so once.
 // Caps Lock is mapped only while the tap runs, so it never becomes a key that nothing
-// handles, and `stop` gives it back. Without Accessibility the tap is refused; the keys
-// then start by themselves within two seconds of it being granted. A pause (from the menu
-// bar or `capsjump pause`) gives Caps Lock back and lasts until resumed, across restarts.
-// Every change of state calls `onChange`, which redraws the menu-bar icon. A key field in
+// handles, and `stop` gives it back. While Accessibility is missing it is checked every two
+// seconds, from launch whether or not a key is bound yet, and the keys start by themselves
+// once it is granted. A pause (from the menu bar or `capsjump pause`) gives Caps Lock back
+// and lasts until resumed, across restarts. Every change of state, the grant included,
+// calls `onChange`, which redraws the menu-bar icon and the Welcome window. A key field in
 // CapsJump's own window can ask for the keys pressed with Caps Lock instead of their
 // actions; that ends whenever CapsJump stops being the active app, so no field left
 // listening can keep the keys from working elsewhere.
@@ -55,10 +56,22 @@ final class Keys {
             self.watcher = watcher
         }
         reload(quietWhenMissing: true)
+        if !AXIsProcessTrusted() { waitForAccessibility() }
     }
 
     var status: KeyStatus {
-        KeyStatus.of(paused: Pause.isOn, config: config, configBroken: lastNotice != nil, tapRunning: layer.isRunning)
+        KeyStatus.of(
+            paused: Pause.isOn,
+            config: config,
+            configBroken: lastNotice != nil,
+            tapRunning: layer.isRunning,
+            accessibility: AXIsProcessTrusted()
+        )
+    }
+
+    /// How many keys the last good config binds; nil when none was ever read.
+    var boundKeys: Int? {
+        config?.keys.count
     }
 
     func pause() {
@@ -115,7 +128,7 @@ final class Keys {
             logger.error("the event tap was refused; Accessibility is missing")
             if !permissionNoticeShown {
                 permissionNoticeShown = true
-                notifier.post("CapsJump needs Accessibility for its keys; run `capsjump setup`")
+                notifier.post("CapsJump needs Accessibility for its keys; click to finish setting up", opensWelcome: true)
             }
             waitForAccessibility()
             return
