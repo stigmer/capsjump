@@ -2,7 +2,8 @@
 // account to one profile folder. Chrome's scripting interface never says which profile a
 // window belongs to; the window title does, ending in the profile's label, so each
 // profile's label is derived here the way Chrome writes it: `<given name> (<profile
-// name>)` for a signed-in account, the bare profile name otherwise.
+// name>)` for a signed-in account, the bare profile name otherwise. Each profile also
+// carries what Chrome draws as its picture, decided by Chrome's own rule.
 
 import Foundation
 
@@ -15,17 +16,60 @@ public struct ChromeProfile: Sendable, Equatable {
     public let email: String
     /// The signed-in account's given name, or empty.
     public let givenName: String
+    /// What Chrome draws for the profile in its profile menu.
+    public let picture: ProfilePicture
 
-    public init(directory: String, name: String, email: String, givenName: String) {
+    public init(directory: String, name: String, email: String, givenName: String, picture: ProfilePicture = ProfilePicture()) {
         self.directory = directory
         self.name = name
         self.email = email
         self.givenName = givenName
+        self.picture = picture
     }
 
     /// The text every one of this profile's window titles ends with, after `– `.
     public var windowLabel: String {
         email.isEmpty || givenName.isEmpty ? name : "\(givenName) (\(name))"
+    }
+}
+
+/// A profile's picture as Chrome would draw it: the account's Google picture, saved in the
+/// profile's folder, when Chrome shows it; otherwise, or when that file doesn't load, a
+/// person's outline on a disc in the profile's own colours. A profile that picked one of
+/// Chrome's built-in avatars gets the outline here, since those are drawn from Chrome's
+/// own resources, not a file in the profile.
+public struct ProfilePicture: Sendable, Hashable {
+    /// The Google picture's file name in the profile folder, when Chrome would show it.
+    public let file: String?
+    /// The disc's colour, as ARGB; nil when Chrome records none.
+    public let fill: UInt32?
+    /// The outline's colour, as ARGB; nil when Chrome records none.
+    public let outline: UInt32?
+
+    public init(file: String? = nil, fill: UInt32? = nil, outline: UInt32? = nil) {
+        self.file = file
+        self.fill = fill
+        self.outline = outline
+    }
+
+    /// Chrome's rule (`IsUsingGAIAPicture` in its profile_attributes_entry.cc): the Google
+    /// picture shows when the profile asks for it, or when it keeps the default avatar and
+    /// has one. Only a plain file name in the folder is kept.
+    static func read(_ info: [String: Any]) -> ProfilePicture {
+        let shown = info["use_gaia_picture"] as? Bool == true || info["is_using_default_avatar"] as? Bool == true
+        let name = info["gaia_picture_file_name"] as? String
+        let plain = name.map { !$0.isEmpty && $0 != "." && $0 != ".." && !$0.contains("/") } ?? false
+        return ProfilePicture(
+            file: shown && plain ? name : nil,
+            fill: argb(info["default_avatar_fill_color"]),
+            outline: argb(info["default_avatar_stroke_color"])
+        )
+    }
+
+    /// Chrome writes colours as signed 32-bit integers.
+    private static func argb(_ value: Any?) -> UInt32? {
+        guard let number = value as? Int, let signed = Int32(exactly: number) else { return nil }
+        return UInt32(bitPattern: signed)
     }
 }
 
@@ -50,7 +94,7 @@ public struct ProfileCatalog: Sendable, Equatable {
     }
 
     /// Parses Chrome's `Local State` (JSON); only `profile.info_cache` and
-    /// `profile.profiles_order` are read.
+    /// `profile.profiles_order` are read, and of each profile its names and picture.
     public static func parse(localState data: Data) throws(ParseError) -> ProfileCatalog {
         guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw .notJSON
@@ -64,7 +108,8 @@ public struct ProfileCatalog: Sendable, Equatable {
                 directory: directory,
                 name: info["name"] as? String ?? directory,
                 email: info["user_name"] as? String ?? "",
-                givenName: info["gaia_given_name"] as? String ?? ""
+                givenName: info["gaia_given_name"] as? String ?? "",
+                picture: ProfilePicture.read(info)
             )
         }
         let order = profile["profiles_order"] as? [String] ?? []

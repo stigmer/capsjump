@@ -1,8 +1,8 @@
 // The Sites section: the list of sites in the file's order, each a line with the site's own
-// icon as Chrome saved it for its account, its name, its account, the page's host and the
-// keys that jump to it, and beside it the picked site's
+// icon as Chrome saved it for its account, its name, its account with the account's picture,
+// the page's host and the keys that jump to it, and beside it the picked site's
 // editor: its name (which is also its capsjump:// link), the account picked from this Mac's
-// Chrome profiles (typed when Chrome's list can't be read), the page it opens, the keys that
+// Chrome profiles, each with its picture (typed when Chrome's list can't be read), the page it opens, the keys that
 // land on it, and under Advanced the URL prefixes that count as the site being open.
 // Removing a site that keys jump to asks what to do with them.
 
@@ -18,7 +18,12 @@ struct SiteList: View {
         VStack(spacing: 0) {
             List(selection: model.siteSelection) {
                 ForEach(lines) { line in
-                    SiteLineView(line: line, problem: model.check.bySite[line.id] != nil, icon: model.iconKey(site: line.id))
+                    SiteLineView(
+                        line: line,
+                        problem: model.check.bySite[line.id] != nil,
+                        icon: model.iconKey(site: line.id),
+                        picture: model.pictureKey(site: line.id)
+                    )
                         .equatable()
                         .tag(line.id)
                 }
@@ -47,6 +52,7 @@ struct SiteLineView: View, Equatable {
     let line: EditorRows.SiteLine
     let problem: Bool
     let icon: SiteIconKey?
+    let picture: ProfilePictureKey?
 
     var body: some View {
         HStack(spacing: 10) {
@@ -54,10 +60,15 @@ struct SiteLineView: View, Equatable {
             VStack(alignment: .leading, spacing: 1) {
                 Text(line.name)
                     .lineLimit(1)
-                Text([line.account, line.host].compactMap { $0 }.joined(separator: " · "))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    if let picture, line.account != nil {
+                        ProfilePictureView(key: picture, size: 12)
+                    }
+                    Text([line.account, line.host].compactMap { $0 }.joined(separator: " · "))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
             Spacer(minLength: 4)
             ForEach(line.keys, id: \.self) { Keycap(symbol: KeyNames.symbol(for: $0)) }
@@ -153,12 +164,10 @@ struct SiteEditor: View, Equatable {
         let id = form.id
         VStack(alignment: .leading, spacing: 4) {
             if let profiles = form.profiles {
-                Picker("Account", selection: Binding(get: { form.profile }, set: { profile in afterUpdate { model.setProfile(id, profile) } })) {
-                    Text("Choose…").tag(String?.none)
-                    ForEach(profiles, id: \.directory) { profile in
-                        Text(AddTabView.label(profile)).tag(Optional(profile.directory))
-                    }
-                }
+                AccountPicker(
+                    selection: Binding(get: { form.profile }, set: { profile in afterUpdate { model.setProfile(id, profile) } }),
+                    profiles: profiles
+                )
             } else {
                 TextField("Account", text: Binding(get: { form.site.account ?? "" }, set: { value in model.update(id) { $0.account = value } }), prompt: Text("you@work.com"))
             }

@@ -106,10 +106,11 @@ final class EditorModel: ObservableObject {
     }
 
     /// For the window opened again: the file as it is now, watched again, nothing searched,
-    /// and site icons read afresh.
+    /// and site icons and account pictures read afresh.
     func reopen() {
         query = ""
         SiteIcons.forget()
+        ProfilePictures.forget()
         load()
         watch()
     }
@@ -365,6 +366,13 @@ final class EditorModel: ObservableObject {
         guard let site = draft.site(id)?.site, let profile = profile(of: id),
               let lookup = SiteIcon.lookup(open: site.open ?? "", match: site.match) else { return nil }
         return SiteIconKey(profile: profile, lookup: lookup)
+    }
+
+    /// What the site's account picture is drawn from: the profile it jumps into, resolved
+    /// as "Lands in" is; nil when no profile matches, which shows the account's text alone.
+    func pictureKey(site id: Int) -> ProfilePictureKey? {
+        guard let catalog, let directory = profile(of: id), let profile = catalog.profile(directory: directory) else { return nil }
+        return ProfilePictureKey(profile)
     }
 
     func setProfile(_ id: Int, _ directory: String?) {

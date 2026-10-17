@@ -155,12 +155,10 @@ struct AddTabView: View {
                     )
                     VStack(alignment: .leading, spacing: 4) {
                         if let catalog = model.catalog {
-                            Picker("Account", selection: Binding(get: { model.profileDirectory }, set: { directory in afterUpdate { model.profileDirectory = directory } })) {
-                                Text("Choose…").tag(String?.none)
-                                ForEach(catalog.profiles, id: \.directory) { profile in
-                                    Text(Self.label(profile)).tag(Optional(profile.directory))
-                                }
-                            }
+                            AccountPicker(
+                                selection: Binding(get: { model.profileDirectory }, set: { directory in afterUpdate { model.profileDirectory = directory } }),
+                                profiles: catalog.profiles
+                            )
                         } else {
                             TextField("Account", text: $model.account, prompt: Text("you@work.com"))
                         }
@@ -209,10 +207,6 @@ struct AddTabView: View {
             KeyPicker(key: Binding(get: { model.key }, set: { key in afterUpdate { model.key = key } }), free: model.freeKeys)
             EditorNotes(note: nil, problems: model.keyProblems)
         }
-    }
-
-    static func label(_ profile: ChromeProfile) -> String {
-        profile.email.isEmpty ? profile.name : "\(profile.windowLabel) · \(profile.email)"
     }
 }
 

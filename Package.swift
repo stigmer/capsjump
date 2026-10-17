@@ -8,7 +8,7 @@
 // the config watcher and saving the config, moving windows, opening apps and links);
 // CapsJumpApp runs the keys and receives capsjump:// links; capsjump is the CLI. Saving
 // the config has tests of its own (CapsJumpSystemTests), because its bugs would lose the
-// user's file; so does reading Chrome's saved site icons (CapsJumpChromeTests), because
+// user's file; so does reading Chrome's saved site icons and profile pictures (CapsJumpChromeTests), because
 // it reads a format that is Chrome's, not ours, and its tests pin what was read. scripts/bundle.sh puts the app and the CLI into
 // one CapsJump.app.
 

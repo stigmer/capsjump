@@ -1,6 +1,7 @@
 // Chrome's Local State parsing, window labels, account lookup and site resolution, on
 // the shapes measured on a real Mac: profiles signed out with the email only in the name,
-// and two profiles sharing a name.
+// and two profiles sharing a name. Profile pictures by Chrome's own rule, on the shapes
+// measured: signed in on the default avatar, asking for the Google picture, no account.
 
 import Foundation
 import Testing
@@ -91,6 +92,44 @@ func site(_ name: String = "s", account: String? = nil, profile: String? = nil, 
         #expect(!a.canFocus)
         #expect(a.sharedLabelWith.map(\.directory) == ["B"])
         #expect(try Resolver.resolve(site(profile: "C"), in: c).canFocus)
+    }
+
+    /// The one profile parsed from an info_cache entry written as JSON.
+    private func picture(_ entry: String) throws -> ProfilePicture {
+        let json = #"{"profile": {"info_cache": {"Profile 1": "# + entry + "}}}"
+        return try #require(ProfileCatalog.parse(localState: Data(json.utf8)).profiles.first).picture
+    }
+
+    @Test func picturesByChromesRule() throws {
+        let colours = #""default_avatar_fill_color": -14410706, "default_avatar_stroke_color": -3161638"#
+        let fill = UInt32(bitPattern: -14410706)
+        let outline = UInt32(bitPattern: -3161638)
+        // Signed in, on the default avatar: Chrome shows the Google picture.
+        #expect(try picture(#"{"name": "a", "gaia_picture_file_name": "Google Profile Picture.png", "is_using_default_avatar": true, "#
+            + colours + "}") == ProfilePicture(file: "Google Profile Picture.png", fill: fill, outline: outline))
+        // Asked for outright.
+        #expect(try picture(#"{"name": "a", "gaia_picture_file_name": "Google Profile Picture.png", "is_using_default_avatar": false, "use_gaia_picture": true}"#)
+            == ProfilePicture(file: "Google Profile Picture.png"))
+        // Explicitly not asked for, on the default avatar: still shown, as unset is.
+        #expect(try picture(#"{"name": "a", "gaia_picture_file_name": "p.png", "is_using_default_avatar": true, "use_gaia_picture": false}"#)
+            == ProfilePicture(file: "p.png"))
+        // No account: no file, only the colours.
+        #expect(try picture(#"{"name": "a", "is_using_default_avatar": true, "# + colours + "}")
+            == ProfilePicture(fill: fill, outline: outline))
+        // A chosen built-in avatar: Chrome draws it from its own resources, so the outline here.
+        #expect(try picture(#"{"name": "a", "gaia_picture_file_name": "p.png", "is_using_default_avatar": false, "use_gaia_picture": false}"#)
+            == ProfilePicture())
+        // An entry without picture keys is what a profile built by hand has.
+        #expect(try picture(#"{"name": "a"}"#) == ProfilePicture())
+    }
+
+    @Test(arguments: ["../p.png", "a/p.png", "..", ".", ""])
+    func pictureFileIsAPlainName(name: String) throws {
+        #expect(try picture(#"{"name": "a", "is_using_default_avatar": true, "gaia_picture_file_name": ""# + name + #""}"#).file == nil)
+    }
+
+    @Test func pictureColoursOutsideThirtyTwoBitsAreDropped() throws {
+        #expect(try picture(#"{"name": "a", "default_avatar_fill_color": 4294967296, "default_avatar_stroke_color": "red"}"#) == ProfilePicture())
     }
 
     @Test(arguments: [

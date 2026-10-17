@@ -3,8 +3,9 @@
 // A key is picked from the keys no other row holds; what it does is an app (through the
 // app chooser), one of the sites, or a link. Keys that move the window are in Windows; one
 // naming a move CapsJump doesn't know stays here, with its problem and no kind picked. The editor says what the
-// key will do on this Mac, or what's wrong under its field. A list line takes values, not
-// the model, so an edit redraws only the lines it changed.
+// key will do on this Mac, or what's wrong under its field. A site key's line shows the
+// site's icon and its account's picture. A list line takes values, not the model, so an
+// edit redraws only the lines it changed.
 
 import CapsJumpCore
 import SwiftUI
@@ -16,11 +17,13 @@ struct KeyList: View {
         let lines = model.keyLines
         List(selection: model.keySelection) {
             ForEach(lines) { line in
+                let siteRow = line.kind == .site ? model.draft.key(line.id)?.siteRow : nil
                 KeyLineView(
                     line: line,
                     problem: model.check.byKey[line.id] != nil,
                     appPath: line.app.flatMap(model.appPath),
-                    siteIcon: line.kind == .site ? model.draft.key(line.id)?.siteRow.flatMap { model.iconKey(site: $0) } : nil
+                    siteIcon: siteRow.flatMap { model.iconKey(site: $0) },
+                    picture: siteRow.flatMap { model.pictureKey(site: $0) }
                 )
                     .equatable()
                     .tag(line.id)
@@ -43,6 +46,7 @@ struct KeyLineView: View, Equatable {
     let problem: Bool
     let appPath: String?
     let siteIcon: SiteIconKey?
+    let picture: ProfilePictureKey?
 
     var body: some View {
         HStack(spacing: 10) {
@@ -53,11 +57,16 @@ struct KeyLineView: View, Equatable {
                 Text(line.title)
                     .lineLimit(1)
                 if let subtitle = line.subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+                    HStack(spacing: 4) {
+                        if let picture {
+                            ProfilePictureView(key: picture, size: 12)
+                        }
+                        Text(subtitle)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
                 }
             }
             Spacer(minLength: 4)
