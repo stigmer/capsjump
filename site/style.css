@@ -1,6 +1,6 @@
 /* CapsJump's website: black and white, in light and dark; a single column
-   that narrows to a phone; the looping Caps Lock + G demo (still, in its final frame, for
-   reduced motion); and pictures of the app, each in the visitor's own look. */
+   that narrows to a phone; a looping desk where Caps Lock + G, left, W and S each do their job
+   (held on the G beat for reduced motion); and pictures of the app, each in the visitor's own look. */
 
 :root {
   --bg: #fafafa;
@@ -152,58 +152,153 @@ kbd {
   line-height: 1.4;
 }
 
-/* The demo. */
+/* The demo: one small Mac desk, Caps Lock held. Paint order is fixed in SVG, so the terminal and
+   the chat window are drawn once in defs, behind Chrome, and a second copy of each sits above it
+   whose only motion is its opacity. Every element's own style is the G beat. */
 .demo { text-align: center; }
 .demo svg { width: 100%; max-width: 640px; height: auto; display: block; margin: 0 auto; }
-.caption { color: var(--muted); font-size: 15px; margin-top: 12px; }
 
-.key-top { fill: var(--key); stroke: var(--line); stroke-width: 1.5; }
-.key-side { fill: var(--key-side); }
-.key-label { fill: var(--muted); font: 600 15px -apple-system, system-ui, sans-serif; }
-.key-letter { fill: var(--ink); font: 700 26px -apple-system, system-ui, sans-serif; text-anchor: middle; }
-.glyph { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
-.key-caps, .key-g { transform-box: fill-box; }
+.screen { fill: var(--accent-soft); stroke: var(--key-side); stroke-width: 1; }
+.menubar { fill: var(--surface); }
+.menu, .menu-app { fill: var(--ink); font: 400 9.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; word-spacing: 9px; }
+.menu-app { font-weight: 700; word-spacing: 0; }
+.menu.end { text-anchor: end; word-spacing: 0; }
+.app-term, .app-slack { opacity: 0; }
 
-.arc { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0 12; opacity: 0; }
+.win { fill: var(--surface); }
+.win-line { fill: none; stroke: var(--key-side); stroke-width: 1; }
+.hair { stroke: var(--line); stroke-width: 1; }
+.light { fill: var(--key-side); }
+.win-title { fill: var(--muted); font: 600 9.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; text-anchor: middle; }
+.term-body { fill: var(--code-bg); }
+.mono { fill: var(--code-ink); font: 400 10.5px ui-monospace, "SF Mono", Menlo, monospace; }
+.caret { fill: var(--code-ink); }
+.side { fill: var(--tab); }
+.side-on { fill: var(--surface); }
+.chan { fill: var(--muted); font: 500 9.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.chan.on { fill: var(--ink); font-weight: 700; }
+.avatar { fill: var(--key-side); }
+.who { fill: var(--ink); font: 700 9.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.said { fill: var(--ink); font: 400 9.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.field { fill: none; stroke: var(--line); stroke-width: 1; }
+.meta { fill: var(--muted); font: 400 8.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.meta.end { text-anchor: end; }
 
-.window { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
-.chip { fill: var(--accent-soft); }
-.chip-label { fill: var(--accent); font: 700 12px -apple-system, system-ui, sans-serif; text-anchor: middle; }
+.strip { fill: var(--tab); }
+.toolbar { fill: var(--surface); }
 .tab rect { fill: var(--tab); }
-.tab text { fill: var(--muted); font: 600 12px -apple-system, system-ui, sans-serif; text-anchor: middle; }
-.page { fill: var(--bg); }
-.line { fill: var(--line); }
+.tab text { fill: var(--muted); font: 500 9.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.ticon { fill: none; stroke: var(--muted); stroke-width: 1; stroke-linejoin: round; }
+.tab-pr rect { fill: var(--surface); }
+.tab-pr text { fill: var(--ink); }
+.addr { fill: var(--tab); }
+.addr-text { fill: var(--muted); font: 400 8.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.chip { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.chip-face { fill: var(--key-side); }
+.chip-label { fill: var(--ink); font: 700 9px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.h { fill: var(--ink); font: 700 12.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.row-title { fill: var(--ink); font: 600 10px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.note { fill: var(--ink); font: 400 10px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.ring { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+.dot { fill: var(--muted); }
+.tick { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.page-docs, .addr-docs { opacity: 0; }
+.chat-front, .term-front { opacity: 0; }
+
+/* Keys, flat like kbd: Caps Lock held, the beat's key down. */
+.key-base { fill: var(--line); }
+.key-top { fill: var(--key); stroke: var(--line); stroke-width: 1; }
+.key-glyph { fill: var(--ink); }
+.key-letter { font: 600 19px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; text-anchor: middle; }
+.key-label { fill: var(--muted); font: 500 10.5px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.plus { fill: var(--muted); font: 400 18px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; text-anchor: middle; }
+.key-caps .cap, .key-g .cap { transform: translateY(3px); }
+.key-caps .key-top, .key-g .key-top { fill: var(--accent); stroke: var(--accent); }
+.key-caps .key-glyph, .key-g .key-glyph { fill: var(--accent-ink); }
+
+/* The legend says what the drawing shows, in text that stays readable on a phone. */
+.legend { max-width: 640px; margin: 16px auto 0; text-align: left; }
+.legend-lead { margin: 0 0 6px; color: var(--muted); font-size: 15px; }
+.legend-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 4px 12px; }
+.legend-list li { padding: 4px 10px; border-radius: 8px; color: var(--muted); font-size: 15px; background-color: transparent; }
+.legend-list .beat-g { color: var(--ink); background-color: var(--accent-soft); }
 
 @media (prefers-reduced-motion: no-preference) {
-  .key-caps { animation: caps 5s infinite; }
-  .key-g { animation: g 5s infinite; }
-  .key-caps .key-top { animation: caps-top 5s infinite; }
-  .key-g .key-top { animation: g-top 5s infinite; }
-  .arc { animation: arc 5s infinite; }
-  .tab-docs rect { animation: tab-before 5s infinite; }
-  .tab-docs text { animation: tab-before-text 5s infinite; }
-  .tab-pr rect { animation: tab-after 5s infinite; }
-  .tab-pr text { animation: tab-after-text 5s infinite; }
-  .window { animation: window 5s infinite; }
+  .windows { animation: windows 16s infinite; }
+  .chrome { animation: snap 16s infinite; }
+  .term-front { animation: term-front 16s infinite; }
+  .chat-front { animation: chat-front 16s infinite; }
+  .app-term { animation: app-term 16s infinite; }
+  .app-chrome { animation: app-chrome 16s infinite; }
+  .app-slack { animation: app-slack 16s infinite; }
+  .tab-docs rect { animation: tab-on 16s infinite; }
+  .tab-docs text { animation: tab-on-text 16s infinite; }
+  .tab-pr rect { animation: tab-off 16s infinite; }
+  .tab-pr text { animation: tab-off-text 16s infinite; }
+  .page-docs, .addr-docs { animation: shown-before 16s infinite; }
+  .page-pr, .addr-pr { animation: shown-after 16s infinite; }
+  .chip { animation: chip 16s infinite; }
+  .key-caps .cap { animation: caps 16s infinite; }
+  .key-caps .key-top { animation: caps-top 16s infinite; }
+  .key-caps .key-glyph { animation: caps-glyph 16s infinite; }
+  .key-g .cap { animation: g 16s infinite; }
+  .key-g .key-top { animation: g-top 16s infinite; }
+  .key-g .key-glyph { animation: g-glyph 16s infinite; }
+  .key-left .cap { animation: left 16s infinite; }
+  .key-left .key-top { animation: left-top 16s infinite; }
+  .key-left .key-glyph { animation: left-glyph 16s infinite; }
+  .key-w .cap { animation: w 16s infinite; }
+  .key-w .key-top { animation: w-top 16s infinite; }
+  .key-w .key-glyph { animation: w-glyph 16s infinite; }
+  .key-s .cap { animation: s 16s infinite; }
+  .key-s .key-top { animation: s-top 16s infinite; }
+  .key-s .key-glyph { animation: s-glyph 16s infinite; }
+  .beat-g { animation: beat-g 16s infinite; }
+  .beat-left { animation: beat-left 16s infinite; }
+  .beat-w { animation: beat-w 16s infinite; }
+  .beat-s { animation: beat-s 16s infinite; }
 }
 
-/* Without motion, the last frame: the pull requests tab is the active one. */
-@media (prefers-reduced-motion: reduce) {
-  .arc { opacity: 1; }
-  .tab-pr rect { fill: var(--accent); }
-  .tab-pr text { fill: var(--accent-ink); }
-}
+/* One 16 s loop. G 0-35% (first and longest), left 35-55, W 55-75, S 75-96; then the windows fade
+   out, go back while hidden and fade in, so the story restarts rather than running backwards. */
+@keyframes windows { 0%, 96% { opacity: 1; } 97.5%, 98.5% { opacity: 0; } 100% { opacity: 1; } }
+/* G: the terminal steps back, then the tab moves to Pull requests in the Work account. */
+@keyframes term-front { 0%, 7% { opacity: 1; } 8.5%, 78.5% { opacity: 0; } 80%, 100% { opacity: 1; } }
+@keyframes app-term { 0%, 7% { opacity: 1; } 8%, 79% { opacity: 0; } 80%, 100% { opacity: 1; } }
+@keyframes app-chrome { 0%, 7% { opacity: 0; } 8%, 59% { opacity: 1; } 60%, 100% { opacity: 0; } }
+@keyframes tab-on { 0%, 12% { fill: var(--surface); } 14%, 97.9% { fill: var(--tab); } 98%, 100% { fill: var(--surface); } }
+@keyframes tab-on-text { 0%, 12% { fill: var(--ink); } 14%, 97.9% { fill: var(--muted); } 98%, 100% { fill: var(--ink); } }
+@keyframes tab-off { 0%, 12% { fill: var(--tab); } 14%, 97.9% { fill: var(--surface); } 98%, 100% { fill: var(--tab); } }
+@keyframes tab-off-text { 0%, 12% { fill: var(--muted); } 14%, 97.9% { fill: var(--ink); } 98%, 100% { fill: var(--muted); } }
+@keyframes shown-before { 0%, 12% { opacity: 1; } 14%, 97.9% { opacity: 0; } 98%, 100% { opacity: 1; } }
+@keyframes shown-after { 0%, 12% { opacity: 0; } 14%, 97.9% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes chip { 0%, 13%, 36%, 100% { stroke: var(--accent-soft); } 15%, 34% { stroke: var(--accent); } }
+/* Left: Chrome slides to the left half, beside the terminal. */
+@keyframes snap { 0%, 39% { transform: translate(0, 0); } 43%, 97.9% { transform: translate(-156px, -8px); } 98%, 100% { transform: translate(0, 0); } }
+/* W: the #launch channel comes forward. S: the terminal does, and stays there into the next loop. */
+@keyframes chat-front { 0%, 58.5% { opacity: 0; } 60%, 97.9% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes app-slack { 0%, 59% { opacity: 0; } 60%, 79% { opacity: 1; } 80%, 100% { opacity: 0; } }
 
-@keyframes caps { 0%, 12%, 72%, 100% { transform: translateY(0); } 16%, 68% { transform: translateY(7px); } }
-@keyframes caps-top { 0%, 12%, 72%, 100% { fill: var(--key); } 16%, 68% { fill: var(--accent-soft); } }
-@keyframes g { 0%, 30%, 44%, 100% { transform: translateY(0); } 33%, 41% { transform: translateY(7px); } }
-@keyframes g-top { 0%, 30%, 44%, 100% { fill: var(--key); } 33%, 41% { fill: var(--accent-soft); } }
-@keyframes arc { 0%, 34% { opacity: 0; } 40%, 62% { opacity: 1; } 72%, 100% { opacity: 0; } }
-@keyframes tab-before { 0%, 42% { fill: var(--accent); } 46%, 100% { fill: var(--tab); } }
-@keyframes tab-before-text { 0%, 42% { fill: var(--accent-ink); } 46%, 100% { fill: var(--muted); } }
-@keyframes tab-after { 0%, 42% { fill: var(--tab); } 46%, 94% { fill: var(--accent); } 98%, 100% { fill: var(--tab); } }
-@keyframes tab-after-text { 0%, 42% { fill: var(--muted); } 46%, 94% { fill: var(--accent-ink); } 98%, 100% { fill: var(--muted); } }
-@keyframes window { 0%, 42%, 70%, 100% { stroke: var(--line); } 46%, 62% { stroke: var(--accent); } }
+@keyframes caps { 0%, 2%, 96%, 100% { transform: translateY(0); } 3%, 95% { transform: translateY(3px); } }
+@keyframes caps-top { 0%, 2%, 96%, 100% { fill: var(--key); stroke: var(--line); } 3%, 95% { fill: var(--accent); stroke: var(--accent); } }
+@keyframes caps-glyph { 0%, 2%, 96%, 100% { fill: var(--muted); } 3%, 95% { fill: var(--accent-ink); } }
+@keyframes g { 0%, 5%, 11%, 100% { transform: translateY(0); } 6%, 10% { transform: translateY(3px); } }
+@keyframes g-top { 0%, 5%, 11%, 100% { fill: var(--key); stroke: var(--line); } 6%, 10% { fill: var(--accent); stroke: var(--accent); } }
+@keyframes g-glyph { 0%, 5%, 11%, 100% { fill: var(--ink); } 6%, 10% { fill: var(--accent-ink); } }
+@keyframes left { 0%, 37%, 42%, 100% { transform: translateY(0); } 38%, 41% { transform: translateY(3px); } }
+@keyframes left-top { 0%, 37%, 42%, 100% { fill: var(--key); stroke: var(--line); } 38%, 41% { fill: var(--accent); stroke: var(--accent); } }
+@keyframes left-glyph { 0%, 37%, 42%, 100% { fill: var(--ink); } 38%, 41% { fill: var(--accent-ink); } }
+@keyframes w { 0%, 57%, 62%, 100% { transform: translateY(0); } 58%, 61% { transform: translateY(3px); } }
+@keyframes w-top { 0%, 57%, 62%, 100% { fill: var(--key); stroke: var(--line); } 58%, 61% { fill: var(--accent); stroke: var(--accent); } }
+@keyframes w-glyph { 0%, 57%, 62%, 100% { fill: var(--ink); } 58%, 61% { fill: var(--accent-ink); } }
+@keyframes s { 0%, 77%, 82%, 100% { transform: translateY(0); } 78%, 81% { transform: translateY(3px); } }
+@keyframes s-top { 0%, 77%, 82%, 100% { fill: var(--key); stroke: var(--line); } 78%, 81% { fill: var(--accent); stroke: var(--accent); } }
+@keyframes s-glyph { 0%, 77%, 82%, 100% { fill: var(--ink); } 78%, 81% { fill: var(--accent-ink); } }
+
+@keyframes beat-g { 0%, 34% { color: var(--ink); background-color: var(--accent-soft); } 35.5%, 98.5% { color: var(--muted); background-color: transparent; } 100% { color: var(--ink); background-color: var(--accent-soft); } }
+@keyframes beat-left { 0%, 34% { color: var(--muted); background-color: transparent; } 35.5%, 54% { color: var(--ink); background-color: var(--accent-soft); } 55.5%, 100% { color: var(--muted); background-color: transparent; } }
+@keyframes beat-w { 0%, 54% { color: var(--muted); background-color: transparent; } 55.5%, 74% { color: var(--ink); background-color: var(--accent-soft); } 75.5%, 100% { color: var(--muted); background-color: transparent; } }
+@keyframes beat-s { 0%, 74% { color: var(--muted); background-color: transparent; } 75.5%, 96% { color: var(--ink); background-color: var(--accent-soft); } 97.5%, 100% { color: var(--muted); background-color: transparent; } }
 
 /* The four panels. */
 .panels {

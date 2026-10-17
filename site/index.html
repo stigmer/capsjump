@@ -37,36 +37,118 @@
       <p class="fine">Free and open source, for macOS 13 or later.</p>
     </section>
 
-    <section class="demo" aria-label="Caps Lock and G bring the GitHub tab forward in the work account">
-      <svg viewBox="0 24 640 226" role="img" aria-hidden="true">
-        <g class="keys">
-          <g class="key key-caps">
-            <rect class="key-side" x="20" y="132" width="150" height="76" rx="14"/>
-            <rect class="key-top" x="20" y="124" width="150" height="76" rx="14"/>
-            <path class="glyph" d="M52 140 L40 153 H47 V162 H57 V153 H64 Z"/>
-            <text class="key-label" x="50" y="186">caps lock</text>
+    <section class="demo" aria-label="Hold Caps Lock, then press G for the pull requests in your work Chrome account, the left arrow to snap that window to the left half, W for the #launch channel in Slack, and S for your terminal">
+      <svg viewBox="0 0 640 376" role="img" aria-hidden="true">
+        <defs>
+          <g id="desk-term">
+            <rect class="win" x="322" y="32" width="306" height="262" rx="10"/>
+            <path class="term-body" d="M322 56 H628 V284 A10 10 0 0 1 618 294 H332 A10 10 0 0 1 322 284 Z"/>
+            <line class="hair" x1="322" y1="56" x2="628" y2="56"/>
+            <circle class="light" cx="337" cy="44" r="4"/><circle class="light" cx="350" cy="44" r="4"/><circle class="light" cx="363" cy="44" r="4"/>
+            <text class="win-title" x="475" y="47">your-repo — zsh</text>
+            <text class="mono" x="336" y="80">~/your-repo $ npm test</text>
+            <text class="mono" x="336" y="98">✓ 86 tests passed</text>
+            <text class="mono" x="336" y="122">~/your-repo $</text>
+            <rect class="caret" x="427" y="113" width="6" height="11"/>
+            <rect class="win-line" x="322" y="32" width="306" height="262" rx="10"/>
           </g>
-          <g class="key key-g">
-            <rect class="key-side" x="186" y="132" width="76" height="76" rx="14"/>
-            <rect class="key-top" x="186" y="124" width="76" height="76" rx="14"/>
-            <text class="key-letter" x="224" y="172">G</text>
+          <g id="desk-chat">
+            <rect class="win" x="56" y="78" width="286" height="196" rx="10"/>
+            <path class="side" d="M56 102 H136 V274 H66 A10 10 0 0 1 56 264 Z"/>
+            <line class="hair" x1="56" y1="102" x2="342" y2="102"/>
+            <circle class="light" cx="71" cy="90" r="4"/><circle class="light" cx="84" cy="90" r="4"/><circle class="light" cx="97" cy="90" r="4"/>
+            <text class="win-title" x="239" y="93">#launch</text>
+            <text class="chan" x="66" y="122"># general</text>
+            <rect class="side-on" x="61" y="129" width="70" height="16" rx="4"/>
+            <text class="chan on" x="66" y="140"># launch</text>
+            <text class="chan" x="66" y="158"># random</text>
+            <circle class="avatar" cx="157" cy="124" r="9"/>
+            <text class="who" x="173" y="121">Sam</text><text class="meta" x="197" y="121">10:21</text>
+            <text class="said" x="173" y="134">Is the PR up yet?</text>
+            <circle class="avatar" cx="157" cy="162" r="9"/>
+            <text class="who" x="173" y="159">Ana</text><text class="meta" x="196" y="159">10:22</text>
+            <text class="said" x="173" y="172">I can review it after lunch.</text>
+            <rect class="field" x="146" y="238" width="186" height="26" rx="6"/>
+            <text class="meta" x="156" y="255">Message #launch</text>
+            <rect class="win-line" x="56" y="78" width="286" height="196" rx="10"/>
           </g>
+        </defs>
+        <rect class="screen" x="6" y="6" width="628" height="300" rx="12"/>
+        <path class="menubar" d="M6 18 A12 12 0 0 1 18 6 H622 A12 12 0 0 1 634 18 V26 H6 Z"/>
+        <text class="menu-app app-term" x="20" y="20">Terminal</text>
+        <text class="menu-app app-chrome" x="20" y="20">Chrome</text>
+        <text class="menu-app app-slack" x="20" y="20">Slack</text>
+        <text class="menu" x="80" y="20">File Edit View Window Help</text>
+        <text class="menu end" x="620" y="20">Tue 10:24</text>
+        <g class="windows">
+          <use href="#desk-term"/>
+          <use href="#desk-chat"/>
+          <g class="chrome">
+            <rect class="win" x="168" y="40" width="304" height="262" rx="10"/>
+            <path class="strip" d="M168 50 A10 10 0 0 1 178 40 H462 A10 10 0 0 1 472 50 V68 H168 Z"/>
+            <circle class="light" cx="182" cy="54" r="4"/><circle class="light" cx="195" cy="54" r="4"/><circle class="light" cx="208" cy="54" r="4"/>
+            <g class="tab tab-inbox"><rect x="222" y="45" width="62" height="28" rx="6"/><path class="ticon" d="M230 53 H240 V60 H230 Z M230 53 L235 57 L240 53"/><text x="245" y="60">Inbox</text></g>
+            <g class="tab tab-docs"><rect x="286" y="45" width="58" height="28" rx="6"/><path class="ticon" d="M294 52 H300 L303 55 V62 H294 Z"/><text x="308" y="60">Docs</text></g>
+            <g class="tab tab-pr"><rect x="346" y="45" width="100" height="28" rx="6"/><path class="ticon" d="M356 52 V62 M362 62 V57 A3 3 0 0 0 359 54 H358"/><text x="369" y="60">Pull requests</text></g>
+            <rect class="toolbar" x="169" y="68" width="302" height="28"/>
+            <rect class="addr" x="180" y="74" width="212" height="17" rx="8.5"/>
+            <text class="addr-text addr-docs" x="190" y="85.5">docs.your-org.com/q4-roadmap</text>
+            <text class="addr-text addr-pr" x="190" y="85.5">github.com/your-org/your-repo/pulls</text>
+            <rect class="chip" x="400" y="74" width="62" height="17" rx="8.5"/>
+            <circle class="chip-face" cx="410" cy="82.5" r="5"/>
+            <text class="chip-label" x="420" y="86">Work</text>
+            <line class="hair" x1="168" y1="96" x2="472" y2="96"/>
+            <g class="page-docs">
+              <text class="h" x="184" y="120">Q4 roadmap</text>
+              <text class="meta" x="184" y="134">Edited 2 hours ago</text>
+              <circle class="dot" cx="188" cy="155" r="1.6"/><text class="note" x="196" y="158">Ship the upload retry before the freeze</text>
+              <circle class="dot" cx="188" cy="173" r="1.6"/><text class="note" x="196" y="176">Move the login tests off the shared runner</text>
+              <circle class="dot" cx="188" cy="191" r="1.6"/><text class="note" x="196" y="194">Write the launch post with the team</text>
+              <circle class="dot" cx="188" cy="209" r="1.6"/><text class="note" x="196" y="212">Plan the next on-call rotation</text>
+            </g>
+            <g class="page-pr">
+              <text class="h" x="184" y="120">Pull requests</text>
+              <text class="meta end" x="456" y="120">3 open</text>
+              <line class="hair" x1="180" y1="130" x2="460" y2="130"/>
+              <circle class="ring" cx="188" cy="141" r="2.2"/><circle class="ring" cx="188" cy="152" r="2.2"/><path class="ring" d="M188 143.2 V149.8"/>
+              <text class="row-title" x="200" y="145">Add retry to the upload job</text>
+              <text class="meta" x="200" y="158">#128 · opened by you · checks passed</text>
+              <path class="tick" d="M444 146 L447.5 149.5 L454 143"/>
+              <line class="hair" x1="180" y1="166" x2="460" y2="166"/>
+              <circle class="ring" cx="188" cy="177" r="2.2"/><circle class="ring" cx="188" cy="188" r="2.2"/><path class="ring" d="M188 179.2 V185.8"/>
+              <text class="row-title" x="200" y="181">Update the test runner</text>
+              <text class="meta" x="200" y="194">#127 · opened by Ana · review requested</text>
+              <circle class="ring" cx="449" cy="183" r="3.5"/>
+              <line class="hair" x1="180" y1="202" x2="460" y2="202"/>
+              <circle class="ring" cx="188" cy="213" r="2.2"/><circle class="ring" cx="188" cy="224" r="2.2"/><path class="ring" d="M188 215.2 V221.8"/>
+              <text class="row-title" x="200" y="217">Fix the flaky login test</text>
+              <text class="meta" x="200" y="230">#125 · opened by Sam · checks passed</text>
+              <path class="tick" d="M444 218 L447.5 221.5 L454 215"/>
+              <line class="hair" x1="180" y1="238" x2="460" y2="238"/>
+            </g>
+            <rect class="win-line" x="168" y="40" width="304" height="262" rx="10"/>
+          </g>
+          <use class="chat-front" href="#desk-chat"/>
+          <use class="term-front" href="#desk-term"/>
         </g>
-        <path class="arc" d="M240 112 C 270 40, 330 34, 352 70"/>
-        <g class="browser">
-          <rect class="window" x="330" y="56" width="290" height="180" rx="14"/>
-          <rect class="chip" x="540" y="68" width="68" height="22" rx="11"/>
-          <text class="chip-label" x="574" y="83">Work</text>
-          <g class="tab tab-mail"><rect x="342" y="98" width="86" height="26" rx="8"/><text x="385" y="115">Inbox</text></g>
-          <g class="tab tab-docs"><rect x="432" y="98" width="80" height="26" rx="8"/><text x="472" y="115">Docs</text></g>
-          <g class="tab tab-pr"><rect x="516" y="98" width="92" height="26" rx="8"/><text x="562" y="115">Pull requests</text></g>
-          <rect class="page" x="342" y="132" width="266" height="92" rx="8"/>
-          <rect class="line l1" x="358" y="150" width="180" height="10" rx="5"/>
-          <rect class="line l2" x="358" y="170" width="220" height="10" rx="5"/>
-          <rect class="line l3" x="358" y="190" width="140" height="10" rx="5"/>
+        <g class="keys">
+          <g class="key key-caps"><rect class="key-base" x="136" y="325" width="120" height="46" rx="9"/><g class="cap"><rect class="key-top" x="136" y="322" width="120" height="46" rx="9"/><text class="key-glyph key-label" x="148" y="359">caps lock</text></g></g>
+          <text class="plus" x="269" y="352">+</text>
+          <g class="key key-g"><rect class="key-base" x="282" y="325" width="48" height="46" rx="9"/><g class="cap"><rect class="key-top" x="282" y="322" width="48" height="46" rx="9"/><text class="key-glyph key-letter" x="306" y="352">G</text></g></g>
+          <g class="key key-left"><rect class="key-base" x="340" y="325" width="48" height="46" rx="9"/><g class="cap"><rect class="key-top" x="340" y="322" width="48" height="46" rx="9"/><path class="key-glyph" d="M357 345 L370 338 V352 Z"/></g></g>
+          <g class="key key-w"><rect class="key-base" x="398" y="325" width="48" height="46" rx="9"/><g class="cap"><rect class="key-top" x="398" y="322" width="48" height="46" rx="9"/><text class="key-glyph key-letter" x="422" y="352">W</text></g></g>
+          <g class="key key-s"><rect class="key-base" x="456" y="325" width="48" height="46" rx="9"/><g class="cap"><rect class="key-top" x="456" y="322" width="48" height="46" rx="9"/><text class="key-glyph key-letter" x="480" y="352">S</text></g></g>
         </g>
       </svg>
-      <p class="caption"><kbd>Caps Lock</kbd> + <kbd>G</kbd> lands on the pull requests tab, in the work account.</p>
+      <div class="legend">
+        <p class="legend-lead">Hold <kbd>Caps Lock</kbd>, then:</p>
+        <ol class="legend-list">
+          <li class="beat-g"><kbd>G</kbd> pull requests, in the work account</li>
+          <li class="beat-left"><kbd>←</kbd> that window to the left half</li>
+          <li class="beat-w"><kbd>W</kbd> the #launch channel in Slack</li>
+          <li class="beat-s"><kbd>S</kbd> your terminal</li>
+        </ol>
+      </div>
     </section>
 
     <section class="panels">
