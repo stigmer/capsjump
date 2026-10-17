@@ -118,7 +118,8 @@ struct SiteEditor: View, Equatable {
                         ForEach(form.keys, id: \.self) { Keycap(symbol: KeyNames.symbol(for: $0)) }
                     }
                     Spacer()
-                    Button("Add Key for This Site") { model.addKey(forSite: id) }
+                    Button("Add Key") { model.addKey(forSite: id) }
+                        .help("Adds a key that jumps to this site, on the first free key")
                         .disabled(!form.canAddKey)
                 }
             }
