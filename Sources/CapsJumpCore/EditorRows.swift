@@ -75,12 +75,12 @@ public enum EditorRows {
                 case nil:
                     title = value.isEmpty ? "Choose an app" : value
                 }
-                doing = "brings \(title) forward"
+                doing = value.isEmpty ? "has no app yet" : "brings \(title) forward"
             case .site:
                 title = value.isEmpty ? "Choose a site" : value
                 let site = draft.sites.first { $0.site.name == value }?.site
                 subtitle = site.flatMap { account(of: $0) }
-                doing = "jumps to \(title)" + (subtitle.map { ", \($0)" } ?? "")
+                doing = value.isEmpty ? "has no site yet" : "jumps to \(title)" + (subtitle.map { ", \($0)" } ?? "")
             case .window:
                 let position = WindowPosition(rawValue: value)
                 window = position
@@ -93,7 +93,7 @@ public enum EditorRows {
                 } else {
                     title = value.isEmpty ? "Give the link" : value
                 }
-                doing = "opens \(title)"
+                doing = value.isEmpty ? "has no link yet" : "opens \(title)"
             }
         }
         return KeyLine(

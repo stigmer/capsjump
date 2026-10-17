@@ -113,6 +113,7 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
         }
         window.isDocumentEdited = model.hasChanges
         if let field = searchItem?.searchField {
+            field.isEnabled = model.state == .editing
             if field.stringValue != model.query { field.stringValue = model.query }
             field.placeholderString = model.section == .sites ? "Search sites" : "Search keys"
         }
@@ -277,6 +278,8 @@ private struct ContentColumn: View {
         }
         .onAppear { built.shown.insert(model.section) }
         .onChange(of: model.section) { section in built.shown.insert(section) }
+        // Under the problems of a file CapsJump can't read, out of VoiceOver's reach too.
+        .accessibilityHidden(model.state != .editing)
     }
 }
 
@@ -310,6 +313,8 @@ private struct DetailColumn: View {
         }
         .onAppear { built.shown.insert(model.section) }
         .onChange(of: model.section) { section in built.shown.insert(section) }
+        // Under the problems of a file CapsJump can't read, out of VoiceOver's reach too.
+        .accessibilityHidden(model.state != .editing)
     }
 }
 
@@ -372,6 +377,7 @@ private struct EditorSidebar: View {
             row(.keys, "Keys", "keyboard", count: model.query.isEmpty ? model.draft.keys.count : model.keyLines.count, problem: !model.check.byKey.isEmpty)
         }
         .listStyle(.sidebar)
+        .accessibilityHidden(model.state != .editing)
     }
 
     private func row(_ section: EditorModel.Section, _ title: String, _ symbol: String, count: Int, problem: Bool) -> some View {

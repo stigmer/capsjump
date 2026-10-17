@@ -141,47 +141,44 @@ struct AddTabView: View {
     let onAdd: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 0) {
             switch model.subject {
             case .newSite:
-                Text("Give this tab a key").font(.headline)
+                heading("Give this tab a key", nil)
                 Form {
-                    LabeledContent("Name") {
-                        field(TextField("Name", text: $model.name, prompt: Text("github")),
-                              note: "Also the link capsjump://\(model.siteName.isEmpty ? "<name>" : model.siteName)",
-                              problems: model.problems(.name))
-                    }
-                    LabeledContent("Account") {
-                        VStack(alignment: .leading, spacing: 4) {
-                            if let catalog = model.catalog {
-                                Picker("Account", selection: Binding(get: { model.profileDirectory }, set: { directory in afterUpdate { model.profileDirectory = directory } })) {
-                                    Text("Choose…").tag(String?.none)
-                                    ForEach(catalog.profiles, id: \.directory) { profile in
-                                        Text(Self.label(profile)).tag(Optional(profile.directory))
-                                    }
+                    FieldRow(
+                        label: "Name",
+                        text: $model.name,
+                        prompt: "github",
+                        note: "Also the link capsjump://\(model.siteName.isEmpty ? "<name>" : model.siteName)",
+                        problems: model.problems(.name)
+                    )
+                    VStack(alignment: .leading, spacing: 4) {
+                        if let catalog = model.catalog {
+                            Picker("Account", selection: Binding(get: { model.profileDirectory }, set: { directory in afterUpdate { model.profileDirectory = directory } })) {
+                                Text("Choose…").tag(String?.none)
+                                ForEach(catalog.profiles, id: \.directory) { profile in
+                                    Text(Self.label(profile)).tag(Optional(profile.directory))
                                 }
-                                .labelsHidden()
-                            } else {
-                                TextField("Account", text: $model.account, prompt: Text("you@work.com"))
-                                    .labelsHidden()
                             }
-                            notes(model.landing, model.problems(.account, .profile, .accountOrProfile))
+                        } else {
+                            TextField("Account", text: $model.account, prompt: Text("you@work.com"))
                         }
+                        EditorNotes(note: model.landing.map { "Lands in \($0)" }, problems: model.problems(.account, .profile, .accountOrProfile))
                     }
-                    LabeledContent("Page") {
-                        field(TextField("Page", text: $model.page), note: nil, problems: model.problems(.open, .match))
-                    }
+                    FieldRow(label: "Page", text: $model.page, prompt: "https://", problems: model.problems(.open, .match))
                     keyPicker
                 }
                 .formStyle(.grouped)
+                // A grouped form scrolls, so it has no height of its own; this window fits its content.
+                .fixedSize(horizontal: false, vertical: true)
             case let .existing(name):
-                Text("That's already your site \(name)").font(.headline)
-                Text(model.keysAlready.isEmpty
-                     ? "Pick a key, and Caps Lock with it lands right here."
-                     : "Caps Lock + \(model.keysAlready.map(KeyNames.symbol(for:)).joined(separator: " or ")) lands here already. Want another key too?")
-                    .foregroundStyle(.secondary)
+                heading("That's already your site \(name)", model.keysAlready.isEmpty
+                    ? "Pick a key, and Caps Lock with it lands right here."
+                    : "Caps Lock + \(model.keysAlready.map(KeyNames.symbol(for:)).joined(separator: " or ")) lands here already. Want another key too?")
                 Form { keyPicker }
                     .formStyle(.grouped)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             HStack {
                 Spacer()
@@ -191,35 +188,26 @@ struct AddTabView: View {
                     .keyboardShortcut(.defaultAction)
                     .disabled(model.config == nil)
             }
+            .padding([.horizontal, .bottom], 20)
         }
-        .padding(20)
         .frame(width: 480)
+    }
+
+    /// The title and its line, at the form's own margin.
+    private func heading(_ title: String, _ text: String?) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.headline)
+            if let text {
+                Text(text).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding([.horizontal, .top], 20)
     }
 
     private var keyPicker: some View {
         VStack(alignment: .leading, spacing: 4) {
             KeyPicker(key: Binding(get: { model.key }, set: { key in afterUpdate { model.key = key } }), free: model.freeKeys)
-            notes(nil, model.keyProblems)
-        }
-    }
-
-    private func field(_ input: TextField<Text>, note: String?, problems: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            input.labelsHidden()
-            notes(note, problems)
-        }
-    }
-
-    @ViewBuilder
-    private func notes(_ note: String?, _ problems: [String]) -> some View {
-        if problems.isEmpty, let note {
-            Text(note).font(.caption).foregroundStyle(.secondary)
-        }
-        ForEach(problems, id: \.self) { problem in
-            Text(problem)
-                .font(.caption)
-                .foregroundStyle(.red)
-                .fixedSize(horizontal: false, vertical: true)
+            EditorNotes(note: nil, problems: model.keyProblems)
         }
     }
 

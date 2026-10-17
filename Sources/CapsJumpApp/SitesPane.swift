@@ -59,7 +59,6 @@ struct SiteLineView: View, Equatable {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
-                    .truncationMode(.middle)
             }
             Spacer(minLength: 4)
             ForEach(line.keys, id: \.self) { Keycap(symbol: KeyNames.symbol(for: $0)) }

@@ -120,6 +120,7 @@ import Testing
         #expect(EditorRows.key(draft.key(row)!, in: draft).title == "Does nothing yet")
         draft.setAction(row, ActionSource(.app, ""))
         #expect(EditorRows.key(draft.key(row)!, in: draft).title == "Choose an app")
+        #expect(EditorRows.key(draft.key(row)!, in: draft).spoken == "Caps Lock plus Q, has no app yet")
         draft.setAction(row, ActionSource(.site, ""))
         #expect(EditorRows.key(draft.key(row)!, in: draft).title == "Choose a site")
         draft.setAction(row, ActionSource(.url, ""))
