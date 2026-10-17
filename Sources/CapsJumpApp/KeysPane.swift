@@ -13,7 +13,7 @@ struct KeyList: View {
 
     var body: some View {
         let lines = model.keyLines
-        List(selection: $model.selectedKey) {
+        List(selection: model.binding(\.selectedKey)) {
             ForEach(lines) { line in
                 KeyLineView(line: line, problem: model.check.byKey[line.id] != nil, appPath: line.app.flatMap(model.appPath))
                     .equatable()

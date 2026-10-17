@@ -12,6 +12,7 @@ import AppKit
 import CapsJumpChrome
 import CapsJumpCore
 import CapsJumpSystem
+import SwiftUI
 
 @MainActor
 final class EditorModel: ObservableObject {
@@ -219,6 +220,15 @@ final class EditorModel: ObservableObject {
         var next = draft
         change(&next)
         if next != draft { draft = next }
+    }
+
+    /// A binding that sets only a different value. Lists and the sidebar write their
+    /// selection back while SwiftUI updates them, and a published property publishes on every
+    /// set, which SwiftUI refuses mid-update.
+    func binding<Value: Equatable>(_ keyPath: ReferenceWritableKeyPath<EditorModel, Value>) -> Binding<Value> {
+        Binding(get: { self[keyPath: keyPath] }, set: { value in
+            if self[keyPath: keyPath] != value { self[keyPath: keyPath] = value }
+        })
     }
 
     // MARK: Lists

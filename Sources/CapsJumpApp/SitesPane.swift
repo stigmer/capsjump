@@ -15,7 +15,7 @@ struct SiteList: View {
     var body: some View {
         let lines = model.siteLines
         VStack(spacing: 0) {
-            List(selection: $model.selectedSite) {
+            List(selection: model.binding(\.selectedSite)) {
                 ForEach(lines) { line in
                     SiteLineView(line: line, problem: model.check.bySite[line.id] != nil)
                         .equatable()

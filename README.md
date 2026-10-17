@@ -31,11 +31,13 @@ capsjump init
 
 ## Configure
 
-The quickest way: open a page in Chrome and pick **Add Current Tab…** from CapsJump's menu, or open **Edit Config…** for a window with every site and key. Each field there is checked as you type, by the same rules `capsjump check` uses, and saving applies at once.
+The quickest way: open a page in Chrome and pick **Add Current Tab…** from CapsJump's menu, or open **Edit Config…** for a window with every site and key: Sites and Keys on the left, every key or site as one line you can search in the middle, and the one you pick open for editing on the right. Each field is checked as you type, by the same rules `capsjump check` uses, and saving applies at once.
 
 <p align="center">
-  <img src="site/editor-sites.png" width="420" alt="Edit Config…, Sites tab: a site's name, its Chrome account picked from a list, and the page it opens">
-  <img src="site/editor-keys.png" width="420" alt="Edit Config…, Keys tab: each key with what it does, picked from lists">
+  <img src="site/editor-keys.png" width="840" alt="Edit Config…, Keys: each key as a keycap with the app's icon or the site and its account, and the picked key open for editing">
+</p>
+<p align="center">
+  <img src="site/editor-sites.png" width="840" alt="Edit Config…, Sites: each site with its account, page and keys, and the picked site open for editing">
 </p>
 
 Underneath it's one small file, `~/.capsjump.yaml`, which you can also edit by hand:
@@ -95,7 +97,7 @@ CapsJump puts its mark in the menu bar, dimmed while it doesn't have Caps Lock. 
 
 - **Pause Keys / Resume Keys**: gives Caps Lock back, or takes it again. A pause lasts until you resume, across restarts.
 - **Add Current Tab…**: turns the tab in front of Chrome into a site with a key. The page and its account come filled in; pick a key, click Add, and Caps Lock with that key lands there from then on. If the page is already one of your sites, it offers that site another key instead.
-- **Edit Config…**: a window with a Sites tab and a Keys tab. Accounts, apps, sites and window positions are picked from lists, problems show under their field as you type, and Save (⌘S) applies at once. Rename a site and its keys come along. Close or quit with unsaved changes and it asks first.
+- **Edit Config…**: a window with Sites and Keys in a sidebar, a searchable list of each, and an editor for the one you pick. Accounts, sites and window positions are picked from lists, apps from a searchable list with their icons; problems show under their field as you type, and Save (⌘S) applies at once. Rename a site and its keys come along. ⌘N adds, ⌫ removes, ⌘F searches, ⌘1 and ⌘2 switch between Sites and Keys. Close or quit with unsaved changes and it asks first.
 - **Open Config File**: opens `~/.capsjump.yaml` in your editor, writing a starter file first if there is none. Saving applies the change at once.
 - **Check Config**: shows what `capsjump check` shows, with a button to Edit Config….
 - **Start at Login**: whether CapsJump starts when you log in.

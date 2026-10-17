@@ -11,6 +11,8 @@ import AppKit
 enum MainMenu {
     /// `quit` on `quitTarget` is CapsJump's own Quit, which asks about unsaved edits.
     static func install(quitTarget: AnyObject, quit: Selector) {
+        // CapsJump's windows are never tabs, so View has no tab items.
+        NSWindow.allowsAutomaticWindowTabbing = false
         let quitItem = item("Quit CapsJump", quit, "q")
         quitItem.target = quitTarget
         let bar = NSMenu()

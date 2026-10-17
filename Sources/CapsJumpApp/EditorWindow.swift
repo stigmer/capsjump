@@ -365,7 +365,7 @@ private struct EditorSidebar: View {
     @ObservedObject var model: EditorModel
 
     var body: some View {
-        List(selection: Binding(get: { model.section }, set: { if let section = $0 { model.section = section } })) {
+        List(selection: Binding(get: { model.section }, set: { if let section = $0, section != model.section { model.section = section } })) {
             row(.sites, "Sites", "globe", count: model.query.isEmpty ? model.draft.sites.count : model.siteLines.count, problem: !model.check.bySite.isEmpty)
             row(.keys, "Keys", "keyboard", count: model.query.isEmpty ? model.draft.keys.count : model.keyLines.count, problem: !model.check.byKey.isEmpty)
         }
