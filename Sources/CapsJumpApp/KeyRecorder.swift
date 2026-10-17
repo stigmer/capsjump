@@ -4,14 +4,16 @@
 // never starts it, so Tab through a form and a window opening with the field first are
 // harmless. While it listens, every key pressed in its window comes to it before the
 // window's own buttons (in Add Current Tab, Return is Add and Escape is Cancel), except
-// ⌘ shortcuts, which keep working, and Tab, which moves on and ends the listening. A key
-// pressed with Caps Lock never reaches a window while keys are bound: the event tap hands
-// it over instead of running it, through the KeyListening the app gives the views. What a
-// key means is PressedKey's one decision: a key that can't be used, or that another row
-// holds, is refused in a line under the field and the field keeps listening. Listening ends
-// on a decision, when focus leaves, when the window stops being key or the view leaves it,
-// and (by the keys themselves) when CapsJump stops being the active app. To VoiceOver the
-// field is a button whose value is the key, and every result is announced.
+// the menu bar's ⌘ shortcuts, which keep working (⌘S saves), and Tab, which moves on and
+// ends the listening; a ⌘ key no menu item takes is refused like any key held with a
+// modifier. A key pressed with Caps Lock never reaches a window while keys are bound: the
+// event tap hands it over instead of running it, through the KeyListening the app gives
+// the views. What a key means is PressedKey's one decision: a key that can't be used, or
+// that another row holds, is refused in a line under the field and the field keeps
+// listening. Listening ends on a decision, when focus leaves, when the window stops being
+// key or the view leaves it, and (by the keys themselves) when CapsJump stops being the
+// active app. To VoiceOver the field is a button whose value is the key, and every result
+// is announced.
 
 import AppKit
 import CapsJumpCore
@@ -73,7 +75,9 @@ struct KeyRecorder: View {
 
     private var face: some View {
         let shape = RoundedRectangle(cornerRadius: 6, style: .continuous)
-        return Group {
+        // One container, not a Group: a Group would give each branch its own overlay, and
+        // the field's AppKit side would be made anew as it starts listening.
+        return ZStack {
             if listening {
                 Text("Press a key")
                     .foregroundStyle(Color.accentColor)
@@ -133,6 +137,9 @@ final class RecorderView: NSView {
     private(set) var isListening = false
     private var monitor: Any?
     private var resignKey: NSObjectProtocol?
+    private weak var observed: NSWindow?
+    /// The window the field listens in.
+    private weak var listeningIn: NSWindow?
 
     private static let space: UInt16 = 0x31
 
@@ -161,16 +168,19 @@ final class RecorderView: NSView {
         return super.resignFirstResponder()
     }
 
-    override func viewWillMove(toWindow newWindow: NSWindow?) {
-        guard newWindow !== window else { return }
-        // The face leaves with the view, so it is not told.
-        stop(quietly: true)
-        if let resignKey { NotificationCenter.default.removeObserver(resignKey) }
-        resignKey = newWindow.map { window in
-            NotificationCenter.default.addObserver(forName: NSWindow.didResignKeyNotification, object: window, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.stop() }
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if observed !== window {
+            if let resignKey { NotificationCenter.default.removeObserver(resignKey) }
+            observed = window
+            resignKey = window.map { window in
+                NotificationCenter.default.addObserver(forName: NSWindow.didResignKeyNotification, object: window, queue: .main) { [weak self] _ in
+                    MainActor.assumeIsolated { self?.stop() }
+                }
             }
         }
+        // A field taken out of its window takes its face with it, so the face isn't told.
+        if isListening, window !== listeningIn { stop(quietly: window == nil) }
     }
 
     // MARK: Listening
@@ -180,6 +190,7 @@ final class RecorderView: NSView {
         if window.firstResponder !== self { window.makeFirstResponder(self) }
         guard !isListening else { return }
         isListening = true
+        listeningIn = window
         keys.listen(ObjectIdentifier(self)) { [weak self] trigger in self?.take(trigger, [], typed: nil) }
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             // A local monitor runs on the main thread, as the event is dispatched.
@@ -201,11 +212,11 @@ final class RecorderView: NSView {
     }
 
     /// Whether a key-down in the app goes on to its window; one in the field's window is the
-    /// field's, but for ⌘ shortcuts and Tab.
+    /// field's, but for the menu bar's ⌘ shortcuts and Tab.
     private func passes(_ event: NSEvent) -> Bool {
         guard isListening, event.window === window else { return true }
         let modifiers = Self.modifiers(event)
-        if modifiers.contains(.command) { return true }
+        if modifiers.contains(.command), NSApp.mainMenu?.performKeyEquivalent(with: event) == true { return false }
         if Int64(event.keyCode) == PressedKey.tab {
             stop()
             return true
