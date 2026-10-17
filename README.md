@@ -34,10 +34,16 @@ capsjump init
 The quickest way: open a page in Chrome and pick **Add Current Tab…** from CapsJump's menu, or open **Edit Config…** for a window with every site and key: Sites and Keys on the left, every key or site as one line you can search in the middle, and the one you pick open for editing on the right. Each field is checked as you type, by the same rules `capsjump check` uses, and saving applies at once.
 
 <p align="center">
-  <img src="site/editor-keys.png" width="840" alt="Edit Config…, Keys: each key as a keycap with the app's icon or the site and its account, and the picked key open for editing">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="site/editor-keys-dark.png">
+    <img src="site/editor-keys.png" width="840" alt="Edit Config…, Keys: each key as a keycap with the app's icon or the site and its account, and the picked key open for editing">
+  </picture>
 </p>
 <p align="center">
-  <img src="site/editor-sites.png" width="840" alt="Edit Config…, Sites: each site with its account, page and keys, and the picked site open for editing">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="site/editor-sites-dark.png">
+    <img src="site/editor-sites.png" width="840" alt="Edit Config…, Sites: each site with its account, page and keys, and the picked site open for editing">
+  </picture>
 </p>
 
 Underneath it's one small file, `~/.capsjump.yaml`, which you can also edit by hand:
