@@ -1,12 +1,12 @@
 # Releases CapsJump when a v<x.y.z> tag is pushed: tests, a universal build signed with
 # the Developer ID, notarization and stapling, a GitHub release carrying the zip, and the
-# cask in github.com/stigmer/homebrew-tap updated to it.
+# cask in github.com/whysosuresh/homebrew-tap updated to it.
 #
 # Eight repository secrets drive it, all required: the seven Apple ones the desktop app's
 # release uses (APPLE_CERTIFICATE as a base64 .p12, APPLE_CERTIFICATE_PASSWORD,
 # APPLE_SIGNING_IDENTITY, APPLE_TEAM_ID, APPLE_API_ISSUER, APPLE_API_KEY, APPLE_API_KEY_P8
 # as a base64 .p8) and HOMEBREW_TAP_DEPLOY_KEY, the private half of a deploy key with write
-# access to stigmer/homebrew-tap alone. The
+# access to whysosuresh/homebrew-tap alone. The
 # scripts under scripts/ do the work and run the same on a laptop; these steps only move
 # secrets into files and environment variables. A release is never signed partly: with
 # any secret missing, the run stops before building.
@@ -121,7 +121,7 @@ jobs:
       - name: Checkout homebrew-tap
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          repository: stigmer/homebrew-tap
+          repository: whysosuresh/homebrew-tap
           ssh-key: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
           # This job pushes the cask to the tap with git, so the checkout keeps its key.
           path: homebrew-tap

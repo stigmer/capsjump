@@ -1,13 +1,13 @@
-# Written by github.com/stigmer/capsjump's release workflow from
+# Written by github.com/whysosuresh/capsjump's release workflow from
 # packaging/capsjump.rb.in on every release. Edit the template there, not this file.
 cask "capsjump" do
   version "@VERSION@"
   sha256 "@SHA256@"
 
-  url "https://github.com/stigmer/capsjump/releases/download/v#{version}/CapsJump-#{version}.zip"
+  url "https://github.com/whysosuresh/capsjump/releases/download/v#{version}/CapsJump-#{version}.zip"
   name "CapsJump"
   desc "Caps Lock shortcuts for apps, Chrome accounts, windows and links"
-  homepage "https://stigmer.github.io/capsjump/"
+  homepage "https://whysosuresh.github.io/capsjump/"
 
   depends_on macos: :ventura
 

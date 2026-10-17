@@ -7,27 +7,37 @@
 <p align="center"><strong>Caps Lock finally has a job.</strong><br>Hold it and press a key to bring an app forward, land on a site in the right Chrome account, snap a window, or open a link.</p>
 
 <p align="center">
-  <a href="https://github.com/stigmer/capsjump/releases/latest"><img src="https://img.shields.io/github/v/release/stigmer/capsjump" alt="Latest release"></a>
+  <a href="https://github.com/whysosuresh/capsjump/releases/latest"><img src="https://img.shields.io/github/v/release/whysosuresh/capsjump" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/macOS-13%2B-0a0a0a" alt="macOS 13 or later">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-5c5c5c" alt="MIT license"></a>
 </p>
 
-<p align="center"><a href="https://stigmer.github.io/capsjump/">stigmer.github.io/capsjump</a></p>
+<p align="center"><a href="https://whysosuresh.github.io/capsjump/">whysosuresh.github.io/capsjump</a></p>
 
 Caps Lock has spent decades waiting for someone to SHOUT. CapsJump gives it a real job. Hold Caps Lock and press S: your terminal is just there. Caps Lock and G: the GitHub tab in your work Chrome account comes forward (not your personal one, never your personal one), or opens there if it isn't open yet. Caps Lock and ←: the front window takes the left half of the screen. Caps Lock and W: a Slack channel opens. One small file, `~/.capsjump.yaml`, says which key does what.
 
 ## Install
 
 ```sh
-brew trust stigmer/tap
-brew install --cask stigmer/tap/capsjump
+brew install --cask whysosuresh/tap/capsjump
 capsjump setup
 capsjump init
 ```
 
-- `brew trust` is asked once per machine: Homebrew 7 loads casks only from taps you trust.
+- Homebrew loads a cask from outside its own taps only once you trust it; naming the cask in full, as above, trusts this one cask and nothing else.
 - `capsjump setup` asks for the app's permissions once (upgrades keep them) and starts CapsJump at login.
 - `capsjump init` writes a starter `~/.capsjump.yaml` in your first Chrome account; `capsjump profiles` lists the others. Edit it, then run `capsjump check`.
+
+### Moving from stigmer/tap
+
+CapsJump used to install from `stigmer/tap`. Homebrew doesn't move an installed cask from one tap to another by itself, so if you installed it from there, move it once:
+
+```sh
+brew uninstall --cask capsjump
+brew install --cask whysosuresh/tap/capsjump
+```
+
+Your Accessibility permission, start-at-login and `~/.capsjump.yaml` stay as they are.
 
 ## Configure
 
@@ -186,7 +196,7 @@ Layout:
 
 ## Release
 
-Bump `VERSION`, merge, and push the tag `v<VERSION>`. `.github/workflows/release.yaml` tests, builds, signs, notarizes and staples, publishes the GitHub release, and updates the cask in [stigmer/homebrew-tap](https://github.com/stigmer/homebrew-tap). It needs the repository secrets listed at the top of that workflow.
+Bump `VERSION`, merge, and push the tag `v<VERSION>`. `.github/workflows/release.yaml` tests, builds, signs, notarizes and staples, publishes the GitHub release, and updates the cask in [whysosuresh/homebrew-tap](https://github.com/whysosuresh/homebrew-tap). It needs the repository secrets listed at the top of that workflow.
 
 ## License
 

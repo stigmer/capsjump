@@ -10,8 +10,8 @@
   <meta property="og:title" content="CapsJump: Caps Lock finally has a job">
   <meta property="og:description" content="Hold Caps Lock and press a key: your app comes forward, GitHub opens in your work Chrome account, the window snaps to half the screen.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://stigmer.github.io/capsjump/">
-  <meta property="og:image" content="https://stigmer.github.io/capsjump/card.png">
+  <meta property="og:url" content="https://whysosuresh.github.io/capsjump/">
+  <meta property="og:image" content="https://whysosuresh.github.io/capsjump/card.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="CapsJump's config window: every key as a keycap with the app's or the site's own icon and the account's picture, and the picked key's field waiting for a new key">
@@ -23,7 +23,7 @@
 <body>
   <header class="bar">
     <a class="brand" href="./"><img src="icon.svg" alt="" width="32" height="32"> CapsJump</a>
-    <a class="bar-link" href="https://github.com/stigmer/capsjump">GitHub</a>
+    <a class="bar-link" href="https://github.com/whysosuresh/capsjump">GitHub</a>
   </header>
 
   <main>
@@ -31,7 +31,7 @@
       <h1>Caps Lock finally has a job.</h1>
       <p class="lede">It spent decades waiting for someone to SHOUT. Now hold it and press a key: your terminal is just there, GitHub opens in your work Chrome account, the window snaps to half the screen. One small file says which key does what.</p>
       <div class="install-line">
-        <code id="install">brew install --cask stigmer/tap/capsjump</code>
+        <code id="install">brew install --cask whysosuresh/tap/capsjump</code>
         <button type="button" class="copy" data-copy="install" aria-label="Copy the install command">Copy</button>
       </div>
       <p class="fine">Free and open source, for macOS 13 or later.</p>
@@ -144,14 +144,18 @@ keys:
 
     <section class="install">
       <h2>Install</h2>
-<pre><code>brew trust stigmer/tap
-brew install --cask stigmer/tap/capsjump
+<pre><code>brew install --cask whysosuresh/tap/capsjump
 capsjump setup
 capsjump init</code></pre>
       <ol>
         <li><code>capsjump setup</code> asks for the permissions once (Accessibility, Chrome automation, notifications) and starts CapsJump at login. A Caps Lock symbol appears in the menu bar.</li>
         <li><code>capsjump init</code> writes a starter <code>~/.capsjump.yaml</code> in your first Chrome account; <code>capsjump profiles</code> lists the others. Edit it, then run <code>capsjump check</code>.</li>
       </ol>
+      <h3>Moving from stigmer/tap</h3>
+      <p>CapsJump used to install from <code>stigmer/tap</code>. Homebrew doesn't move an installed cask from one tap to another by itself, so if you installed it from there, move it once:</p>
+<pre><code>brew uninstall --cask capsjump
+brew install --cask whysosuresh/tap/capsjump</code></pre>
+      <p>Your Accessibility permission, start-at-login and <code>~/.capsjump.yaml</code> stay as they are.</p>
     </section>
 
     <section class="notes">
@@ -167,8 +171,8 @@ capsjump init</code></pre>
   </main>
 
   <footer class="foot">
-    <span>MIT licensed. Made by <a href="https://github.com/stigmer">Stigmer</a>. No caps were locked in the making of this app.</span>
-    <a href="https://github.com/stigmer/capsjump">Source on GitHub</a>
+    <span>MIT licensed. Made by <a href="https://github.com/whysosuresh">Suresh Attaluri</a>, founder of <a href="https://stigmer.ai">Stigmer</a>. No caps were locked in the making of this app.</span>
+    <a href="https://github.com/whysosuresh/capsjump">Source on GitHub</a>
   </footer>
 
   <script>

@@ -138,6 +138,7 @@ h1 {
 .fine { color: var(--muted); font-size: 14px; }
 
 h2 { margin: 0 0 12px; font-size: 24px; letter-spacing: -0.01em; }
+h3 { margin: 28px 0 8px; font-size: 18px; }
 
 kbd {
   display: inline-block;
@@ -254,7 +255,7 @@ p code, li code {
   background: var(--accent-soft);
   font-size: 0.88em;
 }
-.config p, .install li, .notes li { color: var(--muted); }
+.config p, .install p, .install li, .notes li { color: var(--muted); }
 .install ol, .notes ul { padding-left: 20px; }
 .install li, .notes li { margin-bottom: 8px; }
 .notes strong { color: var(--ink); }
