@@ -1,4 +1,5 @@
-# Runs the unit tests and builds the bundle (signed ad hoc) on every pull request and on main.
+# Checks the committed icons are what scripts/make-icon.sh writes, runs the unit tests and
+# builds the bundle (signed ad hoc) on every pull request and on main.
 name: CI
 
 on:
@@ -19,6 +20,8 @@ jobs:
           persist-credentials: false
       - name: Toolchain
         run: swift --version
+      - name: Icons current
+        run: scripts/make-icon.sh --check
       - name: Test
         run: swift test
       - name: Bundle

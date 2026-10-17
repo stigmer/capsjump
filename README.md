@@ -191,7 +191,7 @@ Layout:
 - `Sources/CapsJumpSystem`: the live side of the keys: the Caps Lock mapping, the event tap, watching and saving the config, moving windows, opening apps and links. Saving has its own tests, on a real disk, because its bugs would lose your file.
 - `Sources/CapsJumpApp`: the background app that runs the keys and receives `capsjump://` links.
 - `Sources/capsjump`: the CLI.
-- `packaging/icon.svg` is the icon's source and `packaging/menubar.svg` the menu bar's; `scripts/make-icon.sh` renders them into `packaging/AppIcon.icns` and `packaging/MenuBarIcon*.png`.
+- `scripts/make-icon.sh` holds the mark and its colours, and writes every file that shows it: `packaging/icon.svg` and `packaging/AppIcon.icns` (the app icon), `packaging/menubar.svg` and `packaging/MenuBarIcon*.png` (the menu bar's), `site/icon.svg` and `site/icon.png` (the site's and the iPhone touch icon). Change the mark there, never in those files; CI runs `scripts/make-icon.sh --check` to keep them current.
 - `site/` is the website, hand-written with no build; `.github/workflows/pages.yaml` publishes it to GitHub Pages when it changes on `main`.
 - `scripts/bundle.sh` builds the app bundle; `scripts/notarize.sh` and `scripts/macos-import-signing-keychain.sh` are the release's signing steps.
 
