@@ -152,13 +152,7 @@ open -a CapsJump</code></pre>
         <li><strong>Choose your keys.</strong> One click turns on the starter keys (the arrows snap the front window to a half, F fills the screen), or set up your own. While CapsJump has keys, Caps Lock no longer types capitals; Shift still does.</li>
         <li><strong>Try it.</strong> Click any window, hold Caps Lock and press ←.</li>
       </ol>
-      <p>Chrome accounts, notifications and starting at login are there too, each asked only when you click it. Close the window whenever you like: CapsJump's mark in the menu bar carries a small dot until it's set up, and its menu starts with Finish Setting Up…. From a terminal, <code>capsjump setup</code> opens the same window and <code>capsjump init</code> writes the starter <code>~/.capsjump.yaml</code>.</p>
-      <h3>Moving from stigmer/tap</h3>
-      <p>CapsJump used to install from <code>stigmer/tap</code>. Homebrew doesn't move an installed cask from one tap to another by itself, so if you installed it from there, move it once:</p>
-<pre><code>brew uninstall --cask capsjump
-brew install --cask whysosuresh/tap/capsjump
-open -a CapsJump</code></pre>
-      <p>The uninstall quits CapsJump, so the last line starts it again. Your Accessibility permission, start-at-login and <code>~/.capsjump.yaml</code> stay as they are.</p>
+      <p>Chrome accounts and notifications are there too, each asked only when you click it, and a switch for starting at login, on until you turn it off. Close the window whenever you like: CapsJump's mark in the menu bar carries a small dot until it's set up, and its menu starts with Finish Setting Up…. From a terminal, <code>capsjump setup</code> opens the same window and <code>capsjump init</code> writes the starter <code>~/.capsjump.yaml</code>.</p>
     </section>
 
     <section class="notes">

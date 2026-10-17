@@ -29,22 +29,10 @@ CapsJump opens a short Welcome window, three steps that tick themselves as you g
 2. **Choose your keys.** One click turns on the starter keys (Caps Lock with the arrows snaps the front window to a half, with F it fills the screen), or set up your own. Nothing takes Caps Lock before this, and the step says so plainly: while CapsJump has keys, Caps Lock no longer types capitals (Shift still does).
 3. **Try it.** Click any window, hold Caps Lock and press ←.
 
-Below them, if you like: access to Chrome (for sites in the right account), notifications (so a key that can't do its job says why) and starting at login, each asked only when you click it. Close the window whenever you like; until CapsJump is set up, its menu-bar mark carries a small dot and its menu starts with **Finish Setting Up…**, and opening CapsJump again brings the window back.
+Below them, if you like: access to Chrome (for sites in the right account) and notifications (so a key that can't do its job says why), each asked only when you click it, and a switch for starting at login, on until you turn it off. Close the window whenever you like; until CapsJump is set up, its menu-bar mark carries a small dot and its menu starts with **Finish Setting Up…**, and opening CapsJump again brings the window back.
 
 - Homebrew loads a cask from outside its own taps only once you trust it; naming the cask in full, as above, trusts this one cask and nothing else.
 - From a terminal instead: `capsjump setup` opens the same Welcome window, `capsjump init` writes the starter `~/.capsjump.yaml` (the window keys, and an example site in your first Chrome account), `capsjump profiles` lists Chrome's accounts and `capsjump check` checks the file.
-
-### Moving from stigmer/tap
-
-CapsJump used to install from `stigmer/tap`. Homebrew doesn't move an installed cask from one tap to another by itself, so if you installed it from there, move it once:
-
-```sh
-brew uninstall --cask capsjump
-brew install --cask whysosuresh/tap/capsjump
-open -a CapsJump
-```
-
-The uninstall quits CapsJump, so the last line starts it again. Your Accessibility permission, start-at-login and `~/.capsjump.yaml` stay as they are.
 
 ## Configure
 
