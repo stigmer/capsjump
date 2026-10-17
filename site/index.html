@@ -11,8 +11,11 @@
   <meta property="og:description" content="Hold Caps Lock and press a key: your app comes forward, GitHub opens in your work Chrome account, the window snaps to half the screen.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://stigmer.github.io/capsjump/">
-  <meta property="og:image" content="https://stigmer.github.io/capsjump/icon.png">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://stigmer.github.io/capsjump/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="CapsJump's config window: every key as a keycap with the app's icon or the site and its account">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="stylesheet" href="style.css">
@@ -85,9 +88,35 @@
       </article>
     </section>
 
+    <section class="see" aria-labelledby="see-title">
+      <h2 id="see-title">See it</h2>
+      <p class="see-lede">Rather click than write YAML? Pick <strong>Edit Config…</strong> in the menu bar and every key and site is right there.</p>
+      <figure class="shot">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="editor-keys-dark.png">
+          <img src="editor-keys.png" width="900" height="600" loading="lazy" alt="The config window on Keys: a sidebar with Sites and Keys, every key as a keycap with the app's icon or a globe and its account, and the picked key, Caps Lock + G jumping to github, open for editing">
+        </picture>
+        <figcaption>Every key on one list, in keyboard order. Pick one and change what it does; the app's own icon says it found the right app. Type to search.</figcaption>
+      </figure>
+      <figure class="shot">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="editor-sites-dark.png">
+          <img src="editor-sites.png" width="900" height="600" loading="lazy" alt="The config window on Sites: each site with its Chrome account, its host and the keys that land there, and github open with its account, page and key">
+        </picture>
+        <figcaption>Each site with its Chrome account and the keys that land on it. Rename one and its keys come along.</figcaption>
+      </figure>
+      <figure class="shot shot-small">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="add-tab-dark.png">
+          <img src="add-tab.png" width="480" height="336" loading="lazy" alt="Add Current Tab: a Figma tab becomes a site named figma, in the Work account, on Caps Lock + I">
+        </picture>
+        <figcaption>Page open in Chrome? <strong>Add Current Tab…</strong> names it, knows the account, offers a free key. Click Add.</figcaption>
+      </figure>
+    </section>
+
     <section class="config">
       <h2>One file, ~/.capsjump.yaml</h2>
-      <p>Each key does one thing. Got a page open in Chrome? <strong>Add Current Tab…</strong> in the menu bar makes it a site with a key in two clicks. <strong>Edit Config…</strong> opens a window with every site and key, picked from lists and checked as you type; save and the change applies at once. Prefer a text editor? <strong>Open Config File</strong>, and the file looks like this:</p>
+      <p>Each key does one thing, and the window above saves straight to this file, checked by the same rules as you type. Prefer a text editor? <strong>Open Config File</strong>, and the file looks like this:</p>
 <pre><code>sites:
 - name: github
   account: you@work.com

@@ -1,6 +1,6 @@
 /* CapsJump's website: black and white like its mark, in light and dark; a single column
-   that narrows to a phone; and the looping Caps Lock + G demo (still, in its final frame,
-   for reduced motion). */
+   that narrows to a phone; the looping Caps Lock + G demo (still, in its final frame, for
+   reduced motion); and pictures of the app, each in the visitor's own look. */
 
 :root {
   --bg: #fafafa;
@@ -16,6 +16,7 @@
   --tab: #f1f1f1;
   --code-bg: #0a0a0a;
   --code-ink: #f1f1f1;
+  --shadow: rgba(0, 0, 0, 0.16);
   color-scheme: light;
 }
 
@@ -34,6 +35,7 @@
     --tab: #222222;
     --code-bg: #000000;
     --code-ink: #f1f1f1;
+    --shadow: rgba(0, 0, 0, 0.6);
     color-scheme: dark;
   }
 }
@@ -52,6 +54,7 @@
   --tab: #222222;
   --code-bg: #000000;
   --code-ink: #f1f1f1;
+  --shadow: rgba(0, 0, 0, 0.6);
   color-scheme: dark;
 }
 
@@ -216,6 +219,25 @@ kbd {
 .panels h2 { font-size: 19px; margin-bottom: 8px; }
 .panels p { margin: 0; color: var(--muted); }
 
+/* The app, as it looks: window captures at 2x, with the shadow macOS would draw. */
+.see { text-align: center; }
+.see-lede { max-width: 640px; margin: 0 auto 28px; color: var(--muted); }
+.shot { margin: 0 auto 36px; }
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  filter: drop-shadow(0 14px 32px var(--shadow));
+}
+.shot-small { max-width: 480px; }
+.shot figcaption {
+  max-width: 600px;
+  margin: 14px auto 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
 pre {
   margin: 16px 0;
   padding: 18px 20px;
@@ -253,6 +275,7 @@ p code, li code {
   section { padding: 28px 0; }
   .hero { padding-top: 24px; }
   .panels { grid-template-columns: 1fr; }
+  .shot { margin-bottom: 28px; }
   .install-line { display: flex; }
   .install-line code { font-size: 13px; }
 }
