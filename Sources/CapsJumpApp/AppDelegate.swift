@@ -5,7 +5,8 @@
 // Finder, Spotlight or login while CapsJump isn't set up (until the person has closed it
 // once), when the app is opened again while it runs and isn't set up (set up, the config
 // window opens instead), and once per launch when a jump or Add Current Tab fails for want
-// of a permission. Nothing asks for a permission until the person presses its button there.
+// of a permission. Apart from macOS's own Accessibility box, which macOS raises by itself,
+// nothing asks for a permission until the person presses its button there.
 // Every key that runs without a failure is reported to the Welcome window, whose last step
 // waits for one.
 // Quitting (from the menu bar too), logging out, SIGTERM and SIGINT all go through

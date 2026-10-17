@@ -1,9 +1,11 @@
 // The Welcome window: CapsJump's first run as one checklist that ticks itself. Three steps
 // lead to a working key (let CapsJump hear Caps Lock, choose keys, try one), and three
 // optional rows say what else it can use and why (Chrome accounts, notifications, starting
-// at login). Every permission is asked when its button is pressed, never before, and each
-// row reads its state again every second while the window is open, so a switch flipped in
-// System Settings shows here at once. Nothing takes Caps Lock until the person turns keys
+// at login). Accessibility is asked once, by macOS's own box, which macOS shows by itself
+// while CapsJump lacks it; the first step says what that box wants instead of raising
+// another. Chrome and notifications are asked when their buttons are pressed, never
+// before. Each row reads its state again every second while the window is open, so a
+// switch flipped in System Settings shows here at once. Nothing takes Caps Lock until the person turns keys
 // on, next to the line that says Caps Lock stops typing capitals. While the window itself
 // is in front, keys pressed with Caps Lock are heard rather than run (a window move would
 // try to move this fixed-size window), and the step says so; the first key that runs
@@ -109,10 +111,6 @@ final class WelcomeModel: ObservableObject {
     func readKeys() {
         status = keys.status
         boundKeys = keys.boundKeys
-    }
-
-    func allowAccessibility() {
-        Setup.askForAccessibility()
     }
 
     /// Writes the starter file, unless one appeared since the window last looked.
@@ -221,15 +219,11 @@ struct WelcomeView: View {
             if model.accessibility {
                 Text("Allowed.").foregroundStyle(.secondary)
             } else {
-                Text("macOS asks before any app can see keys or move windows. Allow CapsJump, then turn it on in the list System Settings shows; this ticks by itself.")
+                Text("macOS asks with its own box before any app can see keys or move windows. Click Open System Settings there and turn CapsJump on; this ticks by itself.")
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                HStack(spacing: 12) {
-                    Button("Allow…") { model.allowAccessibility() }
-                        .buttonStyle(.borderedProminent)
-                    Button("Open Accessibility Settings") { Setup.open(.accessibility) }
-                        .buttonStyle(.link)
-                }
+                Button("Open Accessibility Settings") { Setup.open(.accessibility) }
+                    .buttonStyle(.borderedProminent)
             }
         }
     }

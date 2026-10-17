@@ -25,7 +25,7 @@ open -a CapsJump
 
 CapsJump opens a short Welcome window, three steps that tick themselves as you go:
 
-1. **Let CapsJump hear Caps Lock.** Allow it in the Accessibility list macOS shows; the step ticks the moment you do. Upgrades keep the permission.
+1. **Let CapsJump hear Caps Lock.** macOS asks with its own box: click Open System Settings there and turn CapsJump on (or use the step's own button if you closed the box). The step ticks the moment you do, and upgrades keep the permission.
 2. **Choose your keys.** One click turns on the starter keys (Caps Lock with the arrows snaps the front window to a half, with F it fills the screen), or set up your own. Nothing takes Caps Lock before this, and the step says so plainly: while CapsJump has keys, Caps Lock no longer types capitals (Shift still does).
 3. **Try it.** Click any window, hold Caps Lock and press ←.
 

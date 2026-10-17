@@ -1,5 +1,8 @@
 // The two permissions a jump needs, read and asked for on CapsJump's own behalf:
 // Accessibility (window titles, raising a window) and Automation of Chrome (tabs).
+// Accessibility is only ever read: since macOS 26 the read itself makes macOS show its own
+// request whenever access is missing (measured on 26.2, once per launch), so CapsJump never
+// asks a second time.
 
 import AppKit
 import ApplicationServices
@@ -15,11 +18,10 @@ public enum PermissionState: String, Sendable {
 }
 
 public enum Permissions {
-    /// Whether Accessibility is granted; with `prompt`, macOS shows its request when not.
+    /// Whether Accessibility is granted.
     @MainActor
-    public static func accessibility(prompt: Bool) -> PermissionState {
-        let options = ["AXTrustedCheckOptionPrompt": prompt] as CFDictionary
-        return AXIsProcessTrustedWithOptions(options) ? .granted : .denied
+    public static var accessibility: PermissionState {
+        AXIsProcessTrusted() ? .granted : .denied
     }
 
     /// Whether CapsJump may send Chrome Apple Events; with `ask`, macOS shows its

@@ -1,8 +1,9 @@
-// The permissions CapsJump asks for, each asked on its own when the person presses its
-// button in the Welcome window, attributed to CapsJump itself, and each read without asking
-// so the window can tick it the moment it is granted. Nothing here runs by itself: Chrome
-// starts only for the Chrome button, since Automation can be asked for only while Chrome
-// runs, and the login item is the Welcome window's switch.
+// The permissions CapsJump uses, read so the Welcome window can tick each the moment it is
+// granted. Chrome's and the notifications' are asked on their own when the person presses
+// their buttons, attributed to CapsJump itself; Chrome starts only for its button, since
+// Automation can be asked for only while Chrome runs. Accessibility is never asked here:
+// macOS shows its own request whenever CapsJump reads it without access (see Permissions),
+// and that one request is the only ask. The login item is the Welcome window's switch.
 
 import AppKit
 import CapsJumpChrome
@@ -19,14 +20,8 @@ enum Setup {
         case loginItems = "com.apple.LoginItems-Settings.extension"
     }
 
-    /// macOS's own request, which also lists CapsJump under Accessibility and offers to
-    /// open System Settings.
-    static func askForAccessibility() {
-        _ = Permissions.accessibility(prompt: true)
-    }
-
     static var hasAccessibility: Bool {
-        Permissions.accessibility(prompt: false) == .granted
+        Permissions.accessibility == .granted
     }
 
     static var chromeInstalled: Bool {
