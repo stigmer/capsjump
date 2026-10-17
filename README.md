@@ -105,7 +105,7 @@ CapsJump puts its mark in the menu bar, dimmed while it doesn't have Caps Lock. 
 
 - **Pause Keys / Resume Keys**: gives Caps Lock back, or takes it again. A pause lasts until you resume, across restarts.
 - **Add Current Tab…**: turns the tab in front of Chrome into a site with a key. The page and its account come filled in; pick a key, click Add, and Caps Lock with that key lands there from then on. If the page is already one of your sites, it offers that site another key instead.
-- **Edit Config…**: a window with Sites, Keys and Windows in a sidebar, a searchable list of each, and an editor for the one you pick. Keys holds the keys that take you somewhere (an app, a site, a link); Windows lists every move CapsJump can make, each with the key that does it, which you can change or turn off. Accounts, sites and keys are picked from lists, apps from a searchable list with their icons; problems show under their field as you type, and Save (⌘S) applies at once. Rename a site and its keys come along. ⌘N adds, ⌫ removes (in Windows, turns the move's key off), ⌘F searches, ⌘1, ⌘2 and ⌘3 switch between Sites, Keys and Windows. Close or quit with unsaved changes and it asks first.
+- **Edit Config…**: a window with Sites, Keys and Windows in a sidebar, a searchable list of each, and an editor for the one you pick. Keys holds the keys that take you somewhere (an app, a site with its own icon, a link); Windows lists every move CapsJump can make, each with the key that does it, which you can change or turn off. Accounts, sites and keys are picked from lists, apps from a searchable list with their icons; problems show under their field as you type, and Save (⌘S) applies at once. Rename a site and its keys come along. ⌘N adds, ⌫ removes (in Windows, turns the move's key off), ⌘F searches, ⌘1, ⌘2 and ⌘3 switch between Sites, Keys and Windows. Close or quit with unsaved changes and it asks first.
 - **Open Config File**: opens `~/.capsjump.yaml` in your editor, writing a starter file first if there is none. Saving applies the change at once.
 - **Check Config**: shows what `capsjump check` shows, with a button to Edit Config….
 - **Start at Login**: whether CapsJump starts when you log in.
@@ -136,6 +136,8 @@ CapsJump asks for three, all at once, with `capsjump setup`, or by itself the fi
 Setup also adds CapsJump to your login items, so the keys are there from the moment you log in. Turn that off in System Settings › General › Login Items & Extensions.
 
 Releases are signed with a Developer ID and notarized, so macOS keeps these grants across upgrades.
+
+Site icons need no permission: the config window shows the icon Chrome has already saved on this Mac for each site, in the account the site jumps into, and fetches nothing. A site Chrome hasn't shown in that account yet keeps a globe until it has.
 
 ## Commands
 

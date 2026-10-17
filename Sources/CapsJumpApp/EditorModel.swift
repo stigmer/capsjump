@@ -105,9 +105,11 @@ final class EditorModel: ObservableObject {
         watcher = nil
     }
 
-    /// For the window opened again: the file as it is now, watched again, nothing searched.
+    /// For the window opened again: the file as it is now, watched again, nothing searched,
+    /// and site icons read afresh.
     func reopen() {
         query = ""
+        SiteIcons.forget()
         load()
         watch()
     }
@@ -355,6 +357,14 @@ final class EditorModel: ObservableObject {
         guard let catalog, let site = draft.site(id)?.site else { return nil }
         if let directory = site.profile { return directory }
         return site.account.flatMap { try? catalog.profile(account: $0) }?.directory
+    }
+
+    /// What the site's icon is read by: the profile it jumps into and its pages; nil while
+    /// either is unknown, which shows the globe.
+    func iconKey(site id: Int) -> SiteIconKey? {
+        guard let site = draft.site(id)?.site, let profile = profile(of: id),
+              let lookup = SiteIcon.lookup(open: site.open ?? "", match: site.match) else { return nil }
+        return SiteIconKey(profile: profile, lookup: lookup)
     }
 
     func setProfile(_ id: Int, _ directory: String?) {

@@ -16,8 +16,13 @@ public enum Paths {
         home.appendingPathComponent(".capsjump.yaml")
     }
 
+    /// Chrome's own folder, which holds `Local State` and a folder per profile.
+    public static func chromeData(home: URL = FileManager.default.homeDirectoryForCurrentUser) -> URL {
+        home.appendingPathComponent("Library/Application Support/Google/Chrome")
+    }
+
     /// Chrome's `Local State`, which maps each profile folder to its account.
     public static func chromeLocalState(home: URL = FileManager.default.homeDirectoryForCurrentUser) -> URL {
-        home.appendingPathComponent("Library/Application Support/Google/Chrome/Local State")
+        chromeData(home: home).appendingPathComponent("Local State")
     }
 }

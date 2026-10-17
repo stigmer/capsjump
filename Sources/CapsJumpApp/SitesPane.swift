@@ -1,5 +1,6 @@
-// The Sites section: the list of sites in the file's order, each a line with its name, its
-// account, the page's host and the keys that jump to it, and beside it the picked site's
+// The Sites section: the list of sites in the file's order, each a line with the site's own
+// icon as Chrome saved it for its account, its name, its account, the page's host and the
+// keys that jump to it, and beside it the picked site's
 // editor: its name (which is also its capsjump:// link), the account picked from this Mac's
 // Chrome profiles (typed when Chrome's list can't be read), the page it opens, the keys that
 // land on it, and under Advanced the URL prefixes that count as the site being open.
@@ -17,7 +18,7 @@ struct SiteList: View {
         VStack(spacing: 0) {
             List(selection: model.siteSelection) {
                 ForEach(lines) { line in
-                    SiteLineView(line: line, problem: model.check.bySite[line.id] != nil)
+                    SiteLineView(line: line, problem: model.check.bySite[line.id] != nil, icon: model.iconKey(site: line.id))
                         .equatable()
                         .tag(line.id)
                 }
@@ -45,13 +46,11 @@ struct SiteList: View {
 struct SiteLineView: View, Equatable {
     let line: EditorRows.SiteLine
     let problem: Bool
+    let icon: SiteIconKey?
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: "globe")
-                .font(.system(size: 14))
-                .foregroundStyle(.secondary)
-                .frame(width: 20)
+            SiteIconView(key: icon)
             VStack(alignment: .leading, spacing: 1) {
                 Text(line.name)
                     .lineLimit(1)

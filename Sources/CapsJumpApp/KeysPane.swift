@@ -16,7 +16,12 @@ struct KeyList: View {
         let lines = model.keyLines
         List(selection: model.keySelection) {
             ForEach(lines) { line in
-                KeyLineView(line: line, problem: model.check.byKey[line.id] != nil, appPath: line.app.flatMap(model.appPath))
+                KeyLineView(
+                    line: line,
+                    problem: model.check.byKey[line.id] != nil,
+                    appPath: line.app.flatMap(model.appPath),
+                    siteIcon: line.kind == .site ? model.draft.key(line.id)?.siteRow.flatMap { model.iconKey(site: $0) } : nil
+                )
                     .equatable()
                     .tag(line.id)
             }
@@ -37,6 +42,7 @@ struct KeyLineView: View, Equatable {
     let line: EditorRows.KeyLine
     let problem: Bool
     let appPath: String?
+    let siteIcon: SiteIconKey?
 
     var body: some View {
         HStack(spacing: 10) {
@@ -71,7 +77,7 @@ struct KeyLineView: View, Equatable {
         case .app?:
             AppIconView(path: appPath, size: 20)
         case .site?:
-            symbol("globe")
+            SiteIconView(key: siteIcon)
         case .window?:
             symbol("macwindow")
         case .url?:

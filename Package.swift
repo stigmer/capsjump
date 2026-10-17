@@ -7,8 +7,9 @@
 // Chrome); CapsJumpSystem is the live side of the keys (the key mapping, the event tap,
 // the config watcher and saving the config, moving windows, opening apps and links);
 // CapsJumpApp runs the keys and receives capsjump:// links; capsjump is the CLI. Saving
-// the config is the one live piece with tests of its own (CapsJumpSystemTests), because
-// its bugs would lose the user's file. scripts/bundle.sh puts the app and the CLI into
+// the config has tests of its own (CapsJumpSystemTests), because its bugs would lose the
+// user's file; so does reading Chrome's saved site icons (CapsJumpChromeTests), because
+// it reads a format that is Chrome's, not ours, and its tests pin what was read. scripts/bundle.sh puts the app and the CLI into
 // one CapsJump.app.
 
 import PackageDescription
@@ -57,6 +58,10 @@ let package = Package(
         .testTarget(
             name: "CapsJumpSystemTests",
             dependencies: ["CapsJumpCore", "CapsJumpSystem"]
+        ),
+        .testTarget(
+            name: "CapsJumpChromeTests",
+            dependencies: ["CapsJumpCore", "CapsJumpChrome"]
         ),
     ]
 )
