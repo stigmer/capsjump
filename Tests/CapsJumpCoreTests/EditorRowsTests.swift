@@ -1,6 +1,7 @@
 // What the config window's list stands on: one check of the draft that agrees with its
 // `issues` and `config`, each key and site as one line of text, the search that keeps
-// lines, and keys listed in the keyboard's order while the file keeps its own.
+// lines, keys listed in the keyboard's order while the file keeps its own, and the keys
+// that move the window listed apart, one line per move.
 
 import Foundation
 import Testing
@@ -86,15 +87,15 @@ import Testing
     private let draft = ConfigDraft(ConfigReader.read(Self.file))
 
     private func line(_ key: String) -> EditorRows.KeyLine {
-        EditorRows.keys(draft).first { $0.key == key }!
+        EditorRows.key(draft.keys.first { $0.key.key == key }!, in: draft)
     }
 
     @Test func keysAreListedInTheKeyboardsOrderAndTheFileKeepsItsOwn() {
-        #expect(EditorRows.keys(draft).map(\.key) == ["a", "b", "f", "g", "m", "z", "1", "f1", "left"])
+        #expect(EditorRows.keys(draft).map(\.key) == ["a", "b", "g", "m", "z", "1", "f1"])
         #expect(draft.source.keys.map(\.key) == ["a", "left", "f1", "1", "b", "z", "m", "g", "f"])
         var moved = draft
-        _ = moved.bind("c", to: ActionSource(.window, "maximize"), row: moved.keys.first { $0.key.key == "f" }!.id)
-        #expect(EditorRows.keys(moved).map(\.key) == ["a", "b", "c", "g", "m", "z", "1", "f1", "left"])
+        _ = moved.bind("c", to: ActionSource(.app, "~/Applications/Tools/Big Editor.app"), row: moved.keys.first { $0.key.key == "z" }!.id)
+        #expect(EditorRows.keys(moved).map(\.key) == ["a", "b", "c", "g", "m", "1", "f1"])
     }
 
     @Test func aNameTheKeyboardDoesNotKnowSortsLast() {
@@ -151,8 +152,78 @@ import Testing
         #expect(EditorRows.sites(draft, matching: "cafe").map(\.name) == ["café"])
         #expect(EditorRows.sites(draft, matching: "gmail profile").map(\.name) == ["gmail-home"])
         #expect(EditorRows.sites(draft, matching: "acme.dev").count == 2)
-        #expect(EditorRows.keys(draft, matching: "←").map(\.key) == ["left"])
-        #expect(EditorRows.keys(draft, matching: "  ").count == draft.keys.count)
+        #expect(EditorRows.keys(draft, matching: "←").isEmpty)
+        #expect(EditorRows.keys(draft, matching: "  ").count == draft.keys.count - 2)
         #expect(EditorRows.keys(draft, matching: "nothing-like-this").isEmpty)
+    }
+}
+
+@Suite struct WindowRowsTests {
+    private static let file = """
+    sites:
+      - name: github
+        account: alex@acme.dev
+        open: https://github.com/
+    keys:
+      left: { window: left-half }
+      down: { app: Slack }
+      f: { window: maximize }
+      m: { window: maximize }
+      g: { site: github }
+      x: { window: sideways }
+    """
+
+    private let draft = ConfigDraft(ConfigReader.read(Self.file))
+
+    private func line(_ move: WindowPosition) -> EditorRows.WindowLine {
+        EditorRows.window(move, in: draft)
+    }
+
+    @Test func everyMoveIsListedInItsOrderWithOrWithoutAKey() {
+        #expect(EditorRows.windows(draft).map(\.move) == [.leftHalf, .rightHalf, .topHalf, .bottomHalf, .maximize])
+        #expect(EditorRows.windows(ConfigDraft(ConfigSource())).count == 5)
+        #expect(EditorRows.windows(draft).map(\.title) == ["Left half", "Right half", "Top half", "Bottom half", "Whole screen"])
+    }
+
+    @Test func aKnownMoveIsListedUnderItAndEveryOtherKeyWithTheKeys() {
+        #expect(EditorRows.keys(draft).map(\.key) == ["g", "x", "down"])
+        #expect(line(.leftHalf).keys.map(\.key) == ["left"])
+        #expect(EditorRows.move(of: KeySource(index: 0, key: "x", action: ActionSource(.window, "sideways"))) == nil)
+        #expect(EditorRows.move(of: KeySource(index: 0, key: "q", action: nil)) == nil)
+        #expect(EditorRows.move(of: KeySource(index: 0, key: "u", action: ActionSource(.window, "top-half"))) == .topHalf)
+        let listed = EditorRows.keys(draft).count + EditorRows.windows(draft).map(\.keys.count).reduce(0, +)
+        #expect(listed == draft.keys.count)
+    }
+
+    @Test func aMoveTheFileBindsTwiceShowsBothKeys() {
+        #expect(line(.maximize).keys.map(\.key) == ["f", "m"])
+        #expect(line(.maximize).spoken == "Caps Lock plus F or M, moves the front window to the whole screen")
+    }
+
+    @Test func aMoveWithNoKeySuggestsOneAndSaysWhetherItIsFree() {
+        let top = line(.topHalf)
+        #expect(top.keys.isEmpty && top.suggested == "up" && top.suggestedFree && top.suggestedHeld == nil)
+        #expect(top.spoken == "Top half, off")
+        let bottom = line(.bottomHalf)
+        #expect(bottom.suggested == "down" && !bottom.suggestedFree)
+        #expect(bottom.suggestedHeld == "brings Slack forward")
+        #expect(line(.leftHalf).suggestedHeld == nil)
+    }
+
+    @Test func usingTheSuggestedKeyBindsTheMove() {
+        var draft = draft
+        _ = draft.bind("up", to: ActionSource(.window, WindowPosition.topHalf.rawValue))
+        let top = EditorRows.window(.topHalf, in: draft)
+        #expect(top.keys.map(\.key) == ["up"])
+        #expect(top.spoken == "Caps Lock plus Up Arrow, moves the front window to the top half")
+        #expect(!draft.freeKeys().contains("up"))
+    }
+
+    @Test func searchLooksAtTheMoveAndItsKeys() {
+        #expect(EditorRows.windows(draft, matching: "half").map(\.move) == [.leftHalf, .rightHalf, .topHalf, .bottomHalf])
+        #expect(EditorRows.windows(draft, matching: "←").map(\.move) == [.leftHalf])
+        #expect(EditorRows.windows(draft, matching: "WHOLE").map(\.move) == [.maximize])
+        #expect(EditorRows.windows(draft, matching: "screen").map(\.move) == [.maximize])
+        #expect(EditorRows.windows(draft, matching: "nothing-like-this").isEmpty)
     }
 }

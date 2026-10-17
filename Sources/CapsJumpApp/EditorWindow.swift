@@ -1,5 +1,5 @@
-// Edit Config…: one window, kept for the app's life once opened, laid out as the Mac's own apps are: Sites and Keys in a
-// sidebar, the section's rows in a searchable list, and the picked row's editor beside it.
+// Edit Config…: one window, kept for the app's life once opened, laid out as the Mac's own apps are: Sites, Keys and
+// Windows in a sidebar, the section's rows in a searchable list, and the picked row's editor beside it.
 // The toolbar is AppKit's (add, search, Save), because a SwiftUI toolbar reaches a window it
 // doesn't own only from macOS 14; the window's subtitle says whether there is anything to
 // save. The menu bar's File, Edit and View items reach the window through the responder
@@ -115,7 +115,11 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
         if let field = searchItem?.searchField {
             field.isEnabled = model.state == .editing
             if field.stringValue != model.query { field.stringValue = model.query }
-            field.placeholderString = model.section == .sites ? "Search sites" : "Search keys"
+            field.placeholderString = switch model.section {
+            case .sites: "Search sites"
+            case .keys: "Search keys"
+            case .windows: "Search windows"
+            }
         }
         window.toolbar?.validateVisibleItems()
     }
@@ -194,6 +198,10 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
         model?.section = .keys
     }
 
+    @objc func showConfigWindows(_ sender: Any?) {
+        model?.section = .windows
+    }
+
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
         switch item.action {
         case #selector(newConfigItem(_:)):
@@ -202,6 +210,8 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
             item.state = model?.section == .sites ? .on : .off
         case #selector(showConfigKeys(_:)):
             item.state = model?.section == .keys ? .on : .off
+        case #selector(showConfigWindows(_:)):
+            item.state = model?.section == .windows ? .on : .off
         default:
             break
         }
@@ -212,7 +222,7 @@ final class Editor: NSObject, NSWindowDelegate, NSToolbarDelegate, NSSearchField
         guard let model, model.state == .editing else { return false }
         switch action {
         case #selector(newConfigItem(_:)):
-            return model.section == .sites || !model.draft.freeKeys().isEmpty
+            return model.canAdd
         case #selector(saveConfig(_:)):
             return model.hasChanges && model.check.config != nil
         case #selector(deleteConfigItem(_:)):
@@ -274,6 +284,9 @@ private struct ContentColumn: View {
                 if built.includes(.keys, showing: model.section) {
                     KeyList(model: model).shown(model.section == .keys)
                 }
+                if built.includes(.windows, showing: model.section) {
+                    WindowList(model: model).shown(model.section == .windows)
+                }
             }
         }
         .onAppear { built.shown.insert(model.section) }
@@ -309,6 +322,16 @@ private struct DetailColumn: View {
                     }
                 }
                 .shown(model.section == .keys)
+            }
+            if built.includes(.windows, showing: model.section) {
+                Group {
+                    if let move = model.selectedMove {
+                        WindowEditor(form: model.windowForm(move), model: model).equatable()
+                    } else {
+                        EmptyNote(title: "Select a move", text: "Pick one in the list to set its key.")
+                    }
+                }
+                .shown(model.section == .windows)
             }
         }
         .onAppear { built.shown.insert(model.section) }
@@ -364,8 +387,8 @@ private struct UnreadableCover: View {
     }
 }
 
-/// Sites and Keys, each with its count (of matches while searching) and a mark when a row in
-/// it needs fixing.
+/// Sites, Keys and Windows, each with its count (of matches while searching; in Windows, of
+/// the moves with a key) and a mark when a row in it needs fixing.
 private struct EditorSidebar: View {
     @ObservedObject var model: EditorModel
 
@@ -374,7 +397,9 @@ private struct EditorSidebar: View {
             afterUpdate { if let section, section != model.section { model.section = section } }
         })) {
             row(.sites, "Sites", "globe", count: model.query.isEmpty ? model.draft.sites.count : model.siteLines.count, problem: !model.check.bySite.isEmpty)
-            row(.keys, "Keys", "keyboard", count: model.query.isEmpty ? model.draft.keys.count : model.keyLines.count, problem: !model.check.byKey.isEmpty)
+            row(.keys, "Keys", "keyboard", count: model.keyLines.count, problem: model.keyProblems(moves: false))
+            let moves = model.windowLines
+            row(.windows, "Windows", "macwindow", count: model.query.isEmpty ? moves.filter { !$0.keys.isEmpty }.count : moves.count, problem: model.keyProblems(moves: true))
         }
         .listStyle(.sidebar)
         .accessibilityHidden(model.state != .editing)

@@ -16,7 +16,7 @@ public enum ConfigWriter {
     \(marker)
     # Hold Caps Lock and press a key. Each site is also a link, capsjump://<name>, that lands
     # on its tab in the right Chrome account; each key does one thing: an app, a site, a
-    # window position (left-half, right-half, maximize) or a link.
+    # window position (left-half, right-half, top-half, bottom-half, maximize) or a link.
     # `capsjump check` explains every line. CapsJump rewrites this file when it saves, so
     # comments added here don't survive that.
 

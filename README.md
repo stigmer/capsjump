@@ -31,7 +31,7 @@ capsjump init
 
 ## Configure
 
-The quickest way: open a page in Chrome and pick **Add Current Tab…** from CapsJump's menu, or open **Edit Config…** for a window with every site and key: Sites and Keys on the left, every key or site as one line you can search in the middle, and the one you pick open for editing on the right. Each field is checked as you type, by the same rules `capsjump check` uses, and saving applies at once.
+The quickest way: open a page in Chrome and pick **Add Current Tab…** from CapsJump's menu, or open **Edit Config…** for a window with every site and key: Sites, Keys and Windows on the left, every site, key or window move as one line you can search in the middle, and the one you pick open for editing on the right. Each field is checked as you type, by the same rules `capsjump check` uses, and saving applies at once.
 
 <p align="center">
   <picture>
@@ -66,6 +66,8 @@ keys:
   f1: {site: claude-client}
   left: {window: left-half}
   right: {window: right-half}
+  up: {window: top-half}
+  down: {window: bottom-half}
   f: {window: maximize}
   w: {url: 'slack://channel?team=T123&id=C456'}
 ```
@@ -76,7 +78,7 @@ Each entry under `keys:` is Caps Lock + one key. Key names: `a`–`z`, `0`–`9`
 
 - `app`: an app's name, such as `Slack`, or a path to an .app that starts with `/` or `~/`. A name is looked for in `/Applications`, `/Applications/Utilities`, `/System/Applications`, `/System/Applications/Utilities`, `~/Applications` and `/System/Library/CoreServices`, in that order. The app comes forward, starting if it isn't running and opening a window if it has none.
 - `site`: one of the sites below. See [What a jump does](#what-a-jump-does).
-- `window`: `left-half`, `right-half` or `maximize`, for the front window, within the screen it is on.
+- `window`: `left-half`, `right-half`, `top-half`, `bottom-half` or `maximize` (fill the screen, staying on this desktop), for the front window, within the screen it is on. `top-half` and `bottom-half` need CapsJump 0.6.0 or later; if this file syncs to a Mac with an older CapsJump, that Mac refuses the file and keeps its last keys until it is updated.
 - `url`: any link with a scheme. It opens the way a clicked link does: `slack://…` or `zoommtg://…` in the app that owns it, `https://…` in your default browser. Unlike `site`, it opens afresh each time; use `site` to land on a tab that is already open in a Chrome account.
 
 While Caps Lock is held, a key with nothing bound does nothing. A file with no `keys:` leaves Caps Lock as it is.
@@ -103,7 +105,7 @@ CapsJump puts its mark in the menu bar, dimmed while it doesn't have Caps Lock. 
 
 - **Pause Keys / Resume Keys**: gives Caps Lock back, or takes it again. A pause lasts until you resume, across restarts.
 - **Add Current Tab…**: turns the tab in front of Chrome into a site with a key. The page and its account come filled in; pick a key, click Add, and Caps Lock with that key lands there from then on. If the page is already one of your sites, it offers that site another key instead.
-- **Edit Config…**: a window with Sites and Keys in a sidebar, a searchable list of each, and an editor for the one you pick. Accounts, sites and window positions are picked from lists, apps from a searchable list with their icons; problems show under their field as you type, and Save (⌘S) applies at once. Rename a site and its keys come along. ⌘N adds, ⌫ removes, ⌘F searches, ⌘1 and ⌘2 switch between Sites and Keys. Close or quit with unsaved changes and it asks first.
+- **Edit Config…**: a window with Sites, Keys and Windows in a sidebar, a searchable list of each, and an editor for the one you pick. Keys holds the keys that take you somewhere (an app, a site, a link); Windows lists every move CapsJump can make, each with the key that does it, which you can change or turn off. Accounts, sites and keys are picked from lists, apps from a searchable list with their icons; problems show under their field as you type, and Save (⌘S) applies at once. Rename a site and its keys come along. ⌘N adds, ⌫ removes (in Windows, turns the move's key off), ⌘F searches, ⌘1, ⌘2 and ⌘3 switch between Sites, Keys and Windows. Close or quit with unsaved changes and it asks first.
 - **Open Config File**: opens `~/.capsjump.yaml` in your editor, writing a starter file first if there is none. Saving applies the change at once.
 - **Check Config**: shows what `capsjump check` shows, with a button to Edit Config….
 - **Start at Login**: whether CapsJump starts when you log in.

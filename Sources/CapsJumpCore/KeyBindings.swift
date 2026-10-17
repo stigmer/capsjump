@@ -32,10 +32,26 @@ public enum KeyAction: Sendable, Equatable, CustomStringConvertible {
     }
 }
 
+/// The moves, in the order the config window lists them. `maximize` fills the visible
+/// screen in place; it is not macOS full screen, which gives the window a Space of its own.
 public enum WindowPosition: String, Sendable, CaseIterable {
     case leftHalf = "left-half"
     case rightHalf = "right-half"
+    case topHalf = "top-half"
+    case bottomHalf = "bottom-half"
     case maximize
+
+    /// The key a new file binds to the move and the window suggests for it: the arrows and
+    /// F, as macOS's own tiling places these moves on Fn-Control.
+    public var suggestedKey: String {
+        switch self {
+        case .leftHalf: "left"
+        case .rightHalf: "right"
+        case .topHalf: "up"
+        case .bottomHalf: "down"
+        case .maximize: "f"
+        }
+    }
 }
 
 public enum AppTarget: Sendable, Equatable, CustomStringConvertible {

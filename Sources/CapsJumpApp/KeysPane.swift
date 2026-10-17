@@ -1,7 +1,8 @@
 // The Keys section: the list of keys in the keyboard's order, each a line that reads like the
 // key (a keycap, the action's icon, what it does), and beside it the picked key's editor.
 // A key is picked from the keys no other row holds; what it does is an app (through the
-// app chooser), one of the sites, a window position, or a link. The editor says what the
+// app chooser), one of the sites, or a link. Keys that move the window are in Windows; one
+// naming a move CapsJump doesn't know stays here, with its problem and no kind picked. The editor says what the
 // key will do on this Mac, or what's wrong under its field. A list line takes values, not
 // the model, so an edit redraws only the lines it changed.
 
@@ -72,7 +73,7 @@ struct KeyLineView: View, Equatable {
         case .site?:
             symbol("globe")
         case .window?:
-            symbol(line.window == .leftHalf ? "rectangle.lefthalf.filled" : line.window == .rightHalf ? "rectangle.righthalf.filled" : "rectangle.inset.filled")
+            symbol("macwindow")
         case .url?:
             symbol("link")
         case nil:
@@ -146,10 +147,9 @@ struct KeyEditor: View, Equatable {
                     key: Binding(get: { key.key }, set: { name in afterUpdate { if let name { model.setKey(row, name) } } }),
                     free: form.free
                 )
-                Picker("Does", selection: Binding(get: { key.action?.kind }, set: { kind in afterUpdate { model.setKind(row, kind) } })) {
+                Picker("Does", selection: Binding(get: { key.action?.kind == .window ? nil : key.action?.kind }, set: { kind in afterUpdate { model.setKind(row, kind) } })) {
                     Text("App").tag(Optional(ActionSource.Kind.app))
                     Text("Site").tag(Optional(ActionSource.Kind.site))
-                    Text("Window").tag(Optional(ActionSource.Kind.window))
                     Text("Link").tag(Optional(ActionSource.Kind.url))
                 }
                 .pickerStyle(.segmented)
@@ -196,11 +196,8 @@ struct KeyEditor: View, Equatable {
                 }
             }
         case .window:
-            Picker("Position", selection: choice) {
-                Text("Left half").tag(WindowPosition.leftHalf.rawValue)
-                Text("Right half").tag(WindowPosition.rightHalf.rawValue)
-                Text("Whole screen").tag(WindowPosition.maximize.rawValue)
-            }
+            // Only a move CapsJump doesn't know is listed here; its problem says what to do.
+            EmptyView()
         case .url:
             TextField("Link", text: text, prompt: Text("https://example.com or slack://open"))
         }

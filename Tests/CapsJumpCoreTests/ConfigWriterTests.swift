@@ -37,6 +37,8 @@ import Testing
           g: { site: github }
           left: { window: left-half }
           right: { window: right-half }
+          up: { window: top-half }
+          down: { window: bottom-half }
           f: { window: maximize }
           w: { url: "slack://channel?team=T123&id=C456" }
           e: { url: https://example.com/a?b=c }

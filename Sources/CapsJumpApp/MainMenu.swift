@@ -44,6 +44,7 @@ enum MainMenu {
         bar.addItem(submenu("View", [
             item("Sites", #selector(Editor.showConfigSites(_:)), "1"),
             item("Keys", #selector(Editor.showConfigKeys(_:)), "2"),
+            item("Windows", #selector(Editor.showConfigWindows(_:)), "3"),
         ]))
         let window = submenu("Window", [
             item("Close", #selector(NSWindow.performClose(_:)), "w"),

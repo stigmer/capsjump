@@ -1,9 +1,12 @@
 // How the config window lists a draft: each key and site as one line of text, which lines a
 // search keeps, and the order keys are listed in. A key reads like the key itself: its
-// symbol, then what it does in a word or two (the app, the site and its account, "Left
-// half", the link's host). Keys are listed in `KeyNames.all` order, which is how one looks
-// for a key; sites keep the file's order, which can matter among sites that match the same
-// page. The order shown never changes the order written.
+// symbol, then what it does in a word or two (the app, the site and its account, the link's
+// host). Keys are listed in `KeyNames.all` order, which is how one looks for a key; sites
+// keep the file's order, which can matter among sites that match the same page. Keys that
+// move the window are listed apart, as one line per move CapsJump can make, always all of
+// them in `WindowPosition`'s order, each with the keys that do it; every other key, one whose
+// move CapsJump doesn't know included, is listed with the keys, so every problem has a line
+// it shows on. The order and the list shown never change the order written.
 
 import Foundation
 
@@ -16,10 +19,32 @@ public enum EditorRows {
         public let kind: ActionSource.Kind?
         /// For an app key, the app's name or path as written; the window finds its icon by it.
         public let app: String?
-        public let window: WindowPosition?
         public let title: String
         public let subtitle: String?
+        /// What the key does, as a phrase: "brings Slack forward".
+        public let doing: String
         /// What VoiceOver reads for the whole line.
+        public let spoken: String
+        let searched: [String]
+    }
+
+    /// One move CapsJump can make, with the keys that do it.
+    public struct WindowLine: Sendable, Equatable, Identifiable {
+        public struct Bound: Sendable, Equatable {
+            public let row: Int
+            public let key: String
+        }
+
+        public var id: WindowPosition { move }
+        public let move: WindowPosition
+        public let title: String
+        /// The rows that bind a key to the move, in `KeyNames.all` order.
+        public let keys: [Bound]
+        public let suggested: String
+        /// Whether no row holds the suggested key.
+        public let suggestedFree: Bool
+        /// What the suggested key does now, when the move has no key and another row holds it.
+        public let suggestedHeld: String?
         public let spoken: String
         let searched: [String]
     }
@@ -35,13 +60,52 @@ public enum EditorRows {
         let searched: [String]
     }
 
-    /// The draft's keys that match `query`, in `KeyNames.all` order.
+    /// The move a key makes, when it is one CapsJump knows; such a key is listed under its
+    /// move rather than with the keys.
+    public static func move(of key: KeySource) -> WindowPosition? {
+        guard let action = key.action, action.kind == .window else { return nil }
+        return WindowPosition(rawValue: action.value)
+    }
+
+    /// The draft's keys that match `query`, in `KeyNames.all` order, but those that make a move.
     public static func keys(_ draft: ConfigDraft, matching query: String = "") -> [KeyLine] {
         let words = words(query)
         return draft.keys
+            .filter { move(of: $0.key) == nil }
             .map { key($0, in: draft) }
             .filter { matches(words, $0.searched) }
             .sorted { rank($0.key) < rank($1.key) }
+    }
+
+    /// Every move that matches `query`, in `WindowPosition` order, whether a key makes it or not.
+    public static func windows(_ draft: ConfigDraft, matching query: String = "") -> [WindowLine] {
+        let words = words(query)
+        return WindowPosition.allCases
+            .map { window($0, in: draft) }
+            .filter { matches(words, $0.searched) }
+    }
+
+    public static func window(_ move: WindowPosition, in draft: ConfigDraft) -> WindowLine {
+        let keys = draft.keys
+            .filter { Self.move(of: $0.key) == move }
+            .map { WindowLine.Bound(row: $0.id, key: $0.key.key) }
+            .sorted { rank($0.key) < rank($1.key) }
+        let title = positionTitle(move)
+        let suggested = move.suggestedKey
+        let holder = draft.keys.first { $0.key.key == suggested }
+        let spoken = keys.isEmpty
+            ? "\(title), off"
+            : "Caps Lock plus \(keys.map { spokenKey($0.key) }.joined(separator: " or ")), moves the front window to \(positionSpoken(move))"
+        return WindowLine(
+            move: move,
+            title: title,
+            keys: keys,
+            suggested: suggested,
+            suggestedFree: holder == nil,
+            suggestedHeld: keys.isEmpty ? holder.map { key($0, in: draft).doing } : nil,
+            spoken: spoken,
+            searched: [title] + keys.flatMap { [$0.key, KeyNames.symbol(for: $0.key)] }
+        )
     }
 
     /// The draft's sites that match `query`, in the file's order.
@@ -60,7 +124,6 @@ public enum EditorRows {
         var subtitle: String?
         var doing = "does nothing yet"
         var app: String?
-        var window: WindowPosition?
         if let action {
             let value = action.value.trimmingCharacters(in: .whitespaces)
             switch action.kind {
@@ -83,7 +146,6 @@ public enum EditorRows {
                 doing = value.isEmpty ? "has no site yet" : "jumps to \(title)" + (subtitle.map { ", \($0)" } ?? "")
             case .window:
                 let position = WindowPosition(rawValue: value)
-                window = position
                 title = position.map(positionTitle) ?? (value.isEmpty ? "Choose a position" : value)
                 doing = "moves the front window to " + (position.map(positionSpoken) ?? title)
             case .url:
@@ -102,9 +164,9 @@ public enum EditorRows {
             symbol: symbol,
             kind: action?.kind,
             app: app,
-            window: window,
             title: title,
             subtitle: subtitle,
+            doing: doing,
             spoken: "Caps Lock plus \(spokenKey(name)), \(doing)",
             searched: [name, symbol, title, subtitle ?? ""]
         )
@@ -162,6 +224,8 @@ public enum EditorRows {
         switch position {
         case .leftHalf: "Left half"
         case .rightHalf: "Right half"
+        case .topHalf: "Top half"
+        case .bottomHalf: "Bottom half"
         case .maximize: "Whole screen"
         }
     }
@@ -170,6 +234,8 @@ public enum EditorRows {
         switch position {
         case .leftHalf: "the left half"
         case .rightHalf: "the right half"
+        case .topHalf: "the top half"
+        case .bottomHalf: "the bottom half"
         case .maximize: "the whole screen"
         }
     }

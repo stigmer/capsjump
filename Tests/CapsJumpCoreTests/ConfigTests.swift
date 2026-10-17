@@ -144,6 +144,8 @@ import Testing
         #expect(config.keys == [
             KeyBinding(key: "left", action: .window(.leftHalf)),
             KeyBinding(key: "right", action: .window(.rightHalf)),
+            KeyBinding(key: "up", action: .window(.topHalf)),
+            KeyBinding(key: "down", action: .window(.bottomHalf)),
             KeyBinding(key: "f", action: .window(.maximize)),
         ])
 

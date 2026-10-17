@@ -73,7 +73,7 @@ import Testing
             open: nope
             match: x.com
         keys:
-          G: { window: top-half }
+          G: { window: top-third }
           b: { app: Slack, site: github }
         """)
         #expect(source.problems.map(\.description) == [
@@ -82,7 +82,7 @@ import Testing
         ])
         #expect(source.sites == [SiteSource(index: 0, line: 2, name: "Bad", open: "nope")])
         #expect(source.keys == [
-            KeySource(index: 0, line: 6, key: "G", action: ActionSource(.window, "top-half")),
+            KeySource(index: 0, line: 6, key: "G", action: ActionSource(.window, "top-third")),
             KeySource(index: 1, line: 7, key: "b", action: nil),
         ])
     }

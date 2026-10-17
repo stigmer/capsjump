@@ -1,6 +1,7 @@
 // Every rule of the event tap: Caps Lock is swallowed, a bound key runs once, an unbound
 // key does nothing while Caps Lock is held, a swallowed press swallows its key-up and
-// repeats, and nothing is touched when no key is bound.
+// repeats, and nothing is touched when no key is bound. Then where each window move puts
+// the window.
 
 import Foundation
 import Testing
@@ -95,6 +96,23 @@ import Testing
         #expect(rules.decide(KeyEvent(g, .up, capsHeld: false)) == .pass)
     }
 
+    @Test func theArrowsRunTheirMoves() throws {
+        let config = try ConfigParser.parse("""
+        keys:
+          up: { window: top-half }
+          down: { window: bottom-half }
+        """)
+        var rules = KeyRules(bindings: KeyRules.bindings(for: config))
+        let up = KeyTrigger.key(0x7E)
+        let down = KeyTrigger.key(0x7D)
+        #expect(rules.decide(KeyEvent(up, .down, capsHeld: true)) == .run(.window(.topHalf)))
+        #expect(rules.decide(KeyEvent(up, .down, isRepeat: true, capsHeld: true)) == .swallow)
+        #expect(rules.decide(KeyEvent(up, .up, capsHeld: true)) == .swallow)
+        #expect(rules.decide(KeyEvent(down, .down, capsHeld: true)) == .run(.window(.bottomHalf)))
+        #expect(rules.decide(KeyEvent(down, .up, capsHeld: true)) == .swallow)
+        #expect(rules.decide(KeyEvent(up, .down, capsHeld: false)) == .pass)
+    }
+
     @Test func aPressHeldAcrossAReloadThatDropsEveryKeyStillEndsSwallowed() throws {
         var rules = try rules()
         #expect(rules.decide(KeyEvent(g, .down, capsHeld: true)) == .run(site))
@@ -124,8 +142,24 @@ import Testing
         #expect(WindowLayout.frame(.rightHalf, visible: visible, primaryHeight: 500) == CGRect(x: 500, y: 0, width: 501, height: 500))
     }
 
+    @Test func topAndBottomHalvesOnThePrimaryScreen() {
+        #expect(WindowLayout.frame(.topHalf, visible: primaryVisible, primaryHeight: 1117) == CGRect(x: 0, y: 25, width: 1728, height: 511))
+        #expect(WindowLayout.frame(.bottomHalf, visible: primaryVisible, primaryHeight: 1117) == CGRect(x: 0, y: 536, width: 1728, height: 511))
+    }
+
+    @Test func anOddHeightGivesTheExtraPointToTheBottomWithNoGap() {
+        let visible = CGRect(x: 0, y: 0, width: 800, height: 501)
+        let top = WindowLayout.frame(.topHalf, visible: visible, primaryHeight: 501)
+        let bottom = WindowLayout.frame(.bottomHalf, visible: visible, primaryHeight: 501)
+        #expect(top == CGRect(x: 0, y: 0, width: 800, height: 250))
+        #expect(bottom == CGRect(x: 0, y: 250, width: 800, height: 251))
+        #expect(top.maxY == bottom.minY)
+    }
+
     @Test func aSecondScreenUsesItsOwnFrame() {
         #expect(WindowLayout.frame(.leftHalf, visible: secondVisible, primaryHeight: 1117) == CGRect(x: 1728, y: 25, width: 960, height: 1055))
+        #expect(WindowLayout.frame(.topHalf, visible: secondVisible, primaryHeight: 1117) == CGRect(x: 1728, y: 25, width: 1920, height: 527))
+        #expect(WindowLayout.frame(.bottomHalf, visible: secondVisible, primaryHeight: 1117) == CGRect(x: 1728, y: 552, width: 1920, height: 528))
     }
 
     @Test func theWindowStaysOnTheScreenHoldingMostOfIt() {

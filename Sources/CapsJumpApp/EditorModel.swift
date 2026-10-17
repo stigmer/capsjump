@@ -6,7 +6,9 @@
 // The draft is judged once per edit and every view reads that one check; what a key does on
 // this Mac is asked of the disk once per key and action. Which section is shown, the row
 // picked in each and the search text live here too, and a reload keeps the picked rows by
-// what they are (a key's name, a site's name), because row ids follow the file's order.
+// what they are (a key's name, a site's name, a move), because row ids follow the file's
+// order. Windows lists the moves rather than rows, so a move's key is set, changed or turned
+// off by the draft's own bind and remove.
 
 import AppKit
 import CapsJumpChrome
@@ -25,6 +27,7 @@ final class EditorModel: ObservableObject {
     enum Section: String, CaseIterable {
         case sites
         case keys
+        case windows
     }
 
     @Published private(set) var draft = ConfigDraft(ConfigSource()) {
@@ -56,6 +59,9 @@ final class EditorModel: ObservableObject {
     @Published var selectedKey: Int? {
         didSet { if selectedKey != oldValue { Timings.untilIdle("select") } }
     }
+    @Published var selectedMove: WindowPosition? = WindowPosition.allCases.first {
+        didSet { if selectedMove != oldValue { Timings.untilIdle("select") } }
+    }
     @Published var query = "" {
         didSet { onChange?() }
     }
@@ -82,6 +88,7 @@ final class EditorModel: ObservableObject {
 
     init() {
         // Keys the first time: keys are the app's job, and Add Current Tab is the quick way to sites.
+        // A section this version doesn't have, saved by a later one, opens Keys too.
         section = UserDefaults.standard.string(forKey: Self.sectionDefault).flatMap(Section.init) ?? .keys
         load()
         watch()
@@ -157,7 +164,7 @@ final class EditorModel: ObservableObject {
         }
         state = .editing
         selectedSite = draft.sites.first { $0.site.name == siteName }?.id ?? siteLines.first?.id
-        selectedKey = draft.keys.first { $0.key.key == keyName }?.id ?? keyLines.first?.id
+        selectedKey = keyLines.first { $0.key == keyName }?.id ?? keyLines.first?.id
     }
 
     private func fileChanged() {
@@ -236,6 +243,12 @@ final class EditorModel: ObservableObject {
         })
     }
 
+    var moveSelection: Binding<WindowPosition?> {
+        Binding(get: { self.selectedMove }, set: { move in
+            afterUpdate { [weak self] in if let self, self.selectedMove != move { self.selectedMove = move } }
+        })
+    }
+
     // MARK: Lists
 
     var siteLines: [EditorRows.SiteLine] {
@@ -246,7 +259,16 @@ final class EditorModel: ObservableObject {
         EditorRows.keys(draft, matching: query)
     }
 
-    /// Picks the first row with a problem, sites first; false when there is none.
+    var windowLines: [EditorRows.WindowLine] {
+        EditorRows.windows(draft, matching: query)
+    }
+
+    /// Whether a key with a problem is listed in Windows (`moves`) or in Keys.
+    func keyProblems(moves: Bool) -> Bool {
+        draft.keys.contains { check.byKey[$0.id] != nil && (EditorRows.move(of: $0.key) != nil) == moves }
+    }
+
+    /// Picks the first row with a problem: sites, then keys, then moves; false when there is none.
     @discardableResult
     func selectFirstProblem() -> Bool {
         query = ""
@@ -260,27 +282,47 @@ final class EditorModel: ObservableObject {
             selectedKey = key.id
             return true
         }
+        if let line = windowLines.first(where: { $0.keys.contains { check.byKey[$0.row] != nil } }) {
+            section = .windows
+            selectedMove = line.move
+            return true
+        }
         return false
     }
 
-    /// Adds a site or a key to the section shown, and picks it.
+    /// Adds a site or a key to the section shown, and picks it; the moves are fixed.
     func addItem() {
         switch section {
         case .sites: addSite()
         case .keys: addKey()
+        case .windows: break
         }
     }
 
-    /// Removes the picked row; a site that keys jump to asks first.
+    var canAdd: Bool {
+        switch section {
+        case .sites: true
+        case .keys: !draft.freeKeys().isEmpty
+        case .windows: false
+        }
+    }
+
+    /// Removes the picked row, or turns the picked move's keys off; a site that keys jump to asks first.
     func removeSelected(in window: NSWindow?) {
         switch section {
         case .sites: if let selectedSite { remove(site: selectedSite, in: window) }
         case .keys: if let selectedKey { remove(key: selectedKey) }
+        case .windows: if let selectedMove { turnOff(selectedMove) }
         }
     }
 
     var canRemove: Bool {
-        state == .editing && (section == .sites ? selectedSite != nil : selectedKey != nil)
+        guard state == .editing else { return false }
+        return switch section {
+        case .sites: selectedSite != nil
+        case .keys: selectedKey != nil
+        case .windows: selectedMove.map { !EditorRows.window($0, in: draft).keys.isEmpty } ?? false
+        }
     }
 
     /// The row after `id` in `ids`, or the one before it when it is last.
@@ -394,10 +436,10 @@ final class EditorModel: ObservableObject {
             return
         }
         guard draft.key(row)?.key.action?.kind != kind else { return }
+        // Keys offers no window kind: a move's key is set in Windows.
         let value = switch kind {
         case .site: draft.sites.compactMap(\.site.name).first ?? ""
-        case .window: WindowPosition.leftHalf.rawValue
-        case .app, .url: ""
+        case .app, .url, .window: ""
         }
         draft.setAction(row, ActionSource(kind, value))
     }
@@ -428,6 +470,25 @@ final class EditorModel: ObservableObject {
         panel.prompt = "Choose"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         setApp(row, path: url.path)
+    }
+
+    // MARK: Windows
+
+    /// Binds `key` to the move on the row, or on a new row when `row` is nil; nil removes the row.
+    func setKey(_ move: WindowPosition, row: Int?, _ key: String?) {
+        edit { draft in
+            if let key {
+                _ = draft.bind(key, to: ActionSource(.window, move.rawValue), row: row)
+            } else if let row {
+                draft.removeKey(row)
+            }
+        }
+    }
+
+    /// Removes every key that makes the move.
+    func turnOff(_ move: WindowPosition) {
+        let rows = EditorRows.window(move, in: draft).keys.map(\.row)
+        edit { draft in rows.forEach { draft.removeKey($0) } }
     }
 
     // MARK: What each editor shows
@@ -474,6 +535,30 @@ final class EditorModel: ObservableObject {
             appPath: action?.kind == .app ? action.flatMap { appPath($0.value) } : nil,
             note: note,
             problems: problems(key: row) + (missing.map { [$0] } ?? [])
+        )
+    }
+
+    /// Everything the move editor shows, as values.
+    struct WindowForm: Equatable, Sendable {
+        struct KeyChoice: Equatable, Sendable {
+            let row: Int
+            let key: String
+            let free: [String]
+            let problems: [String]
+        }
+
+        let line: EditorRows.WindowLine
+        let keys: [KeyChoice]
+        /// The keys no row holds, for a move with none.
+        let free: [String]
+    }
+
+    func windowForm(_ move: WindowPosition) -> WindowForm {
+        let line = EditorRows.window(move, in: draft)
+        return WindowForm(
+            line: line,
+            keys: line.keys.map { WindowForm.KeyChoice(row: $0.row, key: $0.key, free: draft.freeKeys(for: $0.row), problems: problems(key: $0.row)) },
+            free: line.keys.isEmpty ? draft.freeKeys() : []
         )
     }
 

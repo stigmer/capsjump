@@ -1,5 +1,5 @@
 // The file `capsjump init` writes, and the editing window starts from when there is none:
-// one example site in this Mac's first Chrome account and the three window keys, written
+// one example site in this Mac's first Chrome account and a key for each window move, written
 // as CapsJump writes every file, so a first save from the window loses nothing.
 
 import Foundation
@@ -11,11 +11,7 @@ public enum StarterConfig {
         let open = URL(string: "https://github.com/")!
         return Config(
             sites: [Site(name: "github", account: account, profile: profile, open: open, match: [URLPrefix.defaultMatch(for: open)])],
-            keys: [
-                KeyBinding(key: "left", action: .window(.leftHalf)),
-                KeyBinding(key: "right", action: .window(.rightHalf)),
-                KeyBinding(key: "f", action: .window(.maximize)),
-            ]
+            keys: WindowPosition.allCases.map { KeyBinding(key: $0.suggestedKey, action: .window($0)) }
         )
     }
 

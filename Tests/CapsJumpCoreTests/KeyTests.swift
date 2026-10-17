@@ -131,7 +131,7 @@ import Testing
               a: { site: gitlab }
               b: { app: Slack, site: github }
               c: {}
-              d: { window: top-half }
+              d: { window: top-third }
               e: { url: example.com }
               h: { app: Applications/Slack.app }
               i: { app: ~/Tools/run.sh }
@@ -146,7 +146,7 @@ import Testing
             "line 7: keys.a: no site named `gitlab` in `sites:`",
             "line 8: keys.b: give one action, not `app` and `site`",
             "line 9: keys.c: give one of `app`, `site`, `window` or `url`",
-            "line 10: keys.d: `window` must be one of `left-half`, `right-half`, `maximize`, not `top-half`",
+            "line 10: keys.d: `window` must be one of `left-half`, `right-half`, `top-half`, `bottom-half`, `maximize`, not `top-third`",
             "line 11: keys.e: `url` must be a link with a scheme",
             "line 12: keys.h: `app` must be an app's name",
             "line 13: keys.i: `app` must be an app's name",

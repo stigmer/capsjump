@@ -11,9 +11,13 @@ public enum WindowLayout {
     /// `visible`; `primaryHeight` is the primary screen's full height.
     public static func frame(_ position: WindowPosition, visible: CGRect, primaryHeight: CGFloat) -> CGRect {
         let left = (visible.width / 2).rounded(.down)
+        let top = (visible.height / 2).rounded(.down)
+        // AppKit's y grows up, so the top half is the upper part of the frame.
         let target: CGRect = switch position {
         case .leftHalf: CGRect(x: visible.minX, y: visible.minY, width: left, height: visible.height)
         case .rightHalf: CGRect(x: visible.minX + left, y: visible.minY, width: visible.width - left, height: visible.height)
+        case .topHalf: CGRect(x: visible.minX, y: visible.maxY - top, width: visible.width, height: top)
+        case .bottomHalf: CGRect(x: visible.minX, y: visible.minY, width: visible.width, height: visible.height - top)
         case .maximize: visible
         }
         return flip(target, primaryHeight: primaryHeight)
