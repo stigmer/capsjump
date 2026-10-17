@@ -62,6 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.welcome.keysChanged()
         }
         notifier.openWelcome = { [weak self] in self?.welcome.open() }
+        notifier.welcomeIsOpen = { [weak self] in self?.welcome.isOpen ?? false }
         editor.listening = keys.listening
         addTab.listening = keys.listening
         self.menu = menu

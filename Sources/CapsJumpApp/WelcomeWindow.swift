@@ -7,7 +7,10 @@
 // on, next to the line that says Caps Lock stops typing capitals. While the window itself
 // is in front, keys pressed with Caps Lock are heard rather than run (a window move would
 // try to move this fixed-size window), and the step says so; the first key that runs
-// elsewhere ticks it. The window opens by itself on a launch while CapsJump isn't set up,
+// elsewhere ticks it. The button of the step at hand is the prominent one, but no step's
+// button answers Return: the window can come forward while someone is typing elsewhere,
+// and a stray Return must never raise a macOS request. Done answers Return once all three
+// steps are ticked, and Escape before that. The window opens by itself on a launch while CapsJump isn't set up,
 // until the person has closed it once; after that only when asked: from the menu, by the
 // app being opened again, by `capsjump setup`, by a key that failed for a permission, or by
 // a click on a notification about one. The first time it opens on a CapsJump that isn't set
@@ -82,6 +85,12 @@ final class WelcomeModel: ObservableObject {
     }
 
     var keysChosen: Bool { (boundKeys ?? 0) > 0 }
+
+    var triedIt: Bool {
+        if case .worked = tryIt { true } else { false }
+    }
+
+    var allDone: Bool { accessibility && keysChosen && triedIt }
 
     /// Reads every row again; called every second while the window is open and whenever
     /// the keys change.
@@ -217,7 +226,7 @@ struct WelcomeView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 12) {
                     Button("Allow…") { model.allowAccessibility() }
-                        .keyboardShortcut(.defaultAction)
+                        .buttonStyle(.borderedProminent)
                     Button("Open Accessibility Settings") { Setup.open(.accessibility) }
                         .buttonStyle(.link)
                 }
@@ -251,6 +260,7 @@ struct WelcomeView: View {
                 }
                 HStack(spacing: 12) {
                     Button("Turn On Starter Keys") { model.turnOnStarterKeys() }
+                        .buttonStyle(.borderedProminent)
                         .disabled(!model.accessibility)
                     Button("Set Up My Own…") { model.actions.editConfig(false) }
                         .disabled(!model.accessibility)
@@ -269,7 +279,7 @@ struct WelcomeView: View {
     }
 
     private var tryItStep: some View {
-        Step(number: 3, title: "Try it", done: { if case .worked = model.tryIt { true } else { false } }()) {
+        Step(number: 3, title: "Try it", done: model.triedIt) {
             if model.status.nextStep == .resume {
                 Text("Your keys are paused.").foregroundStyle(.secondary)
                 Button("Resume Keys") { model.actions.resume() }
@@ -367,7 +377,7 @@ struct WelcomeView: View {
                 .foregroundStyle(.tertiary)
                 .textSelection(.enabled)
             Button("Done") { model.actions.close() }
-                .keyboardShortcut(model.accessibility ? .defaultAction : .cancelAction)
+                .keyboardShortcut(model.allDone ? .defaultAction : .cancelAction)
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
@@ -471,6 +481,8 @@ final class Welcome: NSObject, NSWindowDelegate {
         }
         AppWindows.show(window)
     }
+
+    var isOpen: Bool { window != nil }
 
     /// The keys changed: their row and the try-it step follow at once.
     func keysChanged() {
