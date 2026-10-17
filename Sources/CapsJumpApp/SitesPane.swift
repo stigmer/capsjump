@@ -15,7 +15,7 @@ struct SiteList: View {
     var body: some View {
         let lines = model.siteLines
         VStack(spacing: 0) {
-            List(selection: model.binding(\.selectedSite)) {
+            List(selection: model.siteSelection) {
                 ForEach(lines) { line in
                     SiteLineView(line: line, problem: model.check.bySite[line.id] != nil)
                         .equatable()
@@ -154,7 +154,7 @@ struct SiteEditor: View, Equatable {
         let id = form.id
         VStack(alignment: .leading, spacing: 4) {
             if let profiles = form.profiles {
-                Picker("Account", selection: Binding(get: { form.profile }, set: { model.setProfile(id, $0) })) {
+                Picker("Account", selection: Binding(get: { form.profile }, set: { profile in afterUpdate { model.setProfile(id, profile) } })) {
                     Text("Choose…").tag(String?.none)
                     ForEach(profiles, id: \.directory) { profile in
                         Text(AddTabView.label(profile)).tag(Optional(profile.directory))

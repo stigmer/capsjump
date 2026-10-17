@@ -365,7 +365,9 @@ private struct EditorSidebar: View {
     @ObservedObject var model: EditorModel
 
     var body: some View {
-        List(selection: Binding(get: { model.section }, set: { if let section = $0, section != model.section { model.section = section } })) {
+        List(selection: Binding(get: { model.section }, set: { section in
+            afterUpdate { if let section, section != model.section { model.section = section } }
+        })) {
             row(.sites, "Sites", "globe", count: model.query.isEmpty ? model.draft.sites.count : model.siteLines.count, problem: !model.check.bySite.isEmpty)
             row(.keys, "Keys", "keyboard", count: model.query.isEmpty ? model.draft.keys.count : model.keyLines.count, problem: !model.check.byKey.isEmpty)
         }
@@ -387,6 +389,15 @@ private struct EditorSidebar: View {
         }
         .tag(section)
     }
+}
+
+/// Applies a choice made in a pop-up, a segmented control or a list after the SwiftUI update
+/// that reports it: AppKit's controls call their binding inside that update, where SwiftUI
+/// refuses a published change ("Publishing changes from within view updates") and can leave
+/// the window half drawn. Text fields report outside it and apply at once.
+@MainActor
+func afterUpdate(_ apply: @escaping @MainActor @Sendable () -> Void) {
+    Task { @MainActor in apply() }
 }
 
 extension View {

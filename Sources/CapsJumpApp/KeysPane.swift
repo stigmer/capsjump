@@ -13,7 +13,7 @@ struct KeyList: View {
 
     var body: some View {
         let lines = model.keyLines
-        List(selection: model.binding(\.selectedKey)) {
+        List(selection: model.keySelection) {
             ForEach(lines) { line in
                 KeyLineView(line: line, problem: model.check.byKey[line.id] != nil, appPath: line.app.flatMap(model.appPath))
                     .equatable()
@@ -143,10 +143,10 @@ struct KeyEditor: View, Equatable {
         Form {
             Section {
                 KeyPicker(
-                    key: Binding(get: { key.key }, set: { if let name = $0 { model.setKey(row, name) } }),
+                    key: Binding(get: { key.key }, set: { name in afterUpdate { if let name { model.setKey(row, name) } } }),
                     free: form.free
                 )
-                Picker("Does", selection: Binding(get: { key.action?.kind }, set: { model.setKind(row, $0) })) {
+                Picker("Does", selection: Binding(get: { key.action?.kind }, set: { kind in afterUpdate { model.setKind(row, kind) } })) {
                     Text("App").tag(Optional(ActionSource.Kind.app))
                     Text("Site").tag(Optional(ActionSource.Kind.site))
                     Text("Window").tag(Optional(ActionSource.Kind.window))
@@ -174,6 +174,7 @@ struct KeyEditor: View, Equatable {
     private func value(_ action: ActionSource) -> some View {
         let row = form.row
         let text = Binding(get: { action.value }, set: { model.setValue(row, $0) })
+        let choice = Binding(get: { action.value }, set: { value in afterUpdate { model.setValue(row, value) } })
         switch action.kind {
         case .app:
             LabeledContent("App") {
@@ -186,7 +187,7 @@ struct KeyEditor: View, Equatable {
                 )
             }
         case .site:
-            Picker("Site", selection: text) {
+            Picker("Site", selection: choice) {
                 if !form.sites.contains(where: { $0.name == action.value }) {
                     Text(action.value.isEmpty ? "Choose…" : action.value).tag(action.value)
                 }
@@ -195,7 +196,7 @@ struct KeyEditor: View, Equatable {
                 }
             }
         case .window:
-            Picker("Position", selection: text) {
+            Picker("Position", selection: choice) {
                 Text("Left half").tag(WindowPosition.leftHalf.rawValue)
                 Text("Right half").tag(WindowPosition.rightHalf.rawValue)
                 Text("Whole screen").tag(WindowPosition.maximize.rawValue)

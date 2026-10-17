@@ -222,12 +222,17 @@ final class EditorModel: ObservableObject {
         if next != draft { draft = next }
     }
 
-    /// A binding that sets only a different value. Lists and the sidebar write their
-    /// selection back while SwiftUI updates them, and a published property publishes on every
-    /// set, which SwiftUI refuses mid-update.
-    func binding<Value: Equatable>(_ keyPath: ReferenceWritableKeyPath<EditorModel, Value>) -> Binding<Value> {
-        Binding(get: { self[keyPath: keyPath] }, set: { value in
-            if self[keyPath: keyPath] != value { self[keyPath: keyPath] = value }
+    /// The lists' selections: set after the update that reports them, and only when they
+    /// differ, because a list also writes its selection back while SwiftUI updates it.
+    var siteSelection: Binding<Int?> {
+        Binding(get: { self.selectedSite }, set: { id in
+            afterUpdate { [weak self] in if let self, self.selectedSite != id { self.selectedSite = id } }
+        })
+    }
+
+    var keySelection: Binding<Int?> {
+        Binding(get: { self.selectedKey }, set: { id in
+            afterUpdate { [weak self] in if let self, self.selectedKey != id { self.selectedKey = id } }
         })
     }
 

@@ -154,7 +154,7 @@ struct AddTabView: View {
                     LabeledContent("Account") {
                         VStack(alignment: .leading, spacing: 4) {
                             if let catalog = model.catalog {
-                                Picker("Account", selection: $model.profileDirectory) {
+                                Picker("Account", selection: Binding(get: { model.profileDirectory }, set: { directory in afterUpdate { model.profileDirectory = directory } })) {
                                     Text("Choose…").tag(String?.none)
                                     ForEach(catalog.profiles, id: \.directory) { profile in
                                         Text(Self.label(profile)).tag(Optional(profile.directory))
@@ -198,7 +198,7 @@ struct AddTabView: View {
 
     private var keyPicker: some View {
         VStack(alignment: .leading, spacing: 4) {
-            KeyPicker(key: Binding(get: { model.key }, set: { model.key = $0 }), free: model.freeKeys)
+            KeyPicker(key: Binding(get: { model.key }, set: { key in afterUpdate { model.key = key } }), free: model.freeKeys)
             notes(nil, model.keyProblems)
         }
     }
