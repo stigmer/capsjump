@@ -151,12 +151,6 @@ capsjump init</code></pre>
         <li><code>capsjump setup</code> asks for the permissions once (Accessibility, Chrome automation, notifications) and starts CapsJump at login. A Caps Lock symbol appears in the menu bar.</li>
         <li><code>capsjump init</code> writes a starter <code>~/.capsjump.yaml</code> in your first Chrome account; <code>capsjump profiles</code> lists the others. Edit it, then run <code>capsjump check</code>.</li>
       </ol>
-      <h3>Moving from stigmer/tap</h3>
-      <p>CapsJump used to install from <code>stigmer/tap</code>. Homebrew doesn't move an installed cask from one tap to another by itself, so if you installed it from there, move it once:</p>
-<pre><code>brew uninstall --cask capsjump
-brew install --cask whysosuresh/tap/capsjump
-open -a CapsJump</code></pre>
-      <p>The uninstall quits CapsJump, so the last line starts it again. Your Accessibility permission, start-at-login and <code>~/.capsjump.yaml</code> stay as they are.</p>
     </section>
 
     <section class="notes">

@@ -28,18 +28,6 @@ capsjump init
 - `capsjump setup` asks for the app's permissions once (upgrades keep them) and starts CapsJump at login.
 - `capsjump init` writes a starter `~/.capsjump.yaml` in your first Chrome account; `capsjump profiles` lists the others. Edit it, then run `capsjump check`.
 
-### Moving from stigmer/tap
-
-CapsJump used to install from `stigmer/tap`. Homebrew doesn't move an installed cask from one tap to another by itself, so if you installed it from there, move it once:
-
-```sh
-brew uninstall --cask capsjump
-brew install --cask whysosuresh/tap/capsjump
-open -a CapsJump
-```
-
-The uninstall quits CapsJump, so the last line starts it again. Your Accessibility permission, start-at-login and `~/.capsjump.yaml` stay as they are.
-
 ## Configure
 
 The quickest way: open a page in Chrome and pick **Add Current Tab…** from CapsJump's menu, or open **Edit Config…** for a window with every site and key: Sites, Keys and Windows on the left, every site, key or window move as one line you can search in the middle, and the one you pick open for editing on the right. Each field is checked as you type, by the same rules `capsjump check` uses, and saving applies at once.
