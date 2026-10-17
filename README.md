@@ -36,13 +36,13 @@ The quickest way: open a page in Chrome and pick **Add Current Tab…** from Cap
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="site/editor-keys-dark.png">
-    <img src="site/editor-keys.png" width="840" alt="Edit Config…, Keys: each key as a keycap with the app's or the site's own icon and the site's account, and the picked key open for editing">
+    <img src="site/editor-keys.png" width="840" alt="Edit Config…, Keys: each key as a keycap with the app's or the site's own icon and the account's picture, and the picked key's field waiting for a new key">
   </picture>
 </p>
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="site/editor-sites-dark.png">
-    <img src="site/editor-sites.png" width="840" alt="Edit Config…, Sites: each site with its own icon, account, page and keys, and the picked site open for editing">
+    <img src="site/editor-sites.png" width="840" alt="Edit Config…, Sites: each site with its own icon, its account and the account's picture, page and keys, and the picked site's Account menu open">
   </picture>
 </p>
 <p align="center">
